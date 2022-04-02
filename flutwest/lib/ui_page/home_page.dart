@@ -20,5 +20,7 @@ class _HomePageState extends State<HomePage> {
 }
 
 StandardPadding getTop() {
-  return const StandardPadding();
+  return const StandardPadding(
+    child: Text(""),
+  );
 }

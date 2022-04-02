@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutwest/ui_page/Home_Page.dart';
+import 'package:flutwest/ui_page/products_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const HomePage(),
+      home: const ProductsPage(),
     );
   }
 }
