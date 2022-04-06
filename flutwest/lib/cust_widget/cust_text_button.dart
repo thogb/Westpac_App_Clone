@@ -16,18 +16,16 @@ class CustTextButton extends StatelessWidget {
   final double rightLeftPadding = Vars.standardPaddingSize;
   final String? heading;
   final String? paragraph;
+  final VoidCallback? onTap;
 
-  const CustTextButton({
-    Key? key,
-    this.heading,
-    this.paragraph,
-  })  : assert(heading != null || paragraph != null),
+  const CustTextButton({Key? key, this.heading, this.paragraph, this.onTap})
+      : assert(heading != null || paragraph != null),
         super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-        onTap: () {},
+        onTap: onTap,
         child: Container(
           padding: EdgeInsets.fromLTRB(
               rightLeftPadding, topBotPadding, rightLeftPadding, topBotPadding),

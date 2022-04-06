@@ -101,27 +101,39 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _getInboxButton() {
-    return const StandardPadding(
+    return StandardPadding(
         child: CustButton(
       heading: "Inbox",
       paragraph: "Alerts, messages, notifications",
-      leftWidget: Icon(
+      leftWidget: const Icon(
         Icons.send,
         size: iconSize,
       ),
-      rightWidget: null,
+      rightWidget: _getAlertUnseen(32),
     ));
   }
 
   Widget _getRewardsButton() {
-    return const StandardPadding(
+    return StandardPadding(
         child: CustButton(
       heading: "Rewards and offers",
-      leftWidget: Icon(
+      leftWidget: const Icon(
         CupertinoIcons.gift_fill,
         size: iconSize,
       ),
-      rightWidget: null,
+      rightWidget: _getAlertUnseen(1),
     ));
+  }
+
+  Widget _getAlertUnseen(int val) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 5.0),
+      decoration: BoxDecoration(
+          color: Colors.red[700], borderRadius: BorderRadius.circular(10.0)),
+      child: Text(
+        val.toString(),
+        style: const TextStyle(fontSize: 12.0, color: Colors.white),
+      ),
+    );
   }
 }

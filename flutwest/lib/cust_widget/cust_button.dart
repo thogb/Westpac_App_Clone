@@ -19,20 +19,22 @@ class CustButton extends StatelessWidget {
   final String? paragraph;
   final Widget? leftWidget;
   final Widget? rightWidget;
+  final VoidCallback? onTap;
 
   const CustButton(
       {Key? key,
       this.heading,
       this.paragraph,
       this.leftWidget,
-      this.rightWidget})
+      this.rightWidget,
+      this.onTap})
       : assert(heading != null || paragraph != null),
         super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: onTap,
       child: Container(
         padding: EdgeInsets.symmetric(
             vertical: topBotPadding, horizontal: leftRightPadding),
@@ -66,7 +68,7 @@ class CustButton extends StatelessWidget {
             SizedBox(
               width: leftRightPadding,
             ),
-            rightWidget ?? const SizedBox()
+            rightWidget != null ? rightWidget! : const SizedBox()
           ],
         ),
       ),
