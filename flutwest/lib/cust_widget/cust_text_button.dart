@@ -2,6 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutwest/model/vars.dart';
 
 class CustTextButton extends StatelessWidget {
+  /// font size of heading inside text button
+  static const double buttonHeadingSize = 16.0;
+  static const double buttonParaSize = 12.0;
+
+  static const TextStyle textButtonHeadingStyle =
+      TextStyle(fontSize: buttonHeadingSize, fontWeight: FontWeight.w400);
+
+  static const TextStyle textButtonParaStyle =
+      TextStyle(fontSize: buttonParaSize, fontWeight: FontWeight.w300);
+
   final double topBotPadding = Vars.topBotPaddingSize;
   final double rightLeftPadding = Vars.standardPaddingSize;
   final String? heading;
@@ -26,9 +36,15 @@ class CustTextButton extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               heading != null
-                  ? Text(heading!, style: Vars.buttonHeadingStyle)
+                  ? Text(heading!, style: textButtonHeadingStyle)
                   : const SizedBox(),
-              paragraph != null ? Text(paragraph!) : const SizedBox(),
+              const SizedBox(height: 4.0),
+              paragraph != null
+                  ? Text(
+                      paragraph!,
+                      style: textButtonParaStyle,
+                    )
+                  : const SizedBox(),
             ],
           ),
         ));
