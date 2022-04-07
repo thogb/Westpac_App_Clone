@@ -17,41 +17,51 @@ class _CardsPageState extends State<CardsPage> {
     return Scaffold(
       appBar: AppBar(title: Text("Cards")),
       body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            //Security
-            CustHeading(heading: "Security"),
-            //lock cards
-            CustTextButton(heading: "Report lost or stolen"),
-            CustTextButton(heading: "Set or change PIN"),
-            CustTextButton(heading: "Reissue Card"),
-            CustTextButton(heading: "Notify of overseas travel"),
+          child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Text(
+            "Westpac Debit\nMastercard\u00AE",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              //Security
+              CustHeading(heading: "Security"),
+              //lock cards
+              CustTextButton(heading: "Report lost or stolen"),
+              CustTextButton(heading: "Set or change PIN"),
+              CustTextButton(heading: "Reissue Card"),
+              CustTextButton(heading: "Notify of overseas travel"),
 
-            //Wallets
-            CustHeading(heading: "Wallets"),
-            CustTextButton(heading: "Other wallets and Wearables"),
+              //Wallets
+              CustHeading(heading: "Wallets"),
+              CustTextButton(heading: "Other wallets and Wearables"),
 
-            //Controls
-            CustHeading(heading: "Controls"),
-            CustTextButton(heading: "Gamlbing Block"),
-            CustTextButton(heading: "Activate card"),
+              //Controls
+              CustHeading(heading: "Controls"),
+              CustTextButton(heading: "Gamlbing Block"),
+              CustTextButton(heading: "Activate card"),
 
-            //Linked Account
-            CustHeading(heading: "Linked accounts"),
-            StandardPadding(
-                child: CustButton(
-                    leftWidget: Text(
-                      "Westpac Choice",
-                      style: TextStyle(fontSize: CustButton.buttonHeadingSize),
-                    ),
-                    heading: "\n",
-                    rightWidget: Text("\$1333.33",
-                        style: CustButton.buttonHeadingStyle))),
-            SizedBox(height: 30.0)
-          ],
-        ),
-      ),
+              //Linked Account
+              CustHeading(heading: "Linked accounts"),
+              StandardPadding(
+                  child: CustButton(
+                      leftWidget: Text(
+                        "Westpac Choice",
+                        style:
+                            TextStyle(fontSize: CustButton.buttonHeadingSize),
+                      ),
+                      heading: "\n",
+                      rightWidget: Text("\$1333.33",
+                          style: CustButton.buttonHeadingStyle))),
+              SizedBox(height: 30.0)
+            ],
+          ),
+        ],
+      )),
     );
   }
 }

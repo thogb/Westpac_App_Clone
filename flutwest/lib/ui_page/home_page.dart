@@ -30,53 +30,59 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(children: _pages, index: _currPage),
-      bottomNavigationBar: BottomNavigationBar(
-        onTap: _onNavbarTap,
-        currentIndex: _currPage,
-        unselectedItemColor: unselectedNavItemColor,
-        selectedItemColor: selectedNavItemColor,
-        selectedFontSize: 12.0,
-        unselectedFontSize: 12.0,
-        type: BottomNavigationBarType.fixed,
-        items: [
-          const BottomNavigationBarItem(
-              activeIcon: Icon(Icons.home, size: navItemIconSize),
-              icon: Icon(Icons.home_outlined, size: navItemIconSize),
-              label: "Home",
-              tooltip: "Home"),
-          const BottomNavigationBarItem(
-              activeIcon:
-                  Icon(CupertinoIcons.creditcard_fill, size: navItemIconSize),
-              icon: Icon(CupertinoIcons.creditcard, size: navItemIconSize),
-              label: "Cards",
-              tooltip: "Cards"),
-          BottomNavigationBarItem(
-              icon: Container(
-                width: 30.0,
-                height: 30.0,
-                decoration: const BoxDecoration(
-                    shape: BoxShape.circle, color: Colors.red),
-                child: const Icon(
-                  Icons.attach_money,
-                  color: Colors.white,
-                ),
-              ),
-              label: ""),
-          const BottomNavigationBarItem(
-              activeIcon: Icon(CupertinoIcons.cube_fill),
-              icon: Icon(CupertinoIcons.cube),
-              label: "Products",
-              tooltip: "Products"),
-          const BottomNavigationBarItem(
-              activeIcon: Icon(Icons.person, size: navItemIconSize),
-              icon: Icon(Icons.person_outline, size: navItemIconSize),
-              label: "Profile",
-              tooltip: "Profile"),
-        ],
-      ),
-    );
+    return Theme(
+        data: ThemeData(
+            scaffoldBackgroundColor: Colors.grey[50],
+            appBarTheme: AppBarTheme(
+                color: Colors.grey[50],
+                titleTextStyle: const TextStyle(color: Colors.black))),
+        child: Scaffold(
+          body: IndexedStack(children: _pages, index: _currPage),
+          bottomNavigationBar: BottomNavigationBar(
+            onTap: _onNavbarTap,
+            currentIndex: _currPage,
+            unselectedItemColor: unselectedNavItemColor,
+            selectedItemColor: selectedNavItemColor,
+            selectedFontSize: 12.0,
+            unselectedFontSize: 12.0,
+            type: BottomNavigationBarType.fixed,
+            items: [
+              const BottomNavigationBarItem(
+                  activeIcon: Icon(Icons.home, size: navItemIconSize),
+                  icon: Icon(Icons.home_outlined, size: navItemIconSize),
+                  label: "Home",
+                  tooltip: "Home"),
+              const BottomNavigationBarItem(
+                  activeIcon: Icon(CupertinoIcons.creditcard_fill,
+                      size: navItemIconSize),
+                  icon: Icon(CupertinoIcons.creditcard, size: navItemIconSize),
+                  label: "Cards",
+                  tooltip: "Cards"),
+              BottomNavigationBarItem(
+                  icon: Container(
+                    width: 30.0,
+                    height: 30.0,
+                    decoration: const BoxDecoration(
+                        shape: BoxShape.circle, color: Colors.red),
+                    child: const Icon(
+                      Icons.attach_money,
+                      color: Colors.white,
+                    ),
+                  ),
+                  label: ""),
+              const BottomNavigationBarItem(
+                  activeIcon: Icon(CupertinoIcons.cube_fill),
+                  icon: Icon(CupertinoIcons.cube),
+                  label: "Products",
+                  tooltip: "Products"),
+              const BottomNavigationBarItem(
+                  activeIcon: Icon(Icons.person, size: navItemIconSize),
+                  icon: Icon(Icons.person_outline, size: navItemIconSize),
+                  label: "Profile",
+                  tooltip: "Profile"),
+            ],
+          ),
+        ));
   }
 
   void _onNavbarTap(int index) {
