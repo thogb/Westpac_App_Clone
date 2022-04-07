@@ -28,8 +28,7 @@ class CustButton extends StatelessWidget {
       this.leftWidget,
       this.rightWidget,
       this.onTap})
-      : assert(heading != null || paragraph != null),
-        super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
