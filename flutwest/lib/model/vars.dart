@@ -5,7 +5,7 @@ class Vars {
   static const double standardPaddingSize = 15.0;
 
   /// the space betwee nelements in height, used as padding for top, bot
-  static const double topBotPaddingSize = 12.0;
+  static const double topBotPaddingSize = 17.0;
 
   /// font size of paragraph inside button
   static const double buttonParagraphSize = 12.0;

@@ -10,6 +10,8 @@ class CustSilverAppbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
+      elevation: 1.5,
+      shadowColor: Colors.black45,
       pinned: true,
       floating: true,
       snap: false,

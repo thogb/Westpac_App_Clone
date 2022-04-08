@@ -27,9 +27,9 @@ class _ProfilePageState extends State<ProfilePage> {
           actions: [
             TextButton(
                 onPressed: () {},
-                child: const Text(
+                child: Text(
                   "Sign Out",
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(color: Colors.red[700]),
                 ))
           ],
         ),
@@ -69,7 +69,8 @@ class _ProfilePageState extends State<ProfilePage> {
           const CustTextButton(
             heading: "Help",
             paragraph: "FAQs, topics, feedback, contact us",
-          )
+          ),
+          const SizedBox(height: 50.0)
         ]))
       ],
     );

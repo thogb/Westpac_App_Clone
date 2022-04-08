@@ -14,7 +14,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static const Color unselectedNavItemColor = Colors.black45;
+  static const Color unselectedNavItemColor = Colors.black54;
   static const Color selectedNavItemColor = Colors.black;
   static const double navItemIconSize = 30.0;
 
@@ -49,7 +49,7 @@ class _HomePageState extends State<HomePage> {
             type: BottomNavigationBarType.fixed,
             items: [
               const BottomNavigationBarItem(
-                  activeIcon: Icon(Icons.home, size: navItemIconSize),
+                  activeIcon: Icon(Icons.home_sharp, size: navItemIconSize),
                   icon: Icon(Icons.home_outlined, size: navItemIconSize),
                   label: "Home",
                   tooltip: "Home"),
@@ -77,7 +77,7 @@ class _HomePageState extends State<HomePage> {
                   label: "Products",
                   tooltip: "Products"),
               const BottomNavigationBarItem(
-                  activeIcon: Icon(Icons.person, size: navItemIconSize),
+                  activeIcon: Icon(Icons.person_sharp, size: navItemIconSize),
                   icon: Icon(Icons.person_outline, size: navItemIconSize),
                   label: "Profile",
                   tooltip: "Profile"),
