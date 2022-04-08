@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutwest/cust_widget/cust_silver_appbar.dart';
 import 'package:flutwest/cust_widget/cust_text_button.dart';
 
 class HomeContentPage extends StatefulWidget {
@@ -14,31 +15,38 @@ class _HomeContentPageState extends State<HomeContentPage> {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            actions: [
-              TextButton(
-                  onPressed: () {},
-                  child: Container(
-                    child: Text("Sign Out"),
-                  ))
-            ],
-            pinned: true,
-            floating: true,
-            snap: false,
-            expandedHeight: 80.0,
-            title: Text("asdasd"),
-            flexibleSpace: FlexibleSpaceBar(
-              title: Text(
-                "Profile",
-                style: TextStyle(color: Colors.black),
-              ),
-              titlePadding: EdgeInsets.only(bottom: 12.0, left: 15.0),
-              expandedTitleScale: 1.2,
-            ),
-          ),
+          CustSilverAppbar(title: "Profile", actions: [
+            TextButton(onPressed: () {}, child: const Text("Sign Out"))
+          ]),
           SliverList(
             delegate: SliverChildListDelegate([
-              const CustTextButton(heading: "Hello", paragraph: "test"),
+              CustTextButton(
+                heading: "Hello",
+                paragraph: "test",
+                onTap: () {
+                  showModalBottomSheet(
+                      context: context,
+                      builder: (BuildContext bc) {
+                        return Theme(
+                            data: ThemeData(
+                                listTileTheme: const ListTileThemeData(
+                              tileColor: Colors.black,
+                              iconColor: Colors.white,
+                              textColor: Colors.white,
+                            )),
+                            child: Container(
+                              child: Column(
+                                children: [
+                                  ListTile(
+                                      leading:
+                                          Icon(Icons.transfer_within_a_station),
+                                      title: Text("Transfer between accounts"))
+                                ],
+                              ),
+                            ));
+                      });
+                },
+              ),
               const CustTextButton(heading: "Hello", paragraph: "test"),
               const CustTextButton(heading: "Hello", paragraph: "test"),
               const CustTextButton(heading: "Hello", paragraph: "test"),

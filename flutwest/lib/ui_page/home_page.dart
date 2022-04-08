@@ -18,6 +18,7 @@ class _HomePageState extends State<HomePage> {
   static const Color selectedNavItemColor = Colors.black;
   static const double navItemIconSize = 30.0;
 
+  bool _more = false;
   int _currPage = 0;
 
   static const List<Widget> _pages = <Widget>[
@@ -87,10 +88,63 @@ class _HomePageState extends State<HomePage> {
 
   void _onNavbarTap(int index) {
     if (index == 2) {
+      _showBottomSheet();
     } else {
       setState(() {
         _currPage = index;
       });
     }
+  }
+
+  void _showBottomSheet() {
+    _more = false;
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext buildContext) {
+          return StatefulBuilder(
+              builder: (BuildContext bc, StateSetter setModalState) {
+            return Theme(
+                data: ThemeData(
+                    listTileTheme: const ListTileThemeData(
+                  tileColor: Colors.black,
+                  iconColor: Colors.white,
+                  textColor: Colors.white,
+                )),
+                child: Wrap(
+                  children: [
+                    const ListTile(
+                        leading: Icon(Icons.transfer_within_a_station),
+                        title: Text("Transfer between accounts")),
+                    const ListTile(
+                        leading: Icon(Icons.payment_outlined),
+                        title: Text("Pay someone")),
+                    const ListTile(
+                        leading: Icon(Icons.payment),
+                        title: Text("Pay by BPay")),
+                    const ListTile(
+                        leading: Icon(Icons.phone),
+                        title: Text("Cardles Cash")),
+                    !_more
+                        ? ListTile(
+                            leading: const Icon(Icons.expand),
+                            title: const Text("More"),
+                            onTap: () {
+                              setModalState(() {
+                                _more = true;
+                              });
+                            },
+                          )
+                        : Column(children: const [
+                            ListTile(
+                                leading: Icon(Icons.card_giftcard),
+                                title: Text("Cheque deposit")),
+                            ListTile(
+                                leading: Icon(Icons.heart_broken),
+                                title: Text("Make a donation"))
+                          ])
+                  ],
+                ));
+          });
+        });
   }
 }
