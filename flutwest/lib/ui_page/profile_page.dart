@@ -15,7 +15,7 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  static const double iconSize = CustButton.buttonHeadingSize + 4.0;
+  static const double iconSize = Vars.headingTextSize2 + 4.0;
   int value = 31;
 
   @override

@@ -1,9 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/ui_page/home_page.dart';
 import 'package:flutwest/ui_page/products_page.dart';
 import 'package:flutwest/ui_page/profile_page.dart';
 
 void main() {
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.dark,
+      systemNavigationBarDividerColor: Color.fromARGB(1, 0, 1, 51),
+      systemNavigationBarColor: Color.fromARGB(1, 0, 1, 51)));
+
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge, overlays: [
+    SystemUiOverlay.top,
+  ]);
+
   runApp(const MyApp());
 }
 

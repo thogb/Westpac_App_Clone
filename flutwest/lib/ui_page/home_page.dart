@@ -38,14 +38,18 @@ class _HomePageState extends State<HomePage> {
                 color: Colors.grey[50],
                 titleTextStyle: const TextStyle(color: Colors.black))),
         child: Scaffold(
-          body: IndexedStack(children: _pages, index: _currPage),
+          body: Stack(
+            children: [
+              IndexedStack(children: _pages, index: _currPage),
+            ],
+          ),
           bottomNavigationBar: BottomNavigationBar(
             onTap: _onNavbarTap,
             currentIndex: _currPage,
             unselectedItemColor: unselectedNavItemColor,
             selectedItemColor: selectedNavItemColor,
-            //selectedFontSize: 12.0,
-            //unselectedFontSize: 12.0,
+            selectedFontSize: 0.0,
+            unselectedFontSize: 0.0,
             showSelectedLabels: false,
             showUnselectedLabels: false,
             type: BottomNavigationBarType.fixed,

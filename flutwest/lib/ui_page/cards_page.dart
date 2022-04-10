@@ -6,6 +6,7 @@ import 'package:flutwest/cust_widget/cust_heading.dart';
 import 'package:flutwest/cust_widget/cust_silver_appbar.dart';
 import 'package:flutwest/cust_widget/cust_text_button.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
+import 'package:flutwest/model/vars.dart';
 
 class CardsPage extends StatefulWidget {
   const CardsPage({Key? key}) : super(key: key);
@@ -194,8 +195,7 @@ class _CardsPageState extends State<CardsPage> {
                       child: CustButton(
                           leftWidget: Text(
                             "Westpac Choice",
-                            style: TextStyle(
-                                fontSize: CustButton.buttonHeadingSize),
+                            style: TextStyle(fontSize: Vars.headingTextSize2),
                           ),
                           heading: "\n",
                           rightWidget: Text("\$1333.33",

@@ -4,8 +4,7 @@ import 'package:flutwest/model/vars.dart';
 class CustHeading extends StatelessWidget {
   final String heading;
 
-  static const TextStyle headingStyle =
-      TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold);
+  static const TextStyle headingStyle = Vars.headingStyle1;
 
   const CustHeading({Key? key, required this.heading}) : super(key: key);
 

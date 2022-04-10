@@ -2,12 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutwest/model/vars.dart';
 
 class CustButton extends StatelessWidget {
-  /// font size of heading inside button
-  static const double buttonHeadingSize = 16.0;
-  static const double buttonParaSize = 12.0;
+  static const double buttonParaSize = Vars.paragraphTextSize;
 
-  static const TextStyle buttonHeadingStyle =
-      TextStyle(fontSize: buttonHeadingSize, fontWeight: FontWeight.bold);
+  static const TextStyle buttonHeadingStyle = Vars.headingStyle2;
 
   static const TextStyle buttonParaStyle =
       TextStyle(fontSize: buttonParaSize, fontWeight: FontWeight.w300);
