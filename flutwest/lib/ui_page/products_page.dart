@@ -14,6 +14,7 @@ class ProductsPage extends StatelessWidget {
         const CustSilverAppbar(title: "Products"),
         SliverList(
             delegate: SliverChildListDelegate(const [
+          SizedBox(height: 30.0),
           CustTextButton(
             heading: "Bank accounts",
           ),

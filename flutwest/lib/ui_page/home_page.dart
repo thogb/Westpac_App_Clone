@@ -44,10 +44,44 @@ class _HomePageState extends State<HomePage> {
             currentIndex: _currPage,
             unselectedItemColor: unselectedNavItemColor,
             selectedItemColor: selectedNavItemColor,
-            selectedFontSize: 12.0,
-            unselectedFontSize: 12.0,
+            //selectedFontSize: 12.0,
+            //unselectedFontSize: 12.0,
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
             type: BottomNavigationBarType.fixed,
             items: [
+              BottomNavigationBarItem(
+                  label: "",
+                  icon: _getNavIcon(Icons.home_outlined, "Home"),
+                  activeIcon: _getNavIcon(Icons.home_sharp, "Home", true)),
+              BottomNavigationBarItem(
+                  label: "",
+                  icon: _getNavIcon(CupertinoIcons.creditcard, "Cards"),
+                  activeIcon:
+                      _getNavIcon(Icons.credit_card_sharp, "Cards", true)),
+              BottomNavigationBarItem(
+                  icon: Container(
+                    width: 40.0,
+                    height: 40.0,
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle, color: Colors.red[700]),
+                    child: const Icon(
+                      Icons.attach_money,
+                      color: Colors.white,
+                    ),
+                  ),
+                  label: ""),
+              BottomNavigationBarItem(
+                  label: "",
+                  icon: _getNavIcon(CupertinoIcons.cube, "Products"),
+                  activeIcon:
+                      _getNavIcon(CupertinoIcons.cube_fill, "Products", true)),
+              BottomNavigationBarItem(
+                  label: "",
+                  icon: _getNavIcon(Icons.person_outline, "Profile"),
+                  activeIcon: _getNavIcon(Icons.person_sharp, "Profile", true)),
+            ],
+            /*items: [
               const BottomNavigationBarItem(
                   activeIcon: Icon(Icons.home_sharp, size: navItemIconSize),
                   icon: Icon(Icons.home_outlined, size: navItemIconSize),
@@ -63,8 +97,8 @@ class _HomePageState extends State<HomePage> {
                   icon: Container(
                     width: 30.0,
                     height: 30.0,
-                    decoration: const BoxDecoration(
-                        shape: BoxShape.circle, color: Colors.red),
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle, color: Colors.red[700]),
                     child: const Icon(
                       Icons.attach_money,
                       color: Colors.white,
@@ -81,9 +115,25 @@ class _HomePageState extends State<HomePage> {
                   icon: Icon(Icons.person_outline, size: navItemIconSize),
                   label: "Profile",
                   tooltip: "Profile"),
-            ],
+            ],*/
           ),
         ));
+  }
+
+  Widget _getNavIcon(IconData iconData, String label, [bool active = false]) {
+    return Column(
+      children: [
+        Icon(
+          iconData,
+          size: navItemIconSize,
+        ),
+        Text(
+          label,
+          style: TextStyle(
+              color: active ? selectedNavItemColor : unselectedNavItemColor),
+        )
+      ],
+    );
   }
 
   void _onNavbarTap(int index) {

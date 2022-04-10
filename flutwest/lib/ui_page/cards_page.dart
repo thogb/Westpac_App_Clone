@@ -153,6 +153,7 @@ class _CardsPageState extends State<CardsPage> {
                   ),
                   //Security
                   SwitchListTile(
+                      activeColor: Colors.blue[900],
                       title: const Text("Lock card Temporarily"),
                       subtitle: !_lockCard
                           ? const Text("Unlocked")

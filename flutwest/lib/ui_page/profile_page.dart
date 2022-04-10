@@ -40,15 +40,9 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: Vars.heightGapBetweenWidgets),
           _getRewardsButton(),
           const SizedBox(height: Vars.heightGapBetweenWidgets),
-          CustTextButton(
+          const CustTextButton(
               heading: "Settings",
-              paragraph: "Personal details, security and communications",
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const ProductsPage()));
-              }),
+              paragraph: "Personal details, security and communications"),
           CustTextButton(
             heading: "Documents",
             paragraph: "Statements, taxs summaries, proof of balance",
