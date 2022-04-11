@@ -3,18 +3,92 @@ import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
 import 'package:flutwest/cust_widget/outlined_container.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
+import 'package:flutwest/model/navbar_state.dart';
 import 'package:flutwest/model/vars.dart';
 
 class HomeContentPage extends StatefulWidget {
-  const HomeContentPage({Key? key}) : super(key: key);
+  final NavbarState navbarState;
+
+  const HomeContentPage({Key? key, required this.navbarState})
+      : super(key: key);
 
   @override
   _HomeContentPageState createState() => _HomeContentPageState();
 }
 
-class _HomeContentPageState extends State<HomeContentPage> {
+class _HomeContentPageState extends State<HomeContentPage>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   static const TextStyle fakeAppBarStyle =
       TextStyle(color: Colors.white, fontSize: 16.0);
+
+  late final AnimationController _botAnimationController = AnimationController(
+    duration: const Duration(milliseconds: 1000),
+    vsync: this,
+  )..forward();
+
+  late final AnimationController _topAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1200), vsync: this)
+    ..forward();
+
+  late final AnimationController _welcomeFadeController = AnimationController(
+      duration: const Duration(milliseconds: 500), vsync: this);
+
+  late final Animation<double> _welcomeFadeAnimation =
+      Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+          parent: _welcomeFadeController,
+          curve: const Interval(0.0, 1.0, curve: Curves.easeInExpo)));
+
+  late final AnimationController _welcomeController;
+
+  late final Animation<Offset> _botOffSetAnimation =
+      Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero).animate(
+          CurvedAnimation(
+              parent: _botAnimationController, curve: Curves.easeInExpo));
+
+  late final Animation<double> _topFadeAnimation =
+      Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+          parent: _topAnimationController,
+          curve: const Interval(1000 / 1200, 1.0, curve: Curves.easeIn)));
+
+  late final Animation<Offset> _welcomeAnimation;
+
+  @override
+  void initState() {
+    WidgetsBinding.instance?.addObserver(this);
+    widget.navbarState.addObserver(_checkWelcomeAnimation);
+
+    _welcomeController = AnimationController(
+        duration: const Duration(milliseconds: 1500), vsync: this);
+
+    _welcomeAnimation =
+        Tween<Offset>(begin: const Offset(0.0, 2.0), end: Offset.zero).animate(
+            CurvedAnimation(parent: _welcomeController, curve: Curves.easeIn));
+
+    super.initState();
+
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      _welcomeController.forward();
+      Future.delayed(const Duration(milliseconds: 800), () {
+        _welcomeFadeController.forward();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance?.removeObserver(this);
+
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _runWelcomeFadeAnimation(300);
+    }
+
+    super.didChangeAppLifecycleState(state);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,20 +105,44 @@ class _HomeContentPageState extends State<HomeContentPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 50.0),
-                      _getFakeAppBar(),
+                      FadeTransition(
+                        opacity: _topFadeAnimation,
+                        child: _getFakeAppBar(),
+                      ),
                       const SizedBox(height: 120.0),
-                      _getWelcomeText(),
-                      _getSearchBar(),
+                      SlideTransition(
+                          position: _welcomeAnimation,
+                          child: FadeTransition(
+                              opacity: _welcomeFadeAnimation,
+                              child: _getWelcomeText())),
+                      FadeTransition(
+                          opacity: _topFadeAnimation, child: _getSearchBar())
                     ],
                   ),
                 ),
-                _getBottomContent()
+                SlideTransition(
+                  position: _botOffSetAnimation,
+                  child: _getBottomContent(),
+                )
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  void _checkWelcomeAnimation(int prevIndex, int currIndex) {
+    if (currIndex == 0 && prevIndex != 0) {
+      _runWelcomeFadeAnimation(300);
+    }
+  }
+
+  void _runWelcomeFadeAnimation(int delay) {
+    Future.delayed(Duration(milliseconds: delay), () {
+      _welcomeFadeController.reset();
+      _welcomeFadeController.forward();
+    });
   }
 
   Widget _getFakeAppBar() {
@@ -80,7 +178,7 @@ class _HomeContentPageState extends State<HomeContentPage> {
         padding: const EdgeInsets.symmetric(vertical: Vars.topBotPaddingSize),
         child: Container(
           decoration: BoxDecoration(
-              color: Colors.white, borderRadius: BorderRadius.circular(3.0)),
+              color: Colors.grey[50], borderRadius: BorderRadius.circular(3.0)),
           child: TextField(
             enabled: false,
             decoration: InputDecoration(
@@ -96,9 +194,9 @@ class _HomeContentPageState extends State<HomeContentPage> {
 
   Widget _getBottomContent() {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(15.0)),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(15.0)),
       ),
       child: StandardPadding(
         child: Column(
@@ -106,10 +204,14 @@ class _HomeContentPageState extends State<HomeContentPage> {
             const SizedBox(height: Vars.topBotPaddingSize),
             _getAccountSection(),
             const SizedBox(height: Vars.heightGapBetweenWidgets),
-            const CustButton(
-              leftWidget: Icon(Icons.money),
+            CustButton(
+              leftWidget: const Icon(Icons.money),
               heading: "Payments",
               paragraph: "Upcoming, past, direct debits, BPAY View",
+              onTap: () {
+                print("start----");
+                print("end -------");
+              },
             ),
             const SizedBox(height: 200.0)
           ],

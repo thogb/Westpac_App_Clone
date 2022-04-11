@@ -20,14 +20,18 @@ class BackgroundImage extends StatelessWidget {
           )),
         ),
         Positioned(
-            top: MediaQuery.of(context).size.height * -0.3,
-            left: MediaQuery.of(context).size.height * -0.2,
+            top: MediaQuery.of(context).size.height *
+                MediaQuery.of(context).size.aspectRatio *
+                -0.65,
+            left: MediaQuery.of(context).size.width *
+                MediaQuery.of(context).size.aspectRatio *
+                -1.0,
             child: RotationTransition(
                 turns: const AlwaysStoppedAnimation(45.0 / 360.0),
                 child: Column(
                   children: [
                     Container(
-                        color: Color(0xFF000133),
+                        color: const Color(0xFF000133),
                         width: MediaQuery.of(context).size.width,
                         height: MediaQuery.of(context).size.height * 0.2),
                     Container(
@@ -37,10 +41,14 @@ class BackgroundImage extends StatelessWidget {
                   ],
                 ))),
         Positioned(
-            bottom: MediaQuery.of(context).size.height * -0.7,
-            left: MediaQuery.of(context).size.height * -0.1,
+            bottom: MediaQuery.of(context).size.height *
+                MediaQuery.of(context).size.aspectRatio *
+                -1.55,
+            left: MediaQuery.of(context).size.width *
+                MediaQuery.of(context).size.aspectRatio *
+                -0.55,
             child: RotationTransition(
-              turns: AlwaysStoppedAnimation(-45 / 360),
+              turns: const AlwaysStoppedAnimation(-45 / 360),
               child: Container(
                   color: Colors.pink[400],
                   width: MediaQuery.of(context).size.width,

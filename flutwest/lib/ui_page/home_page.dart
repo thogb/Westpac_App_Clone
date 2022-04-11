@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
+import 'package:flutwest/model/navbar_state.dart';
 import 'package:flutwest/ui_page/cards_page.dart';
 import 'package:flutwest/ui_page/home_content_page.dart';
 import 'package:flutwest/ui_page/products_page.dart';
@@ -18,16 +19,23 @@ class _HomePageState extends State<HomePage> {
   static const Color selectedNavItemColor = Colors.black;
   static const double navItemIconSize = 30.0;
 
+  static final NavbarState navbarState = NavbarState();
+
   bool _more = false;
   int _currPage = 0;
 
-  static const List<Widget> _pages = <Widget>[
-    HomeContentPage(),
-    CardsPage(),
-    SizedBox(),
-    ProductsPage(),
-    ProfilePage()
-  ];
+  final List<Widget> _pages = [];
+
+  @override
+  void initState() {
+    _pages.add(HomeContentPage(navbarState: navbarState));
+    _pages.add(const CardsPage());
+    _pages.add(const SizedBox());
+    _pages.add(const ProductsPage());
+    _pages.add(const ProfilePage());
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -148,6 +156,9 @@ class _HomePageState extends State<HomePage> {
         _currPage = index;
       });
     }
+
+    navbarState.updatePageIndex(index);
+    navbarState.notifyObserver();
   }
 
   void _showBottomSheet() {
