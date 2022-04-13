@@ -3,6 +3,7 @@ import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
 import 'package:flutwest/cust_widget/outlined_container.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
+import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/navbar_state.dart';
 import 'package:flutwest/model/vars.dart';
 
@@ -18,39 +19,91 @@ class HomeContentPage extends StatefulWidget {
 
 class _HomeContentPageState extends State<HomeContentPage>
     with TickerProviderStateMixin, WidgetsBindingObserver {
+  static const double scrollBy = 40.0;
+
+  static const Duration topFadeDuration = Duration(milliseconds: 300);
+
+  static const Duration welcomeFadeDuration = Duration(milliseconds: 500);
+
+  static final Widget dollarIcon = Container(
+    padding: const EdgeInsets.all(15.0),
+    decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.red[800]),
+    child: const Center(
+        child: Icon(Icons.attach_money, color: Colors.white, size: 50)),
+  );
+
   static const TextStyle fakeAppBarStyle =
       TextStyle(color: Colors.white, fontSize: 16.0);
 
+  /// controller for bottom part sliding in animation
   late final AnimationController _botAnimationController = AnimationController(
     duration: const Duration(milliseconds: 1000),
     vsync: this,
-  )..forward();
+  )..forward().then((value) => {
+        _topAnimationController.forward().then((value) {
+          _welcomeController.forward();
+          _welcomeFadeController.forward();
+        })
+      });
 
-  late final AnimationController _topAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1200), vsync: this)
-    ..forward();
-
-  late final AnimationController _welcomeFadeController = AnimationController(
-      duration: const Duration(milliseconds: 500), vsync: this);
-
-  late final Animation<double> _welcomeFadeAnimation =
-      Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-          parent: _welcomeFadeController,
-          curve: const Interval(0.0, 1.0, curve: Curves.easeInExpo)));
-
-  late final AnimationController _welcomeController;
-
+  /// animation for bottom to slide in
   late final Animation<Offset> _botOffSetAnimation =
       Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero).animate(
           CurvedAnimation(
               parent: _botAnimationController, curve: Curves.easeInExpo));
 
+  /// controller for the top part's fading in animation
+  late final AnimationController _topAnimationController =
+      AnimationController(duration: topFadeDuration, vsync: this);
+
+  /// the top part of the page animation fading in
   late final Animation<double> _topFadeAnimation =
       Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
           parent: _topAnimationController,
-          curve: const Interval(1000 / 1200, 1.0, curve: Curves.easeIn)));
+          curve: const Interval(0.0, 1.0, curve: Curves.easeIn)));
 
+  /// welcome text animation controller for fading in
+  late final AnimationController _welcomeFadeController =
+      AnimationController(duration: welcomeFadeDuration, vsync: this);
+
+  /// welcome text animation fading in
+  late final Animation<double> _welcomeFadeAnimation =
+      Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+          parent: _welcomeFadeController,
+          curve: const Interval(0.0, 1.0, curve: Curves.easeInExpo)));
+
+  late final AnimationController _paymentContentFadeController =
+      AnimationController(
+          duration: const Duration(microseconds: 0), vsync: this)
+        ..forward().then((value) {
+          _paymentContentFadeController.duration =
+              const Duration(milliseconds: 200);
+        });
+
+  late final Animation<double> _paymentContentFadeAnimation =
+      Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+          parent: _paymentContentFadeController,
+          curve: const Interval(0.0, 1.0, curve: Curves.easeIn)));
+
+  /// the controller for welcome text animation sliding in
+  late final AnimationController _welcomeController;
+
+  /// welcome text animation sliding in
   late final Animation<Offset> _welcomeAnimation;
+
+  final Map<String, bool> _accountRedBorderState = {};
+  final Map<String, AnimationController> _accountAnimationControllers = {};
+  final Map<String, Animation<double>> _accountAnimations = {};
+
+  final ScrollController _scrollController = ScrollController();
+
+  static List<Account> accounts = [
+    Account(Account.typeChocie, "666-777", "232383", 2000.0),
+    Account(Account.typeeSaver, "888-999", "223323", 6000.0),
+    Account(Account.typeBusiness, "111-222", "231231", 100000.0)
+  ];
+
+  bool _dragging = false;
 
   @override
   void initState() {
@@ -58,20 +111,38 @@ class _HomeContentPageState extends State<HomeContentPage>
     widget.navbarState.addObserver(_checkWelcomeAnimation);
 
     _welcomeController = AnimationController(
-        duration: const Duration(milliseconds: 1500), vsync: this);
+        duration: const Duration(milliseconds: 500), vsync: this);
 
     _welcomeAnimation =
         Tween<Offset>(begin: const Offset(0.0, 2.0), end: Offset.zero).animate(
             CurvedAnimation(parent: _welcomeController, curve: Curves.easeIn));
 
+    for (Account account in accounts) {
+      AnimationController controller = AnimationController(
+          duration: const Duration(milliseconds: 300), vsync: this);
+
+      Animation<double> animation = Tween<double>(begin: 1.0, end: 1.02)
+          .animate(CurvedAnimation(parent: controller, curve: Curves.linear));
+
+      _accountAnimations[account.bsb] = animation;
+      _accountAnimationControllers[account.bsb] = controller;
+      _accountRedBorderState[account.bsb] = false;
+    }
+
     super.initState();
 
+    /*
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      _topAnimationController.forward();
+    });*/
+
+    /*
     Future.delayed(const Duration(milliseconds: 1500), () {
       _welcomeController.forward();
       Future.delayed(const Duration(milliseconds: 800), () {
         _welcomeFadeController.forward();
       });
-    });
+    });*/
   }
 
   @override
@@ -98,6 +169,7 @@ class _HomeContentPageState extends State<HomeContentPage>
         children: [
           const BackgroundImage(),
           SingleChildScrollView(
+            controller: _scrollController,
             child: Column(
               children: [
                 StandardPadding(
@@ -132,12 +204,15 @@ class _HomeContentPageState extends State<HomeContentPage>
     );
   }
 
+  /// check if home content page is opened from another page
+  /// if it is then run text welcome fading aniamtion.
   void _checkWelcomeAnimation(int prevIndex, int currIndex) {
     if (currIndex == 0 && prevIndex != 0) {
       _runWelcomeFadeAnimation(300);
     }
   }
 
+  /// set a delay when to run welcome text fading animation before run
   void _runWelcomeFadeAnimation(int delay) {
     Future.delayed(Duration(milliseconds: delay), () {
       _welcomeFadeController.reset();
@@ -145,6 +220,7 @@ class _HomeContentPageState extends State<HomeContentPage>
     });
   }
 
+  /// returns the fake app bar of this page that looks like app bar
   Widget _getFakeAppBar() {
     return Row(
       children: [
@@ -204,15 +280,7 @@ class _HomeContentPageState extends State<HomeContentPage>
             const SizedBox(height: Vars.topBotPaddingSize),
             _getAccountSection(),
             const SizedBox(height: Vars.heightGapBetweenWidgets),
-            CustButton(
-              leftWidget: const Icon(Icons.money),
-              heading: "Payments",
-              paragraph: "Upcoming, past, direct debits, BPAY View",
-              onTap: () {
-                print("start----");
-                print("end -------");
-              },
-            ),
+            _getPaymentsContent(),
             const SizedBox(height: 200.0)
           ],
         ),
@@ -220,35 +288,193 @@ class _HomeContentPageState extends State<HomeContentPage>
     );
   }
 
-  Widget _getAccountSection() {
-    return OutlinedContainer(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _getPaymentsContent() {
+    // column there might be more stuff under payments button
+    return FadeTransition(
+      opacity: _paymentContentFadeAnimation,
+      child: Column(
         children: [
-          const Text("Accounts", style: Vars.headingStyle2),
-          GestureDetector(
+          CustButton(
+            leftWidget: const Icon(Icons.money),
+            heading: "Payments",
+            paragraph: "Upcoming, past, direct debits, BPAY View",
             onTap: () {},
-            child: Text(
-              "New account",
-              style: TextStyle(color: Colors.red[600], fontSize: 12.0),
-            ),
-          )
+          ),
         ],
       ),
-      const SizedBox(height: 30.0),
-      const Text("Cash", style: TextStyle(fontSize: 14.0)),
-      const SizedBox(height: 3.0),
-      Container(height: 0.25, color: Colors.black45),
-      Align(
-          alignment: Alignment.bottomRight,
-          child: Padding(
-            padding: const EdgeInsets.only(top: Vars.topBotPaddingSize),
-            child: GestureDetector(
-              onTap: () {},
-              child: Icon(Icons.settings, color: Colors.red[700]),
-            ),
-          )),
-    ]));
+    );
+  }
+
+  Widget _getAccountSection() {
+    return Container(
+        padding: OutlinedContainer.defaultPadding,
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(3.0),
+            border: !_dragging
+                ? Border.all(width: 0.5, color: Colors.black12)
+                : Border.all(width: 0.0, color: Colors.transparent)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          !_dragging
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Accounts", style: Vars.headingStyle2),
+                    GestureDetector(
+                      onTap: () {},
+                      child: Text(
+                        "New account",
+                        style:
+                            TextStyle(color: Colors.red[600], fontSize: 12.0),
+                      ),
+                    )
+                  ],
+                )
+              : const SizedBox(
+                  height: 40.0,
+                  child: Align(
+                      alignment: Alignment.topCenter,
+                      child: Text(
+                        "Drag & drop to transfer",
+                        style: TextStyle(fontSize: 16.0),
+                      ))),
+          const SizedBox(height: 30.0),
+          const Text("Cash", style: TextStyle(fontSize: 14.0)),
+          const SizedBox(height: 3.0),
+          Container(height: 0.25, color: Colors.black45),
+          const SizedBox(height: 4.0),
+          Column(
+            children:
+                accounts.map((account) => _getAccountDrag(account)).toList(),
+          ),
+          Align(
+              alignment: Alignment.bottomRight,
+              child: Padding(
+                padding:
+                    const EdgeInsets.only(top: Vars.topBotPaddingSize - 4.0),
+                child: GestureDetector(
+                  onTap: () {},
+                  child: Icon(Icons.settings, color: Colors.red[700]),
+                ),
+              )),
+        ]));
+  }
+
+  Widget _getAccountDrag(Account account) {
+    return DragTarget<Account>(
+      builder: (BuildContext context, List<dynamic> accepted,
+          List<dynamic> rejected) {
+        return LongPressDraggable(
+          data: account,
+          child: _getAccountButton(account, false),
+          feedback: dollarIcon,
+          childWhenDragging: _getAccountButton(account, true),
+          onDragStarted: () {
+            _welcomeFadeController.duration = topFadeDuration;
+            _welcomeFadeController.reverse();
+            _topAnimationController.reverse();
+            _paymentContentFadeController.reverse();
+
+            _scrollController.jumpTo(_scrollController.offset + 40.0);
+
+            _accountAnimationControllers[account.bsb]!.forward();
+            if (_scrollController.offset > 160.0) {
+              _scrollController.jumpTo(150.0);
+            }
+
+            widget.navbarState.hide();
+
+            setState(() {
+              _dragging = true;
+            });
+          },
+          onDragEnd: (DraggableDetails details) {
+            _welcomeFadeController.forward();
+            _topAnimationController.forward();
+            _paymentContentFadeController.forward();
+            _welcomeController.duration = topFadeDuration;
+
+            _scrollController.jumpTo(_scrollController.offset - 40.0);
+            /*if (_overScrolled) {
+              _scrollController.jumpTo(_scrollController.offset - 30.0);
+            }*/
+            _accountAnimationControllers[account.bsb]!.reverse();
+
+            widget.navbarState.show();
+
+            setState(() {
+              _dragging = false;
+            });
+          },
+        );
+      },
+      onWillAccept: (Account? inAccount) {
+        if (account.bsb != inAccount!.bsb) {
+          setState(() {
+            _accountRedBorderState[account.bsb] = true;
+            _accountAnimationControllers[account.bsb]!.forward();
+          });
+        }
+        return true;
+      },
+      onLeave: (Account? inAccount) {
+        if (account.bsb != inAccount!.bsb) {
+          setState(() {
+            _accountRedBorderState[account.bsb] = false;
+            _accountAnimationControllers[account.bsb]!.reverse();
+          });
+        }
+      },
+      onAccept: (Account inAccount) {
+        //TODO: open transaction page
+        if (account.bsb != inAccount.bsb) {
+          setState(() {
+            _accountRedBorderState[account.bsb] = false;
+            _accountAnimationControllers[account.bsb]!.reverse();
+          });
+        }
+      },
+    );
+  }
+
+  Widget _getAccountButton(Account account, bool inDrag) {
+    return InkWell(
+      onTap: () {
+        //TODO: open account info page
+      },
+      child: ScaleTransition(
+        scale: _accountAnimations[account.bsb]!,
+        child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 4.0),
+            padding: const EdgeInsets.fromLTRB(
+                Vars.standardPaddingSize,
+                Vars.topBotPaddingSize,
+                Vars.standardPaddingSize,
+                Vars.topBotPaddingSize * 2.5),
+            decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(4.0),
+                boxShadow: const [
+                  BoxShadow(
+                      color: Colors.grey, blurRadius: 3, offset: Offset(0, 2))
+                ],
+                border: inDrag
+                    ? Border.all(width: 2.0, color: Colors.black)
+                    : !_accountRedBorderState[account.bsb]!
+                        ? Border.all(width: 0.5, color: Colors.black12)
+                        : Border.all(width: 2.0, color: Colors.red)),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Westpac ${account.type}",
+                  style: const TextStyle(fontSize: 16.0),
+                ),
+                Text("\$${account.balance}",
+                    style: const TextStyle(
+                        fontSize: 16.0, fontWeight: FontWeight.bold))
+              ],
+            )),
+      ),
+    );
   }
 }

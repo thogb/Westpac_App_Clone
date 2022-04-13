@@ -19,8 +19,9 @@ class _HomePageState extends State<HomePage> {
   static const Color selectedNavItemColor = Colors.black;
   static const double navItemIconSize = 30.0;
 
-  static final NavbarState navbarState = NavbarState();
+  late NavbarState navbarState;
 
+  bool _showNavBar = true;
   bool _more = false;
   int _currPage = 0;
 
@@ -28,6 +29,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+    navbarState = NavbarState(showNavBar: showNavBar, hideNavBar: hideNavBar);
+
     _pages.add(HomeContentPage(navbarState: navbarState));
     _pages.add(const CardsPage());
     _pages.add(const SizedBox());
@@ -51,49 +54,53 @@ class _HomePageState extends State<HomePage> {
               IndexedStack(children: _pages, index: _currPage),
             ],
           ),
-          bottomNavigationBar: BottomNavigationBar(
-            onTap: _onNavbarTap,
-            currentIndex: _currPage,
-            unselectedItemColor: unselectedNavItemColor,
-            selectedItemColor: selectedNavItemColor,
-            selectedFontSize: 0.0,
-            unselectedFontSize: 0.0,
-            showSelectedLabels: false,
-            showUnselectedLabels: false,
-            type: BottomNavigationBarType.fixed,
-            items: [
-              BottomNavigationBarItem(
-                  label: "",
-                  icon: _getNavIcon(Icons.home_outlined, "Home"),
-                  activeIcon: _getNavIcon(Icons.home_sharp, "Home", true)),
-              BottomNavigationBarItem(
-                  label: "",
-                  icon: _getNavIcon(CupertinoIcons.creditcard, "Cards"),
-                  activeIcon:
-                      _getNavIcon(Icons.credit_card_sharp, "Cards", true)),
-              BottomNavigationBarItem(
-                  icon: Container(
-                    width: 40.0,
-                    height: 40.0,
-                    decoration: BoxDecoration(
-                        shape: BoxShape.circle, color: Colors.red[700]),
-                    child: const Icon(
-                      Icons.attach_money,
-                      color: Colors.white,
-                    ),
-                  ),
-                  label: ""),
-              BottomNavigationBarItem(
-                  label: "",
-                  icon: _getNavIcon(CupertinoIcons.cube, "Products"),
-                  activeIcon:
-                      _getNavIcon(CupertinoIcons.cube_fill, "Products", true)),
-              BottomNavigationBarItem(
-                  label: "",
-                  icon: _getNavIcon(Icons.person_outline, "Profile"),
-                  activeIcon: _getNavIcon(Icons.person_sharp, "Profile", true)),
-            ],
-            /*items: [
+          bottomNavigationBar: !_showNavBar
+              ? const SizedBox()
+              : BottomNavigationBar(
+                  onTap: _onNavbarTap,
+                  currentIndex: _currPage,
+                  unselectedItemColor: unselectedNavItemColor,
+                  selectedItemColor: selectedNavItemColor,
+                  selectedFontSize: 0.0,
+                  unselectedFontSize: 0.0,
+                  showSelectedLabels: false,
+                  showUnselectedLabels: false,
+                  type: BottomNavigationBarType.fixed,
+                  items: [
+                    BottomNavigationBarItem(
+                        label: "",
+                        icon: _getNavIcon(Icons.home_outlined, "Home"),
+                        activeIcon:
+                            _getNavIcon(Icons.home_sharp, "Home", true)),
+                    BottomNavigationBarItem(
+                        label: "",
+                        icon: _getNavIcon(CupertinoIcons.creditcard, "Cards"),
+                        activeIcon: _getNavIcon(
+                            Icons.credit_card_sharp, "Cards", true)),
+                    BottomNavigationBarItem(
+                        icon: Container(
+                          width: 40.0,
+                          height: 40.0,
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle, color: Colors.red[700]),
+                          child: const Icon(
+                            Icons.attach_money,
+                            color: Colors.white,
+                          ),
+                        ),
+                        label: ""),
+                    BottomNavigationBarItem(
+                        label: "",
+                        icon: _getNavIcon(CupertinoIcons.cube, "Products"),
+                        activeIcon: _getNavIcon(
+                            CupertinoIcons.cube_fill, "Products", true)),
+                    BottomNavigationBarItem(
+                        label: "",
+                        icon: _getNavIcon(Icons.person_outline, "Profile"),
+                        activeIcon:
+                            _getNavIcon(Icons.person_sharp, "Profile", true)),
+                  ],
+                  /*items: [
               const BottomNavigationBarItem(
                   activeIcon: Icon(Icons.home_sharp, size: navItemIconSize),
                   icon: Icon(Icons.home_outlined, size: navItemIconSize),
@@ -128,8 +135,20 @@ class _HomePageState extends State<HomePage> {
                   label: "Profile",
                   tooltip: "Profile"),
             ],*/
-          ),
+                ),
         ));
+  }
+
+  void showNavBar() {
+    setState(() {
+      _showNavBar = true;
+    });
+  }
+
+  void hideNavBar() {
+    setState(() {
+      _showNavBar = false;
+    });
   }
 
   Widget _getNavIcon(IconData iconData, String label, [bool active = false]) {
@@ -206,7 +225,8 @@ class _HomePageState extends State<HomePage> {
                             ListTile(
                                 leading: Icon(Icons.heart_broken),
                                 title: Text("Make a donation"))
-                          ])
+                          ]),
+                    const ListTile(title: Text("")),
                   ],
                 ));
           });
