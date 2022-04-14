@@ -470,9 +470,11 @@ class _HomeContentPageState extends State<HomeContentPage>
             decoration: BoxDecoration(
                 color: Colors.grey[50],
                 borderRadius: BorderRadius.circular(4.0),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
-                      color: Colors.grey, blurRadius: 3, offset: Offset(0, 2))
+                      color: Colors.grey.shade400,
+                      blurRadius: 3,
+                      offset: const Offset(0, 3))
                 ],
                 border: inDrag
                     ? Border.all(width: 2.0, color: Colors.black)
