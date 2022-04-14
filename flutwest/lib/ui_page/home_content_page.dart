@@ -7,6 +7,8 @@ import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/navbar_state.dart';
 import 'package:flutwest/model/vars.dart';
 
+import 'account_detail_page.dart';
+
 class HomeContentPage extends StatefulWidget {
   final NavbarState navbarState;
 
@@ -343,9 +345,20 @@ class _HomeContentPageState extends State<HomeContentPage>
           Container(height: 0.25, color: Colors.black45),
           const SizedBox(height: 4.0),
           Column(
-            children:
-                accounts.map((account) => _getAccountDrag(account)).toList(),
-          ),
+              children: List.generate(accounts.length, (index) {
+            print("teststed");
+            return GestureDetector(
+              /*onDoubleTap: () {
+                print("teststed222222222222");
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => AccountDetailPage(
+                            accounts: accounts, currIndex: 0)));
+              },*/
+              child: _getAccountDrag(accounts[index]),
+            );
+          })),
           Align(
               alignment: Alignment.bottomRight,
               child: Padding(
@@ -395,8 +408,8 @@ class _HomeContentPageState extends State<HomeContentPage>
 
             _scrollController.jumpTo(_scrollController.offset - 40.0);
             /*if (_overScrolled) {
-              _scrollController.jumpTo(_scrollController.offset - 30.0);
-            }*/
+                _scrollController.jumpTo(_scrollController.offset - 30.0);
+              }*/
             _accountAnimationControllers[account.bsb]!.reverse();
 
             widget.navbarState.show();
@@ -439,7 +452,11 @@ class _HomeContentPageState extends State<HomeContentPage>
   Widget _getAccountButton(Account account, bool inDrag) {
     return InkWell(
       onTap: () {
-        //TODO: open account info page
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    AccountDetailPage(accounts: accounts, currIndex: 0)));
       },
       child: ScaleTransition(
         scale: _accountAnimations[account.bsb]!,

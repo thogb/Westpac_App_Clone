@@ -17,6 +17,7 @@ class CustButton extends StatelessWidget {
   final Widget? leftWidget;
   final Widget? rightWidget;
   final VoidCallback? onTap;
+  final EdgeInsetsGeometry? margin;
 
   const CustButton(
       {Key? key,
@@ -24,7 +25,8 @@ class CustButton extends StatelessWidget {
       this.paragraph,
       this.leftWidget,
       this.rightWidget,
-      this.onTap})
+      this.onTap,
+      this.margin})
       : super(key: key);
 
   @override
@@ -32,6 +34,7 @@ class CustButton extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
+        margin: margin,
         padding: EdgeInsets.symmetric(
             vertical: topBotPadding, horizontal: leftRightPadding),
         decoration: BoxDecoration(
