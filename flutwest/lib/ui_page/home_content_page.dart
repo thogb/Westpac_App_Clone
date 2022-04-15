@@ -322,7 +322,9 @@ class _HomeContentPageState extends State<HomeContentPage>
                   children: [
                     const Text("Accounts", style: Vars.headingStyle2),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        widget.navbarState.changeToPage(3);
+                      },
                       child: Text(
                         "New account",
                         style:
@@ -346,18 +348,7 @@ class _HomeContentPageState extends State<HomeContentPage>
           const SizedBox(height: 4.0),
           Column(
               children: List.generate(accounts.length, (index) {
-            print("teststed");
-            return GestureDetector(
-              /*onDoubleTap: () {
-                print("teststed222222222222");
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => AccountDetailPage(
-                            accounts: accounts, currIndex: 0)));
-              },*/
-              child: _getAccountDrag(accounts[index]),
-            );
+            return _getAccountDrag(accounts[index]);
           })),
           Align(
               alignment: Alignment.bottomRight,

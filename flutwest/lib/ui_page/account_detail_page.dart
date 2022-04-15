@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/cust_widget/cust_appbar.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
+import 'package:flutwest/cust_widget/cust_silver_appbar.dart';
 import 'package:flutwest/cust_widget/outlined_container.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/vars.dart';
@@ -30,10 +31,21 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
   static const BorderSide outlinedBorderSide =
       BorderSide(width: 0.5, color: Colors.black12);
 
+  late Account _currAccount;
+  bool _showNavBarTitle = false;
+
+  @override
+  void initState() {
+    _currAccount = widget.accounts[0];
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: CustAppbar(
+        appBar: AppBar(
+            backgroundColor: Colors.grey[50],
+            elevation: _showNavBarTitle ? 2 : 0,
             leading: GestureDetector(
               onTap: () {
                 Navigator.pop(context);
@@ -43,8 +55,24 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
                 color: Colors.red[900],
               ),
             ),
-            title: const Text(""),
-            trailing: [
+            title: _showNavBarTitle
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Westpac ${_currAccount.type}",
+                        style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 16.0,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      Text("\$${_currAccount.balance}",
+                          style: const TextStyle(
+                              color: Colors.black54, fontSize: 12.0))
+                    ],
+                  )
+                : const SizedBox(),
+            actions: [
               GestureDetector(
                   onTap: () {},
                   child: Icon(
@@ -53,6 +81,12 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
                   ))
             ]),
         body: PageView(
+          onPageChanged: (int index) {
+            /*setState(() {
+              _currAccount = widget.accounts[index];
+              _showNavBarTitle = false;
+            });*/
+          },
           children: widget.accounts
               .map((Account account) => _getAccountDetail(account))
               .toList(),
@@ -60,30 +94,54 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
   }
 
   Widget _getAccountDetail(Account account) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-            horizontal: Vars.standardPaddingSize,
-            vertical: Vars.topBotPaddingSize),
-        child: Column(
-          children: [
-            _getAccountInfo(account),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                _getSimpleButton(Icons.transfer_within_a_station, "Pay", () {}),
-                const SizedBox(width: 10.0),
-                _getSimpleButton(
-                    Icons.transfer_within_a_station, "Transfer", () {}),
-                const SizedBox(width: 10.0),
-                _getSimpleButton(Icons.transfer_within_a_station, "BPay", () {})
-              ],
-            ),
-            const SizedBox(height: Vars.heightGapBetweenWidgets),
-            _getTransactionSummary(account),
-            _getBottomContent(account),
-            const SizedBox(height: 40)
-          ],
+    ScrollController controller = ScrollController();
+    return NotificationListener(
+      onNotification: ((notification) {
+        if (notification is ScrollUpdateNotification) {
+          if (controller.offset > 60) {
+            if (!_showNavBarTitle) {
+              setState(() {
+                _showNavBarTitle = true;
+              });
+            }
+          } else {
+            if (_showNavBarTitle) {
+              setState(() {
+                _showNavBarTitle = false;
+              });
+            }
+          }
+        }
+        return false;
+      }),
+      child: SingleChildScrollView(
+        controller: controller,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: Vars.standardPaddingSize,
+              vertical: Vars.topBotPaddingSize),
+          child: Column(
+            children: [
+              _getAccountInfo(account),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  _getSimpleButton(
+                      Icons.transfer_within_a_station, "Pay", () {}),
+                  const SizedBox(width: 10.0),
+                  _getSimpleButton(
+                      Icons.transfer_within_a_station, "Transfer", () {}),
+                  const SizedBox(width: 10.0),
+                  _getSimpleButton(
+                      Icons.transfer_within_a_station, "BPay", () {})
+                ],
+              ),
+              const SizedBox(height: Vars.heightGapBetweenWidgets),
+              _getTransactionSummary(account),
+              _getBottomContent(account),
+              const SizedBox(height: 40)
+            ],
+          ),
         ),
       ),
     );

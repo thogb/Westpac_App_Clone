@@ -29,7 +29,10 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    navbarState = NavbarState(showNavBar: showNavBar, hideNavBar: hideNavBar);
+    navbarState = NavbarState(
+        showNavBar: showNavBar,
+        hideNavBar: hideNavBar,
+        changeToPage: _onNavbarTap);
 
     _pages.add(HomeContentPage(navbarState: navbarState));
     _pages.add(const CardsPage());

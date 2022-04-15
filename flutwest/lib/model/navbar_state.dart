@@ -8,8 +8,12 @@ class NavbarState {
   late List<NavBarStateCallBack<int, int>> _observers;
   final VoidCallback showNavBar;
   final VoidCallback hideNavBar;
+  final ValueSetter<int> changeToPage;
 
-  NavbarState({required this.showNavBar, required this.hideNavBar}) {
+  NavbarState(
+      {required this.showNavBar,
+      required this.hideNavBar,
+      required this.changeToPage}) {
     _prevPageIndex = 0;
     _currPageIndex = 0;
     _observers = [];
@@ -44,5 +48,9 @@ class NavbarState {
 
   void hide() {
     hideNavBar();
+  }
+
+  void jumpToPage(int index) {
+    changeToPage(index);
   }
 }
