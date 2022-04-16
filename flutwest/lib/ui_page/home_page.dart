@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/navbar_state.dart';
 import 'package:flutwest/ui_page/cards_page.dart';
 import 'package:flutwest/ui_page/home_content_page.dart';

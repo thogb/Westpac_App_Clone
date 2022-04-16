@@ -1,10 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutwest/cust_widget/cust_appbar.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
-import 'package:flutwest/cust_widget/cust_silver_appbar.dart';
 import 'package:flutwest/cust_widget/outlined_container.dart';
-import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/vars.dart';
 
 import '../model/account.dart';

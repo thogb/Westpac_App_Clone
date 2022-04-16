@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
-
 class Account {
   static const String typeLife = "Life";
   static const String typeChocie = "Choice";

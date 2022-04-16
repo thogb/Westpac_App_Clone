@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutwest/cust_widget/cust_silver_appbar.dart';
-import 'package:flutwest/model/vars.dart';
 
 import '../cust_widget/cust_text_button.dart';
 

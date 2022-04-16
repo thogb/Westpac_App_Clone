@@ -5,7 +5,6 @@ import 'package:flutwest/cust_widget/cust_silver_appbar.dart';
 import 'package:flutwest/cust_widget/cust_text_button.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/vars.dart';
-import 'package:flutwest/ui_page/products_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);

@@ -21,8 +21,6 @@ class HomeContentPage extends StatefulWidget {
 
 class _HomeContentPageState extends State<HomeContentPage>
     with TickerProviderStateMixin, WidgetsBindingObserver {
-  static const double scrollBy = 40.0;
-
   static const Duration topFadeDuration = Duration(milliseconds: 300);
 
   static const Duration welcomeFadeDuration = Duration(milliseconds: 500);

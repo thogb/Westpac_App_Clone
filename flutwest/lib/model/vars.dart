@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Vars {
-  Vars._() {}
+  Vars._();
 
   /// the padding size on most pages against the left and right side of screen
   static const double standardPaddingSize = 15.0;

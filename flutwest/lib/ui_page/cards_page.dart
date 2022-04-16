@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
 import 'package:flutwest/cust_widget/cust_heading.dart';

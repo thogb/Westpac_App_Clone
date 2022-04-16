@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
