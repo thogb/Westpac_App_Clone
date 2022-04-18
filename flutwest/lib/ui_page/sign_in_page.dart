@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
+import 'package:flutwest/cust_widget/west_logo.dart';
 
 import '../model/vars.dart';
 
@@ -46,7 +47,7 @@ class _SignInPageState extends State<SignInPage> {
                         Navigator.pop(context);
                       },
                       child: const Icon(
-                        Icons.cancel_outlined,
+                        Icons.close,
                         color: Colors.white,
                       ),
                     ),
@@ -54,7 +55,7 @@ class _SignInPageState extends State<SignInPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const StandardPadding(child: Icon(Icons.share)),
+                      const StandardPadding(child: WestLogo(width: 40.0)),
                       _getInputArea(),
                     ],
                   )

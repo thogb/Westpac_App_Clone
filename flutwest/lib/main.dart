@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutwest/cust_widget/west_logo.dart';
 import 'package:flutwest/ui_page/guest_page.dart';
 
 void main() {
@@ -39,5 +40,14 @@ class MyApp extends StatelessWidget {
         ),
         //home: const HomePage(),
         home: const GuestPage());
+    /*
+        home: Scaffold(
+          backgroundColor: Colors.red,
+          body: Center(
+            child: const WestLogo(
+              width: 200.0,
+            ),
+          ),
+        ));*/
   }
 }

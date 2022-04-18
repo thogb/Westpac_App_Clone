@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
+import 'package:flutwest/cust_widget/west_logo.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/sign_in_page.dart';
 
@@ -63,7 +64,7 @@ class _GuestPageState extends State<GuestPage> with TickerProviderStateMixin {
                 children: [
                   Column(
                     children: [
-                      const SizedBox(height: 30.0),
+                      const SizedBox(height: 50.0),
                       _getFakeAppbar(),
                       const SizedBox(height: 30.0),
                       SizeTransition(
@@ -106,10 +107,9 @@ class _GuestPageState extends State<GuestPage> with TickerProviderStateMixin {
   }
 
   Widget _getFakeAppbar() {
-    return Row(children: [
-      const Icon(
-        Icons.share,
-      ),
+    return Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+      const WestLogo(width: 40.0),
+      const SizedBox(width: Vars.standardPaddingSize),
       GestureDetector(
           onTap: _openSignInPage,
           child: const Text("Contact us",
