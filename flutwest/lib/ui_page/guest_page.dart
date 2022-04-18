@@ -11,7 +11,45 @@ class GuestPage extends StatefulWidget {
   _GuestPageState createState() => _GuestPageState();
 }
 
-class _GuestPageState extends State<GuestPage> {
+class _GuestPageState extends State<GuestPage> with TickerProviderStateMixin {
+  static const int buttonSizeDuration = 300;
+  //static const int buttonSlidedDuration = 1;
+  static const int welcomeFadeDuration = 200;
+  static const int welcomeSlideDuration = 500;
+
+  late final AnimationController _buttonSizeController = AnimationController(
+      duration: const Duration(milliseconds: buttonSizeDuration), vsync: this)
+    ..forward().then((value) {
+      _welcomeFadeController.forward().then((value) {
+        _welcomeSlideController.forward();
+      });
+    });
+  late final Animation<double> _buttonSizeAnimation =
+      CurvedAnimation(parent: _buttonSizeController, curve: Curves.linear);
+
+  /*
+  late final AnimationController _buttonSlideController = AnimationController(
+      duration: const Duration(milliseconds: buttonSlidedDuration),
+      vsync: this);
+  late final Animation<Offset> _buttonSlideAnimation =
+      Tween<Offset>(begin: const Offset(0.0, -0.0), end: const Offset(0.0, 0.0))
+          .animate(CurvedAnimation(
+              parent: _buttonSlideController, curve: Curves.linear));*/
+
+  late final AnimationController _welcomeFadeController = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: welcomeFadeDuration));
+  late final Animation<double> _welcomeFadeAnimation =
+      Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+          parent: _welcomeFadeController, curve: Curves.linear));
+
+  late final AnimationController _welcomeSlideController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: welcomeSlideDuration));
+  late final Animation<Offset> _weclomeSlideAnimation =
+      Tween<Offset>(begin: const Offset(0.0, 1.0), end: const Offset(0.0, 0.0))
+          .animate(CurvedAnimation(
+              parent: _welcomeSlideController, curve: Curves.linear));
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,13 +66,35 @@ class _GuestPageState extends State<GuestPage> {
                       const SizedBox(height: 30.0),
                       _getFakeAppbar(),
                       const SizedBox(height: 30.0),
-                      _getWelcomeText(),
-                      _getButton("Cardless Cash", () {}),
-                      _getButton("Locate us", () {}),
-                      const SizedBox(height: 20.0),
-                      const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Icon(Icons.settings, color: Colors.white)),
+                      SizeTransition(
+                          sizeFactor: _welcomeFadeAnimation,
+                          axis: Axis.vertical,
+                          axisAlignment: -1.0,
+                          child: SlideTransition(
+                              position: _weclomeSlideAnimation,
+                              child: _getWelcomeText())),
+                      Column(
+                        children: [
+                          SizeTransition(
+                            sizeFactor: _buttonSizeAnimation,
+                            axis: Axis.vertical,
+                            axisAlignment: -1.0,
+                            child: Column(
+                              children: [
+                                _getButton("Cardless Cash", _openSignInPage),
+                                _getButton("Locate us", () {}),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20.0),
+                          Align(
+                              alignment: Alignment.centerLeft,
+                              child: GestureDetector(
+                                  onTap: _openSignInPage,
+                                  child: const Icon(Icons.settings,
+                                      color: Colors.white)))
+                        ],
+                      ),
                     ],
                   ),
                   _getSignInButton()
@@ -46,11 +106,14 @@ class _GuestPageState extends State<GuestPage> {
   }
 
   Widget _getFakeAppbar() {
-    return Row(children: const [
-      Icon(
+    return Row(children: [
+      const Icon(
         Icons.share,
       ),
-      Text("Contact us", style: TextStyle(fontSize: 16.0, color: Colors.white))
+      GestureDetector(
+          onTap: _openSignInPage,
+          child: const Text("Contact us",
+              style: TextStyle(fontSize: 16.0, color: Colors.white)))
     ]);
   }
 
@@ -89,15 +152,7 @@ class _GuestPageState extends State<GuestPage> {
 
   Widget _getSignInButton() {
     return InkWell(
-      onTap: () {
-        Navigator.push(
-            context,
-            PageRouteBuilder(
-                pageBuilder: ((context, animation, secondaryAnimation) =>
-                    const SignInPage()),
-                transitionDuration: Duration.zero,
-                reverseTransitionDuration: Duration.zero));
-      },
+      onTap: _openSignInPage,
       child: Container(
         margin: const EdgeInsets.symmetric(
             vertical: Vars.heightGapBetweenWidgets + 40.0),
@@ -111,5 +166,26 @@ class _GuestPageState extends State<GuestPage> {
                 style: TextStyle(color: Colors.white, fontSize: 18.0))),
       ),
     );
+  }
+
+  void _openSignInPage() {
+    Navigator.push(
+            context,
+            PageRouteBuilder(
+                pageBuilder: ((context, animation, secondaryAnimation) =>
+                    const SignInPage()),
+                transitionDuration: Duration.zero,
+                reverseTransitionDuration: Duration.zero))
+        .then((value) {
+      _buttonSizeController.reset();
+      _welcomeFadeController.reset();
+      _welcomeSlideController.reset();
+
+      _buttonSizeController.forward().then((value) {
+        _welcomeFadeController.forward().then((value) {
+          _welcomeSlideController.forward();
+        });
+      });
+    });
   }
 }

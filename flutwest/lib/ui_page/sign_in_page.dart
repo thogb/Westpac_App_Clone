@@ -152,7 +152,10 @@ class _SignInPageState extends State<SignInPage> {
                         ? IconButton(
                             icon: const Icon(Icons.cancel, color: Colors.white),
                             onPressed: () {
-                              _passwordController.clear();
+                              _customIDController.clear();
+                              setState(() {
+                                _showIDCancel = false;
+                              });
                             },
                           )
                         : const SizedBox()),
@@ -212,6 +215,9 @@ class _SignInPageState extends State<SignInPage> {
                         icon: const Icon(Icons.cancel, color: Colors.white),
                         onPressed: () {
                           _passwordController.clear();
+                          setState(() {
+                            _showPasswordCancel = false;
+                          });
                         },
                       )
                     : const SizedBox()),
@@ -244,7 +250,35 @@ class _SignInPageState extends State<SignInPage> {
 
   Widget _getSignInButton() {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        String errMsg = "";
+
+        if (_customIDController.text.length < 8) {
+          errMsg = "Enter 8 digits";
+        } else if (_passwordController.text.isEmpty) {
+          errMsg = "No password entered";
+        } else if (_passwordController.text.length < 6) {
+          errMsg = "Your password does no meet requirements. Please try again.";
+          _passwordController.clear();
+        }
+
+        if (errMsg != "") {
+          showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  content: Text(errMsg),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text("Ok"))
+                  ],
+                );
+              });
+        }
+      },
       child: Container(
         margin: const EdgeInsets.symmetric(
             vertical: Vars.heightGapBetweenWidgets / 4),
