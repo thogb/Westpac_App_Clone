@@ -440,6 +440,60 @@ class _HomeContentPageState extends State<HomeContentPage>
   }
 
   Widget _getAccountButton(Account account, bool inDrag) {
+    return ScaleTransition(
+      scale: _accountAnimations[account.bsb]!,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4.0),
+        decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(4.0),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.grey.shade400,
+                  blurRadius: 3,
+                  offset: const Offset(0, 3))
+            ],
+            border: inDrag
+                ? Border.all(width: 2.0, color: Colors.black)
+                : !_accountRedBorderState[account.bsb]!
+                    ? Border.all(width: 0.5, color: Colors.black12)
+                    : Border.all(width: 2.0, color: Colors.red)),
+        child: Material(
+          borderRadius: BorderRadius.circular(4.0),
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          AccountDetailPage(accounts: accounts, currIndex: 0)));
+            },
+            child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    Vars.standardPaddingSize,
+                    Vars.topBotPaddingSize,
+                    Vars.standardPaddingSize,
+                    Vars.topBotPaddingSize * 2.5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Westpac ${account.type}",
+                      style: const TextStyle(fontSize: 16.0),
+                    ),
+                    Text("\$${account.balance}",
+                        style: const TextStyle(
+                            fontSize: 16.0, fontWeight: FontWeight.bold))
+                  ],
+                )),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /*
+  Widget _getAccountButton(Account account, bool inDrag) {
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -485,5 +539,5 @@ class _HomeContentPageState extends State<HomeContentPage>
             )),
       ),
     );
-  }
+  }*/
 }
