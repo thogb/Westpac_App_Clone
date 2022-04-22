@@ -10,6 +10,7 @@ class CustSilverAppbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
+      backgroundColor: Colors.grey[50],
       elevation: 1.5,
       shadowColor: Colors.black45,
       pinned: true,
@@ -18,6 +19,7 @@ class CustSilverAppbar extends StatelessWidget {
       expandedHeight: 80.0,
       actions: actions,
       title: const SizedBox(),
+      leading: const SizedBox(),
       flexibleSpace: FlexibleSpaceBar(
           title: Text(
             title,
