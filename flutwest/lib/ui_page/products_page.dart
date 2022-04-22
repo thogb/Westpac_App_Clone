@@ -12,33 +12,42 @@ class ProductsPage extends StatelessWidget {
       slivers: [
         const CustSilverAppbar(title: "Products"),
         SliverList(
-            delegate: SliverChildListDelegate(const [
-          SizedBox(height: 30.0),
+            delegate: SliverChildListDelegate([
+          const SizedBox(height: 30.0),
           CustTextButton(
+            onTap: () {},
             heading: "Bank accounts",
           ),
           CustTextButton(
+            onTap: () {},
             heading: "Home loans",
           ),
           CustTextButton(
+            onTap: () {},
             heading: "Credit cards",
           ),
           CustTextButton(
+            onTap: () {},
             heading: "Personal loans",
           ),
           CustTextButton(
+            onTap: () {},
             heading: "International & travel",
           ),
           CustTextButton(
+            onTap: () {},
             heading: "Insurance",
           ),
           CustTextButton(
+            onTap: () {},
             heading: "Shares & investing",
           ),
           CustTextButton(
+            onTap: () {},
             heading: "Superannuation",
           ),
           CustTextButton(
+            onTap: () {},
             heading: "Business products",
           )
         ]))
