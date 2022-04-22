@@ -171,6 +171,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _getInboxButton() {
     return StandardPadding(
         child: CustButton(
+      onTap: () {},
       heading: "Inbox",
       paragraph: "Alerts, messages, notifications",
       leftWidget: const Icon(
@@ -184,6 +185,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _getRewardsButton() {
     return StandardPadding(
         child: CustButton(
+      onTap: () {},
       heading: "Rewards and offers",
       leftWidget: const Icon(
         CupertinoIcons.gift_fill,

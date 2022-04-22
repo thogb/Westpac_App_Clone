@@ -255,15 +255,16 @@ class _CardsPageState extends State<CardsPage> {
         const CustHeading(
           heading: "Linked accounts",
         ),
-        const StandardPadding(
+        StandardPadding(
             child: CustButton(
-                leftWidget: Text(
+                onTap: () {},
+                leftWidget: const Text(
                   "Westpac Choice",
                   style: TextStyle(fontSize: Vars.headingTextSize2),
                 ),
                 heading: "\n",
-                rightWidget:
-                    Text("\$1333.33", style: CustButton.buttonHeadingStyle))),
+                rightWidget: const Text("\$1333.33",
+                    style: CustButton.buttonHeadingStyle))),
         const SizedBox(height: 30.0)
       ],
     );

@@ -52,7 +52,9 @@ class _HomePageState extends State<HomePage> {
                 titleTextStyle: const TextStyle(color: Colors.black))),
         child: Scaffold(
           body: Theme(
-            data: ThemeData(splashFactory: NoSplash.splashFactory),
+            data: ThemeData(
+                splashFactory: NoSplash.splashFactory,
+                highlightColor: Colors.grey[100]),
             child: Stack(
               children: [
                 IndexedStack(children: _pages, index: _currPage),
