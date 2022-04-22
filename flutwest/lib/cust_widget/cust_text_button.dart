@@ -24,27 +24,29 @@ class CustTextButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: EdgeInsets.fromLTRB(
-              rightLeftPadding, topBotPadding, rightLeftPadding, topBotPadding),
-          width: MediaQuery.of(context).size.width,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              heading != null
-                  ? Text(heading!, style: textButtonHeadingStyle)
-                  : const SizedBox(),
-              const SizedBox(height: 4.0),
-              paragraph != null
-                  ? Text(
-                      paragraph!,
-                      style: textButtonParaStyle,
-                    )
-                  : const SizedBox(),
-            ],
-          ),
-        ));
+    return Material(
+      child: InkWell(
+          onTap: onTap,
+          child: Container(
+            padding: EdgeInsets.fromLTRB(rightLeftPadding, topBotPadding,
+                rightLeftPadding, topBotPadding),
+            width: MediaQuery.of(context).size.width,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                heading != null
+                    ? Text(heading!, style: textButtonHeadingStyle)
+                    : const SizedBox(),
+                const SizedBox(height: 4.0),
+                paragraph != null
+                    ? Text(
+                        paragraph!,
+                        style: textButtonParaStyle,
+                      )
+                    : const SizedBox(),
+              ],
+            ),
+          )),
+    );
   }
 }
