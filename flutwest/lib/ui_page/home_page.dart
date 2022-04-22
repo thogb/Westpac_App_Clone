@@ -51,10 +51,13 @@ class _HomePageState extends State<HomePage> {
                 color: Colors.grey[50],
                 titleTextStyle: const TextStyle(color: Colors.black))),
         child: Scaffold(
-          body: Stack(
-            children: [
-              IndexedStack(children: _pages, index: _currPage),
-            ],
+          body: Theme(
+            data: ThemeData(splashFactory: NoSplash.splashFactory),
+            child: Stack(
+              children: [
+                IndexedStack(children: _pages, index: _currPage),
+              ],
+            ),
           ),
           bottomNavigationBar: !_showNavBar
               ? const SizedBox()

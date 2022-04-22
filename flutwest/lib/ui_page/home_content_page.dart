@@ -3,6 +3,7 @@ import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
 import 'package:flutwest/cust_widget/outlined_container.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
+import 'package:flutwest/cust_widget/west_logo.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/navbar_state.dart';
 import 'package:flutwest/model/vars.dart';
@@ -224,7 +225,7 @@ class _HomeContentPageState extends State<HomeContentPage>
   Widget _getFakeAppBar() {
     return Row(
       children: [
-        const Icon(Icons.share),
+        const WestLogo(width: 50),
         const SizedBox(width: 10.0),
         Expanded(
           child: GestureDetector(
