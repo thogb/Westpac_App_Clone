@@ -55,60 +55,66 @@ class _GuestPageState extends State<GuestPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
-        body: Stack(
-          children: [
-            const BackgroundImage(),
-            StandardPadding(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    children: [
-                      const SizedBox(height: 50.0),
-                      _getFakeAppbar(),
-                      const SizedBox(height: 30.0),
-                      SizeTransition(
-                          sizeFactor: _welcomeFadeAnimation,
-                          axis: Axis.vertical,
-                          axisAlignment: -1.0,
-                          child: SlideTransition(
-                              position: _weclomeSlideAnimation,
-                              child: _getWelcomeText())),
-                      Column(
-                        children: [
-                          SizeTransition(
-                            sizeFactor: _buttonSizeAnimation,
+        body: Theme(
+          data: ThemeData(
+            splashFactory: NoSplash.splashFactory,
+            highlightColor: const Color.fromARGB(80, 243, 123, 123),
+          ),
+          child: Stack(
+            children: [
+              const BackgroundImage(),
+              StandardPadding(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      children: [
+                        const SizedBox(height: 50.0),
+                        _getFakeAppbar(),
+                        const SizedBox(height: 30.0),
+                        SizeTransition(
+                            sizeFactor: _welcomeFadeAnimation,
                             axis: Axis.vertical,
                             axisAlignment: -1.0,
-                            child: Column(
-                              children: [
-                                _getButton("Cardless Cash", _openSignInPage),
-                                _getButton("Locate us", () {}),
-                              ],
+                            child: SlideTransition(
+                                position: _weclomeSlideAnimation,
+                                child: _getWelcomeText())),
+                        Column(
+                          children: [
+                            SizeTransition(
+                              sizeFactor: _buttonSizeAnimation,
+                              axis: Axis.vertical,
+                              axisAlignment: -1.0,
+                              child: Column(
+                                children: [
+                                  _getButton("Cardless Cash", _openSignInPage),
+                                  _getButton("Locate us", () {}),
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 20.0),
-                          Align(
-                              alignment: Alignment.centerLeft,
-                              child: GestureDetector(
-                                  onTap: _openSignInPage,
-                                  child: const Icon(Icons.settings,
-                                      color: Colors.white)))
-                        ],
-                      ),
-                    ],
-                  ),
-                  _getSignInButton()
-                ],
-              ),
-            )
-          ],
+                            const SizedBox(height: 20.0),
+                            Align(
+                                alignment: Alignment.centerLeft,
+                                child: GestureDetector(
+                                    onTap: _openSignInPage,
+                                    child: const Icon(Icons.settings,
+                                        color: Colors.white)))
+                          ],
+                        ),
+                      ],
+                    ),
+                    _getSignInButton()
+                  ],
+                ),
+              )
+            ],
+          ),
         ));
   }
 
   Widget _getFakeAppbar() {
     return Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-      const WestLogo(width: 40.0),
+      const WestLogo(width: 50.0),
       const SizedBox(width: Vars.standardPaddingSize),
       GestureDetector(
           onTap: _openSignInPage,
@@ -129,41 +135,52 @@ class _GuestPageState extends State<GuestPage> with TickerProviderStateMixin {
   }
 
   Widget _getButton(String title, VoidCallback voidCallback) {
-    return InkWell(
-      onTap: voidCallback,
-      child: Container(
-        margin: const EdgeInsets.symmetric(
-            vertical: Vars.heightGapBetweenWidgets / 2),
-        padding: const EdgeInsets.symmetric(
-            vertical: Vars.topBotPaddingSize,
-            horizontal: Vars.standardPaddingSize),
-        decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(5)),
-        child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(title,
-                style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.bold))),
+    return Container(
+      margin: const EdgeInsets.symmetric(
+          vertical: Vars.heightGapBetweenWidgets / 2),
+      decoration: BoxDecoration(
+          color: Colors.white, borderRadius: BorderRadius.circular(5)),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(3.0),
+        child: InkWell(
+          onTap: voidCallback,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+                vertical: Vars.topBotPaddingSize,
+                horizontal: Vars.standardPaddingSize),
+            child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(title,
+                    style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold))),
+          ),
+        ),
       ),
     );
   }
 
   Widget _getSignInButton() {
-    return InkWell(
-      onTap: _openSignInPage,
-      child: Container(
-        margin: const EdgeInsets.symmetric(
-            vertical: Vars.heightGapBetweenWidgets + 40.0),
-        padding: const EdgeInsets.symmetric(
-            vertical: Vars.topBotPaddingSize,
-            horizontal: Vars.standardPaddingSize),
-        decoration: BoxDecoration(
-            color: Colors.red[700], borderRadius: BorderRadius.circular(5)),
-        child: const Center(
-            child: Text("Sign in",
-                style: TextStyle(color: Colors.white, fontSize: 18.0))),
+    return Container(
+      margin: const EdgeInsets.symmetric(
+          vertical: Vars.heightGapBetweenWidgets + 40.0),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(5)),
+      child: Material(
+        color: Colors.red[700],
+        borderRadius: BorderRadius.circular(3.0),
+        child: InkWell(
+          onTap: _openSignInPage,
+          child: const Padding(
+            padding: EdgeInsets.symmetric(
+                vertical: Vars.topBotPaddingSize,
+                horizontal: Vars.standardPaddingSize),
+            child: Center(
+                child: Text("Sign in",
+                    style: TextStyle(color: Colors.white, fontSize: 18.0))),
+          ),
+        ),
       ),
     );
   }

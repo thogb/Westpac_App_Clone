@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/cust_widget/west_logo.dart';
+import 'package:flutwest/ui_page/home_page.dart';
 
 import '../model/vars.dart';
 
@@ -28,43 +29,50 @@ class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Stack(
-      children: [
-        const BackgroundImage(),
-        SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints:
-                BoxConstraints(maxHeight: MediaQuery.of(context).size.height),
-            child: StandardPadding(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 30.0),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Icon(
-                        Icons.close,
-                        color: Colors.white,
+        body: Theme(
+      data: ThemeData(
+        splashFactory: NoSplash.splashFactory,
+        highlightColor: const Color.fromARGB(80, 243, 123, 123),
+      ),
+      child: Stack(
+        children: [
+          const BackgroundImage(),
+          SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints:
+                  BoxConstraints(maxHeight: MediaQuery.of(context).size.height),
+              child: StandardPadding(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 30.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const StandardPadding(child: WestLogo(width: 40.0)),
-                      _getInputArea(),
-                    ],
-                  )
-                ],
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 20.0),
+                        const StandardPadding(child: WestLogo(width: 50.0)),
+                        _getInputArea(),
+                      ],
+                    )
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     ));
   }
 
@@ -250,68 +258,83 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   Widget _getSignInButton() {
-    return InkWell(
-      onTap: () {
-        String errMsg = "";
+    return Container(
+      decoration: BoxDecoration(
+          color: Colors.transparent, borderRadius: BorderRadius.circular(3)),
+      margin: const EdgeInsets.symmetric(
+          vertical: Vars.heightGapBetweenWidgets / 4),
+      child: Material(
+        color: Colors.red[700],
+        borderRadius: BorderRadius.circular(3.0),
+        child: InkWell(
+          onTap: () {
+            String errMsg = "";
 
-        if (_customIDController.text.length < 8) {
-          errMsg = "Enter 8 digits";
-        } else if (_passwordController.text.isEmpty) {
-          errMsg = "No password entered";
-        } else if (_passwordController.text.length < 6) {
-          errMsg = "Your password does no meet requirements. Please try again.";
-          _passwordController.clear();
-        }
+            if (_customIDController.text.length < 8) {
+              errMsg = "Enter 8 digits";
+            } else if (_passwordController.text.isEmpty) {
+              errMsg = "No password entered";
+            } else if (_passwordController.text.length < 6) {
+              errMsg =
+                  "Your password does no meet requirements. Please try again.";
+              _passwordController.clear();
+            }
 
-        if (errMsg != "") {
-          showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  content: Text(errMsg),
-                  actions: [
-                    TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text("Ok"))
-                  ],
-                );
-              });
-        }
-      },
-      child: Container(
-        margin: const EdgeInsets.symmetric(
-            vertical: Vars.heightGapBetweenWidgets / 4),
-        padding: const EdgeInsets.symmetric(
-            vertical: Vars.topBotPaddingSize,
-            horizontal: Vars.standardPaddingSize),
-        decoration: BoxDecoration(
-            color: Colors.red[700], borderRadius: BorderRadius.circular(3)),
-        child: const Center(
-            child: Text("Sign in",
-                style: TextStyle(color: Colors.white, fontSize: 18.0))),
+            if (errMsg != "") {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      content: Text(errMsg),
+                      actions: [
+                        TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text("Ok"))
+                      ],
+                    );
+                  });
+            }
+          },
+          child: const Padding(
+            padding: EdgeInsets.symmetric(
+                vertical: Vars.topBotPaddingSize,
+                horizontal: Vars.standardPaddingSize),
+            child: Center(
+                child: Text("Sign in",
+                    style: TextStyle(color: Colors.white, fontSize: 18.0))),
+          ),
+        ),
       ),
     );
   }
 
   Widget _getRegisterButton() {
-    return InkWell(
-      onTap: () {},
-      child: Container(
-        margin: const EdgeInsets.symmetric(
-            vertical: Vars.heightGapBetweenWidgets / 4),
-        padding: const EdgeInsets.symmetric(
-            vertical: Vars.topBotPaddingSize,
-            horizontal: Vars.standardPaddingSize),
-        decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(3.0),
-            border: Border.all(width: 1.0, color: Colors.red)),
-        child: const Center(
-          child: Text(
-            "Register for online banking",
-            style: TextStyle(color: Colors.black, fontSize: 18.0),
+    return Container(
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(3.0),
+          border: Border.all(width: 1.0, color: Colors.red)),
+      margin: const EdgeInsets.symmetric(
+          vertical: Vars.heightGapBetweenWidgets / 4),
+      child: Material(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(3.0),
+        child: InkWell(
+          onTap: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const HomePage()));
+          },
+          child: const Padding(
+            padding: EdgeInsets.symmetric(
+                vertical: Vars.topBotPaddingSize,
+                horizontal: Vars.standardPaddingSize),
+            child: Center(
+              child: Text(
+                "Register for online banking",
+                style: TextStyle(color: Colors.black, fontSize: 18.0),
+              ),
+            ),
           ),
         ),
       ),
