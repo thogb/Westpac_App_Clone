@@ -92,9 +92,9 @@ class _HomeContentPageState extends State<HomeContentPage>
   /// welcome text animation sliding in
   late final Animation<Offset> _welcomeAnimation;
 
-  final Map<String, bool> _accountRedBorderState = {};
-  final Map<String, AnimationController> _accountAnimationControllers = {};
-  final Map<String, Animation<double>> _accountAnimations = {};
+  // final Map<String, bool> _accountRedBorderState = {};
+  // final Map<String, AnimationController> _accountAnimationControllers = {};
+  // final Map<String, Animation<double>> _accountAnimations = {};
 
   final ScrollController _scrollController = ScrollController();
 
@@ -118,7 +118,7 @@ class _HomeContentPageState extends State<HomeContentPage>
         Tween<Offset>(begin: const Offset(0.0, 2.0), end: Offset.zero).animate(
             CurvedAnimation(parent: _welcomeController, curve: Curves.easeIn));
 
-    for (Account account in accounts) {
+    /*for (Account account in accounts) {
       AnimationController controller = AnimationController(
           duration: const Duration(milliseconds: 300), vsync: this);
 
@@ -128,7 +128,7 @@ class _HomeContentPageState extends State<HomeContentPage>
       _accountAnimations[account.bsb] = animation;
       _accountAnimationControllers[account.bsb] = controller;
       _accountRedBorderState[account.bsb] = false;
-    }
+    }*/
 
     super.initState();
 
@@ -363,6 +363,52 @@ class _HomeContentPageState extends State<HomeContentPage>
   }
 
   Widget _getAccountDrag(Account account) {
+    return DraggableAccountButton(
+      account: account,
+      feedback: dollarIcon,
+      onDragStart: () {
+        _welcomeFadeController.duration = topFadeDuration;
+        _welcomeFadeController.reverse();
+        _topAnimationController.reverse();
+        _paymentContentFadeController.reverse();
+
+        _scrollController.jumpTo(_scrollController.offset + 40.0);
+
+        if (_scrollController.offset > 160.0) {
+          _scrollController.jumpTo(150.0);
+        }
+
+        widget.navbarState.hide();
+
+        setState(() {
+          _dragging = true;
+        });
+      },
+      onDragEnd: (details) {
+        _welcomeFadeController.forward();
+        _topAnimationController.forward();
+        _paymentContentFadeController.forward();
+        _welcomeController.duration = topFadeDuration;
+
+        _scrollController.jumpTo(_scrollController.offset - 40.0);
+        widget.navbarState.show();
+
+        setState(() {
+          _dragging = false;
+        });
+      },
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    AccountDetailPage(accounts: accounts, currIndex: 0)));
+      },
+    );
+  }
+
+  /*
+  Widget _getAccountDrag(Account account) {
     return DragTarget<Account>(
       builder: (BuildContext context, List<dynamic> accepted,
           List<dynamic> rejected) {
@@ -490,7 +536,7 @@ class _HomeContentPageState extends State<HomeContentPage>
         ),
       ),
     );
-  }
+  }*/
 
   /*
   Widget _getAccountButton(Account account, bool inDrag) {
@@ -540,4 +586,144 @@ class _HomeContentPageState extends State<HomeContentPage>
       ),
     );
   }*/
+}
+
+class DraggableAccountButton extends StatefulWidget {
+  final Account account;
+  final VoidCallback? onTap;
+  final Widget feedback;
+  final VoidCallback? onDragStart;
+  final void Function(DraggableDetails)? onDragEnd;
+
+  const DraggableAccountButton(
+      {Key? key,
+      this.onDragStart,
+      this.onDragEnd,
+      required this.account,
+      this.onTap,
+      required this.feedback})
+      : super(key: key);
+
+  @override
+  _DraggableAccountButtonState createState() => _DraggableAccountButtonState();
+}
+
+class _DraggableAccountButtonState extends State<DraggableAccountButton>
+    with SingleTickerProviderStateMixin {
+  bool _inDrag = false;
+  bool _onBeingDragFocused = false;
+  late final AnimationController _scaleController = AnimationController(
+      duration: const Duration(milliseconds: 300), vsync: this);
+
+  late final Animation<double> _scaleAnimation = Tween<double>(
+          begin: 1.0, end: 1.02)
+      .animate(CurvedAnimation(parent: _scaleController, curve: Curves.linear));
+
+  @override
+  Widget build(BuildContext context) {
+    return DragTarget<Account>(
+      builder: (BuildContext context, List<dynamic> accepted,
+          List<dynamic> rejected) {
+        return LongPressDraggable(
+          data: widget.account,
+          child: _getAccountButton(),
+          feedback: widget.feedback,
+          childWhenDragging: _getAccountButton(),
+          onDragStarted: () {
+            if (widget.onDragStart != null) {
+              widget.onDragStart!();
+            }
+
+            _scaleController.forward();
+            setState(() {
+              _inDrag = true;
+            });
+          },
+          onDragEnd: (DraggableDetails details) {
+            if (widget.onDragEnd != null) {
+              widget.onDragEnd!(details);
+            }
+
+            _scaleController.reverse();
+            setState(() {
+              _inDrag = false;
+            });
+          },
+        );
+      },
+      onWillAccept: (Account? inAccount) {
+        if (widget.account.bsb != inAccount!.bsb) {
+          setState(() {
+            _onBeingDragFocused = true;
+            _scaleController.forward();
+          });
+        }
+        return true;
+      },
+      onLeave: (Account? inAccount) {
+        if (widget.account.bsb != inAccount!.bsb) {
+          setState(() {
+            _onBeingDragFocused = false;
+            _scaleController.reverse();
+          });
+        }
+      },
+      onAccept: (Account inAccount) {
+        //TODO: open transaction page
+        if (widget.account.bsb != inAccount.bsb) {
+          setState(() {
+            _onBeingDragFocused = false;
+            _scaleController.reverse();
+          });
+        }
+      },
+    );
+  }
+
+  Widget _getAccountButton() {
+    return ScaleTransition(
+      scale: _scaleAnimation,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4.0),
+        decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(4.0),
+            boxShadow: [
+              BoxShadow(
+                  color: Colors.grey.shade400,
+                  blurRadius: 3,
+                  offset: const Offset(0, 3))
+            ],
+            border: _inDrag
+                ? Border.all(width: 2.0, color: Colors.black)
+                : !_onBeingDragFocused
+                    ? Border.all(width: 0.5, color: Colors.black12)
+                    : Border.all(width: 2.0, color: Colors.red)),
+        child: Material(
+          borderRadius: BorderRadius.circular(4.0),
+          child: InkWell(
+            onTap: widget.onTap,
+            child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    Vars.standardPaddingSize,
+                    Vars.topBotPaddingSize,
+                    Vars.standardPaddingSize,
+                    Vars.topBotPaddingSize * 2.5),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Westpac ${widget.account.type}",
+                      style: const TextStyle(fontSize: 16.0),
+                    ),
+                    Text("\$${widget.account.balance}",
+                        style: const TextStyle(
+                            fontSize: 16.0, fontWeight: FontWeight.bold))
+                  ],
+                )),
+          ),
+        ),
+      ),
+    );
+  }
 }
