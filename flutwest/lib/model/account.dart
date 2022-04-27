@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutwest/model/account_id.dart';
+
 class Account {
   static const String typeLife = "Life";
   static const String typeChocie = "Choice";
@@ -7,40 +9,55 @@ class Account {
   static const String typeBusiness = "Business";
 
   late String type;
-  late String bsb;
-  late String number;
+  late AccountID accountID;
   late double balance;
+  late String cardNumber;
 
-  Account(this.type, this.bsb, this.number, this.balance);
+  Account(
+      {required this.type,
+      required bsb,
+      required number,
+      required this.balance,
+      required this.cardNumber})
+      : accountID = AccountID(number: number, bsb: bsb);
 
   get getType => this.type;
 
-  get getBsb => this.bsb;
+  get getBsb => this.accountID.bsb;
 
-  get getNumber => this.number;
+  get getNumber => this.accountID.number;
 
   get getBalance => this.balance;
 
   set setBalance(balance) => this.balance = balance;
 
+  get getCardNumber => this.cardNumber;
+
+  set setCardNumber(cardNumber) => this.cardNumber = cardNumber;
+
+  bool hasCard() {
+    return cardNumber != "";
+  }
+
   Map<String, dynamic> toMap() {
     final result = <String, dynamic>{};
 
     result.addAll({'type': type});
-    result.addAll({'bsb': bsb});
-    result.addAll({'number': number});
+    result.addAll({'bsb': accountID.bsb});
+    result.addAll({'number': accountID.number});
     result.addAll({'balance': balance});
+    result.addAll({'cardNumber': cardNumber});
 
     return result;
   }
 
   factory Account.fromMap(Map<String, dynamic> map) {
     return Account(
-      map['type'] ?? '',
-      map['bsb'] ?? '',
-      map['number'] ?? '',
-      map['balance']?.toDouble() ?? 0.0,
-    );
+        type: map['type'] ?? '',
+        bsb: map['bsb'] ?? '',
+        number: map['number'] ?? '',
+        balance: map['balance']?.toDouble() ?? 0.0,
+        cardNumber: map['cardNumber'] ?? '');
   }
 
   String toJson() => json.encode(toMap());
