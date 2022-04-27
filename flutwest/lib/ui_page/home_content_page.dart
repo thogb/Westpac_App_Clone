@@ -99,9 +99,24 @@ class _HomeContentPageState extends State<HomeContentPage>
   final ScrollController _scrollController = ScrollController();
 
   static List<Account> accounts = [
-    Account(Account.typeChocie, "666-777", "232383", 2000.0),
-    Account(Account.typeeSaver, "888-999", "223323", 6000.0),
-    Account(Account.typeBusiness, "111-222", "231231", 100000.0)
+    Account(
+        type: Account.typeChocie,
+        bsb: "666-777",
+        number: "232383",
+        balance: 2000.0,
+        cardNumber: "213123123123123123"),
+    Account(
+        type: Account.typeeSaver,
+        bsb: "888-999",
+        number: "223323",
+        balance: 6000.0,
+        cardNumber: ""),
+    Account(
+        type: Account.typeBusiness,
+        bsb: "111-222",
+        number: "231231",
+        balance: 100000.0,
+        cardNumber: "")
   ];
 
   bool _dragging = false;
@@ -652,7 +667,7 @@ class _DraggableAccountButtonState extends State<DraggableAccountButton>
         );
       },
       onWillAccept: (Account? inAccount) {
-        if (widget.account.bsb != inAccount!.bsb) {
+        if (widget.account.getBsb != inAccount!.getBsb) {
           setState(() {
             _onBeingDragFocused = true;
             _scaleController.forward();
@@ -661,7 +676,7 @@ class _DraggableAccountButtonState extends State<DraggableAccountButton>
         return true;
       },
       onLeave: (Account? inAccount) {
-        if (widget.account.bsb != inAccount!.bsb) {
+        if (widget.account.getBsb != inAccount!.getBsb) {
           setState(() {
             _onBeingDragFocused = false;
             _scaleController.reverse();
@@ -670,7 +685,7 @@ class _DraggableAccountButtonState extends State<DraggableAccountButton>
       },
       onAccept: (Account inAccount) {
         //TODO: open transaction page
-        if (widget.account.bsb != inAccount.bsb) {
+        if (widget.account.getBsb != inAccount.getBsb) {
           setState(() {
             _onBeingDragFocused = false;
             _scaleController.reverse();
