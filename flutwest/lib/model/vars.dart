@@ -39,4 +39,37 @@ class Vars {
       fontSize: appbarTitleSize,
       fontWeight: FontWeight.bold,
       color: Colors.black);
+
+  static const List<String> days = [
+    "",
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+    "Sun"
+  ];
+
+  static const List<String> months = [
+    "",
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
+  ];
+
+  static bool isSameDay(DateTime dateTime, DateTime otherDateTime) {
+    return dateTime.year == otherDateTime.year &&
+        dateTime.month == otherDateTime.month &&
+        dateTime.day == otherDateTime.day;
+  }
 }
