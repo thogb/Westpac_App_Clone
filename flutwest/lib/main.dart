@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
             // Notice that the counter didn't reset back to zero; the application
             // is not restarted.
             primarySwatch: Colors.blue,
-            highlightColor: Colors.red,
+            highlightColor: Colors.grey[200],
             splashFactory: NoSplash.splashFactory),
         //home: const HomePage(),
         home: const GuestPage());
