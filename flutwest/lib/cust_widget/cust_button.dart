@@ -16,7 +16,10 @@ class CustButton extends StatelessWidget {
   final String? paragraph;
   final Widget? leftWidget;
   final Widget? rightWidget;
+  final TextStyle? paragraphStype;
   final VoidCallback? onTap;
+  final bool? borderOn;
+  final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
 
   const CustButton(
@@ -25,7 +28,10 @@ class CustButton extends StatelessWidget {
       this.paragraph,
       this.leftWidget,
       this.rightWidget,
+      this.paragraphStype,
       this.onTap,
+      this.borderOn = true,
+      this.padding,
       this.margin})
       : super(key: key);
 
@@ -35,14 +41,17 @@ class CustButton extends StatelessWidget {
       margin: margin,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(3.0),
-          border: Border.all(width: 0.5, color: Colors.black12)),
+          border: borderOn == true
+              ? Border.all(width: 0.5, color: Colors.black12)
+              : null),
       child: Material(
         borderRadius: BorderRadius.circular(3.0),
         child: InkWell(
           onTap: onTap,
           child: Padding(
-            padding: EdgeInsets.symmetric(
-                vertical: topBotPadding, horizontal: leftRightPadding),
+            padding: padding ??
+                EdgeInsets.symmetric(
+                    vertical: topBotPadding, horizontal: leftRightPadding),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -52,6 +61,7 @@ class CustButton extends StatelessWidget {
                 ),
                 Expanded(
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       heading != null
@@ -62,7 +72,8 @@ class CustButton extends StatelessWidget {
                           : const SizedBox(),
                       const SizedBox(height: 4.0),
                       paragraph != null
-                          ? Text(paragraph!, style: buttonParaStyle)
+                          ? Text(paragraph!,
+                              style: paragraphStype ?? buttonParaStyle)
                           : const SizedBox()
                     ],
                   ),
