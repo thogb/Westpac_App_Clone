@@ -2,6 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
 import 'package:flutwest/cust_widget/outlined_container.dart';
+import 'package:flutwest/cust_widget/standard_padding.dart';
+import 'package:flutwest/model/account_id.dart';
+import 'package:flutwest/model/transaction.dart';
 import 'package:flutwest/model/vars.dart';
 
 import '../model/account.dart';
@@ -19,20 +22,13 @@ class AccountDetailPage extends StatefulWidget {
 }
 
 class _AccountDetailPageState extends State<AccountDetailPage> {
-  static const TextStyle headingStyle =
-      TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold);
-
-  static const EdgeInsetsGeometry buttonMargin =
-      EdgeInsets.symmetric(vertical: Vars.topBotPaddingSize / 2);
-
-  static const BorderSide outlinedBorderSide =
-      BorderSide(width: 0.5, color: Colors.black12);
-
   late Account _currAccount;
   bool _showNavBarTitle = false;
+  late AppbarTitleStatus appbarTitleStatus;
 
   @override
   void initState() {
+    appbarTitleStatus = AppbarTitleStatus(show: _showTitle, hide: _hideTitle);
     _currAccount = widget.accounts[0];
     super.initState();
   }
@@ -79,40 +75,145 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
             ]),
         body: PageView(
           onPageChanged: (int index) {
-            /*setState(() {
+            setState(() {
               _currAccount = widget.accounts[index];
               _showNavBarTitle = false;
-            });*/
+            });
           },
           children: widget.accounts
-              .map((Account account) => _getAccountDetail(account))
+              .map((Account account) => AccountDetailSection(
+                  account: account, appbarTitleStatus: appbarTitleStatus))
               .toList(),
         ));
   }
 
+  void _showTitle() {
+    if (_showNavBarTitle == false) {
+      setState(() {
+        _showNavBarTitle = true;
+      });
+    }
+  }
+
+  void _hideTitle() {
+    if (_showNavBarTitle == true) {
+      setState(() {
+        _showNavBarTitle = false;
+      });
+    }
+  }
+}
+
+class AppbarTitleStatus {
+  late bool visible;
+  final VoidCallback show;
+  final VoidCallback hide;
+
+  AppbarTitleStatus(
+      {this.visible = false, required this.show, required this.hide});
+
+  void showTitle() {
+    visible = true;
+    show();
+  }
+
+  void hideTitle() {
+    visible = false;
+    hide();
+  }
+}
+
+class AccountDetailSection extends StatefulWidget {
+  final Account account;
+  final AppbarTitleStatus appbarTitleStatus;
+
+  const AccountDetailSection(
+      {Key? key, required this.account, required this.appbarTitleStatus})
+      : super(key: key);
+
+  @override
+  _AccountDetailSectionState createState() => _AccountDetailSectionState();
+}
+
+class _AccountDetailSectionState extends State<AccountDetailSection>
+    with AutomaticKeepAliveClientMixin {
+  static const TextStyle headingStyle =
+      TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold);
+
+  static const EdgeInsetsGeometry buttonMargin =
+      EdgeInsets.symmetric(vertical: Vars.topBotPaddingSize / 2);
+
+  static const BorderSide outlinedBorderSide =
+      BorderSide(width: 0.5, color: Colors.black12);
+
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  Widget build(BuildContext context) {
+    return _getAccountDetail(widget.account);
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+
+  Widget _getTransactionLineBr(DateTime dateTime) {
+    return StandardPadding(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(
+            height: Vars.heightGapBetweenWidgets / 2.0,
+          ),
+          Text(
+              "${Vars.days[dateTime.weekday]} ${dateTime.day} ${Vars.months[dateTime.month]} ${dateTime.year}"),
+          const SizedBox(height: 2.0),
+          Container(
+            height: 1,
+            color: Colors.black12,
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _getTransactionButton(Transaction transaction, double balance) {
+    return CustButton(
+      onTap: () {},
+      borderOn: false,
+      paragraphStype: const TextStyle(fontSize: 16.0),
+      leftWidget: const Icon(
+        Icons.monetization_on_sharp,
+        size: 30,
+      ),
+      paragraph: transaction.getDescription,
+      rightWidget: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            "\$${transaction.getAmount}",
+            style: TextStyle(
+                color: transaction.getAmount > 0.0 ? Colors.green : null),
+          ),
+          Text("bal \$$balance")
+        ],
+      ),
+    );
+  }
+
   Widget _getAccountDetail(Account account) {
-    ScrollController controller = ScrollController();
     return NotificationListener(
       onNotification: ((notification) {
         if (notification is ScrollUpdateNotification) {
-          if (controller.offset > 60) {
-            if (!_showNavBarTitle) {
-              setState(() {
-                _showNavBarTitle = true;
-              });
-            }
+          if (_scrollController.offset > 60) {
+            widget.appbarTitleStatus.showTitle();
           } else {
-            if (_showNavBarTitle) {
-              setState(() {
-                _showNavBarTitle = false;
-              });
-            }
+            widget.appbarTitleStatus.hideTitle();
           }
         }
         return false;
       }),
       child: SingleChildScrollView(
-        controller: controller,
+        controller: _scrollController,
         child: Padding(
           padding: const EdgeInsets.symmetric(
               horizontal: Vars.standardPaddingSize,
@@ -159,9 +260,10 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text("BSB ${account.bsb} Acct ${account.number}"),
+              Text("BSB ${account.getBsb} Acct ${account.getNumber}"),
               Icon(
                 Icons.share,
+                size: 20,
                 color: Colors.red[700],
               )
             ],
@@ -200,6 +302,42 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
   }
 
   Widget _getTransactionSummary(Account account) {
+    List<Transaction> trans = [
+      Transaction(
+          accountID: AccountID(number: "23232323", bsb: "123-123"),
+          dateTime: DateTime.now(),
+          id: "asdasd",
+          description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
+          amount: 23.0),
+      Transaction(
+          accountID: AccountID(number: "23232323", bsb: "123-123"),
+          dateTime: DateTime(2022, 4, 10),
+          id: "asdasd",
+          description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
+          amount: -23.0),
+      Transaction(
+          accountID: AccountID(number: "23232323", bsb: "123-123"),
+          dateTime: DateTime(2022, 3, 2),
+          id: "asdasd",
+          description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
+          amount: 23.0),
+      Transaction(
+          accountID: AccountID(number: "23232323", bsb: "123-123"),
+          dateTime: DateTime(2022, 3, 2),
+          id: "asdasd",
+          description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
+          amount: 23.0),
+      Transaction(
+          accountID: AccountID(number: "23232323", bsb: "123-123"),
+          dateTime: DateTime(2022, 3, 2),
+          id: "asdasd",
+          description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
+          amount: 23.0)
+    ];
+
+    double balance = account.getBalance;
+    DateTime dateTime = DateTime(1000);
+
     return Padding(
       padding: buttonMargin,
       child: Container(
@@ -220,6 +358,27 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
                   ],
                 ),
               ),
+              Column(
+                children: trans.map(((transaction) {
+                  Widget widget;
+
+                  if (Vars.isSameDay(dateTime, transaction.getDateTime)) {
+                    widget = _getTransactionButton(transaction, balance);
+                  } else {
+                    dateTime = transaction.dateTime;
+                    widget = Column(
+                      children: [
+                        _getTransactionLineBr(dateTime),
+                        _getTransactionButton(transaction, balance)
+                      ],
+                    );
+                  }
+
+                  balance = balance - transaction.getAmount;
+
+                  return widget;
+                })).toList(),
+              ),
               const SizedBox(height: 20.0),
               Container(
                   padding: OutlinedContainer.defaultPadding,
@@ -239,22 +398,30 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
 
   Widget _getBottomContent(Account account) {
     return Column(
-      children: const [
+      children: [
         CustButton(
-            leftWidget: Icon(Icons.money),
+            onTap: () {},
+            leftWidget: const Icon(Icons.monetization_on_outlined),
             heading: "Upcoming payments",
             margin: buttonMargin),
+        account.hasCard()
+            ? CustButton(
+                onTap: () {},
+                leftWidget: const Icon(CupertinoIcons.gift_fill),
+                heading: "Rewards and offers",
+                margin: buttonMargin)
+            : const SizedBox(),
+        account.hasCard()
+            ? CustButton(
+                onTap: () {},
+                leftWidget: const Icon(Icons.settings),
+                heading: "Card settings",
+                paragraph: "Lock card, autopay, digital card",
+                margin: buttonMargin)
+            : const SizedBox(),
         CustButton(
-            leftWidget: Icon(CupertinoIcons.gift_fill),
-            heading: "Rewards and offers",
-            margin: buttonMargin),
-        CustButton(
-            leftWidget: Icon(Icons.settings),
-            heading: "Card settings",
-            paragraph: "Lock card, autopay, digital card",
-            margin: buttonMargin),
-        CustButton(
-            leftWidget: Icon(Icons.book),
+            onTap: () {},
+            leftWidget: const Icon(Icons.book),
             heading: "Documents",
             paragraph: "Statements, interest, tax, proof of balance",
             margin: buttonMargin)
