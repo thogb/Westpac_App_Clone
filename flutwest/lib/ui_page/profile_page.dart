@@ -39,7 +39,8 @@ class _ProfilePageState extends State<ProfilePage> {
           const SizedBox(height: Vars.heightGapBetweenWidgets),
           _getRewardsButton(),
           const SizedBox(height: Vars.heightGapBetweenWidgets),
-          const CustTextButton(
+          CustTextButton(
+              onTap: () {},
               heading: "Settings",
               paragraph: "Personal details, security and communications"),
           CustTextButton(
@@ -51,15 +52,18 @@ class _ProfilePageState extends State<ProfilePage> {
               });
             },
           ),
-          const CustTextButton(
+          CustTextButton(
+            onTap: () {},
             heading: "Payments",
             paragraph: "Upcoming, past, direct debits, BPAY View",
           ),
-          const CustTextButton(
+          CustTextButton(
+            onTap: () {},
             heading: "Payees and billers",
             paragraph: "Add, delete",
           ),
-          const CustTextButton(
+          CustTextButton(
+            onTap: () {},
             heading: "Help",
             paragraph: "FAQs, topics, feedback, contact us",
           ),
