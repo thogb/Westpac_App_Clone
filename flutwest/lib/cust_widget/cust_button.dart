@@ -70,7 +70,7 @@ class CustButton extends StatelessWidget {
                               style: buttonHeadingStyle,
                             )
                           : const SizedBox(),
-                      const SizedBox(height: 4.0),
+                      SizedBox(height: heading != null ? 4.0 : 0.0),
                       paragraph != null
                           ? Text(paragraph!,
                               style: paragraphStype ?? buttonParaStyle)
