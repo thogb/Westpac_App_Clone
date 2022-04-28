@@ -304,31 +304,36 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
   Widget _getTransactionSummary(Account account) {
     List<Transaction> trans = [
       Transaction(
-          accountID: AccountID(number: "23232323", bsb: "123-123"),
+          sender: AccountID(number: "23232323", bsb: "123-123"),
+          receiver: AccountID(number: "23232328", bsb: "423-123"),
           dateTime: DateTime.now(),
           id: "asdasd",
           description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
           amount: 23.0),
       Transaction(
-          accountID: AccountID(number: "23232323", bsb: "123-123"),
+          sender: AccountID(number: "23232323", bsb: "123-123"),
+          receiver: AccountID(number: "23232328", bsb: "423-123"),
           dateTime: DateTime(2022, 4, 10),
           id: "asdasd",
           description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
           amount: -23.0),
       Transaction(
-          accountID: AccountID(number: "23232323", bsb: "123-123"),
+          sender: AccountID(number: "23232323", bsb: "123-123"),
+          receiver: AccountID(number: "23232328", bsb: "423-123"),
           dateTime: DateTime(2022, 3, 2),
           id: "asdasd",
           description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
           amount: 23.0),
       Transaction(
-          accountID: AccountID(number: "23232323", bsb: "123-123"),
+          sender: AccountID(number: "23232323", bsb: "123-123"),
+          receiver: AccountID(number: "23232328", bsb: "423-123"),
           dateTime: DateTime(2022, 3, 2),
           id: "asdasd",
           description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
           amount: 23.0),
       Transaction(
-          accountID: AccountID(number: "23232323", bsb: "123-123"),
+          sender: AccountID(number: "23232323", bsb: "123-123"),
+          receiver: AccountID(number: "23232328", bsb: "423-123"),
           dateTime: DateTime(2022, 3, 2),
           id: "asdasd",
           description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
