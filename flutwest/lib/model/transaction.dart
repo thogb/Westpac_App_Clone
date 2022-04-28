@@ -3,23 +3,29 @@ import 'dart:convert';
 import 'package:flutwest/model/account_id.dart';
 
 class Transaction {
-  late AccountID accountID;
+  late AccountID sender;
+  late AccountID receiver;
   late DateTime dateTime;
   late String id;
   late String description;
   late double amount;
 
   Transaction({
-    required this.accountID,
+    required this.sender,
+    required this.receiver,
     required this.dateTime,
     required this.id,
     required this.description,
     required this.amount,
   });
 
-  get getAccountID => this.accountID;
+  get getSender => this.sender;
 
-  set setAccountID(accountID) => this.accountID = accountID;
+  set setSender(sender) => this.sender = sender;
+
+  get getReceiver => this.receiver;
+
+  set setReceiver(receiver) => this.receiver = receiver;
 
   get getDateTime => this.dateTime;
 
@@ -40,8 +46,10 @@ class Transaction {
   Map<String, dynamic> toMap() {
     final result = <String, dynamic>{};
 
-    result.addAll({'number': accountID.number});
-    result.addAll({'bsb': accountID.bsb});
+    result.addAll({'senderNumber': sender.number});
+    result.addAll({'senderBsb': sender.bsb});
+    result.addAll({'receiverNumber': receiver.number});
+    result.addAll({'receiverBsb': receiver.bsb});
     result.addAll({'dateTime': dateTime.toString()});
     result.addAll({'id': id});
     result.addAll({'description': description});
@@ -52,8 +60,11 @@ class Transaction {
 
   factory Transaction.fromMap(Map<String, dynamic> map) {
     return Transaction(
-      accountID: map['number'] != null && map["bsb"] != null
-          ? AccountID(number: map["number"], bsb: map["bsb"])
+      sender: map['senderNumber'] != null && map["senderBsb"] != null
+          ? AccountID(number: map["senderNumber"], bsb: map["senderBsb"])
+          : AccountID(number: "", bsb: ""),
+      receiver: map['receiverNumber'] != null && map["receiverBsb"] != null
+          ? AccountID(number: map["receiverNumber"], bsb: map["receiverBsb"])
           : AccountID(number: "", bsb: ""),
       dateTime:
           map['dateTime'] != null ? DateTime(map["dateTime"]) : DateTime(1000),
