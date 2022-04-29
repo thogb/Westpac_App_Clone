@@ -3,21 +3,42 @@ import 'dart:convert';
 import 'package:flutwest/model/account_id.dart';
 
 class Transaction {
-  late AccountID sender;
-  late AccountID receiver;
-  late DateTime dateTime;
-  late String id;
-  late String description;
-  late double amount;
+  static const String debits = "Debits";
+  static const String credits = "Credits";
+  static const String atimAndCash = "ATM and cash";
+  static const String cheques = "Cheques";
+  static const String deposits = "Deposits";
+  static const String dividendPayments = "Dividend payments";
+  static const String interestAdnFees = "Interest and fees";
+  static const String paymentsAndTransfers = "Payments and transfers";
 
-  Transaction({
-    required this.sender,
-    required this.receiver,
-    required this.dateTime,
-    required this.id,
-    required this.description,
-    required this.amount,
-  });
+  static const List<String> types = [
+    debits,
+    credits,
+    atimAndCash,
+    cheques,
+    deposits,
+    dividendPayments,
+    interestAdnFees,
+    paymentsAndTransfers
+  ];
+
+  late final AccountID sender;
+  late final AccountID receiver;
+  late final DateTime dateTime;
+  late final String id;
+  late final String description;
+  late final double amount;
+  late final String type;
+
+  Transaction(
+      {required this.sender,
+      required this.receiver,
+      required this.dateTime,
+      required this.id,
+      required this.description,
+      required this.amount,
+      this.type = credits});
 
   get getSender => this.sender;
 
