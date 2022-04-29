@@ -6,6 +6,7 @@ import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/transaction.dart';
 import 'package:flutwest/model/vars.dart';
+import 'package:flutwest/ui_page/transaction_detail_page.dart';
 
 import '../model/account.dart';
 
@@ -66,12 +67,19 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
                   )
                 : const SizedBox(),
             actions: [
-              GestureDetector(
-                  onTap: () {},
-                  child: Icon(
-                    Icons.info_outline,
-                    color: Colors.red[900],
-                  ))
+              Padding(
+                padding: const EdgeInsets.only(right: Vars.standardPaddingSize),
+                child: Tooltip(
+                  message: "Additional Details",
+                  child: GestureDetector(
+                      onTap: () {},
+                      child: Icon(
+                        Icons.info_outline,
+                        color: Colors.red[900],
+                        size: 30,
+                      )),
+                ),
+              )
             ]),
         body: PageView(
           onPageChanged: (int index) {
@@ -359,7 +367,15 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
                     const Text("Recent Transactions",
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 14.0)),
-                    Icon(Icons.search, color: Colors.red[900])
+                    GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: ((context) => TransactionDetailPage(
+                                      account: account, isInputting: true))));
+                        },
+                        child: Icon(Icons.search, color: Colors.red[900]))
                   ],
                 ),
               ),
@@ -386,16 +402,25 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
               ),
               const SizedBox(height: 20.0),
               Container(
-                  padding: OutlinedContainer.defaultPadding,
-                  decoration: const BoxDecoration(
-                      border: Border(top: outlinedBorderSide)),
-                  child: Center(
-                      child: GestureDetector(
-                          onTap: () {},
-                          child: const Text(
-                            "More transactions",
-                            style: TextStyle(color: Colors.red),
-                          ))))
+                decoration: const BoxDecoration(
+                    border: Border(top: outlinedBorderSide)),
+                child: InkWell(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: ((context) =>
+                                TransactionDetailPage(account: account))));
+                  },
+                  child: const Padding(
+                      padding: OutlinedContainer.defaultPadding,
+                      child: Center(
+                          child: Text(
+                        "More transactions",
+                        style: TextStyle(color: Colors.red),
+                      ))),
+                ),
+              )
             ],
           )),
     );
