@@ -1,4 +1,3 @@
-import 'package:flutwest/model/account.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -9,6 +8,7 @@ class AccountOrder {
   static const String order = "order";
   static const String number = "number";
   static const String bsb = "bsb";
+  static const String hidden = "hidden";
   static const String memberID = "member_id";
 
   AccountOrder._() {}
@@ -35,13 +35,13 @@ class SQLiteController {
 
     dataBase = await openDatabase(path, onCreate: ((db, version) {
       return db.execute(
-          'CREATE TABLE ${AccountOrder.tableName}(${AccountOrder.memberID} TEXT NOT NULL, ${AccountOrder.order} INTEGER NOT NULL, ${AccountOrder.number} TEXT, ${AccountOrder.bsb} TEXT, PRIMARY KEY (${AccountOrder.memberID}, ${AccountOrder.order}))');
+          'CREATE TABLE ${AccountOrder.tableName}(${AccountOrder.memberID} TEXT NOT NULL, ${AccountOrder.order} INTEGER NOT NULL, ${AccountOrder.number} TEXT, ${AccountOrder.bsb} TEXT,  ${AccountOrder.hidden} INTEGER,PRIMARY KEY (${AccountOrder.memberID}, ${AccountOrder.order}))');
     }), version: 1);
   }
 
-  Future<void> insertAccountID(AccountID account, int order) async {
+  Future<void> insertAccountID(AccountIDOrder accountIDOrder) async {
     await dataBase.insert(
-        AccountOrder.tableName, getAccountIDMap(account, order));
+        AccountOrder.tableName, getAccountIDOrderMap(accountIDOrder));
   }
 
   Future<List<AccountIDOrder>> getAccountIDs() async {
@@ -55,7 +55,8 @@ class SQLiteController {
         (index) => AccountIDOrder(
             number: accountIDs[index][AccountOrder.number],
             bsb: accountIDs[index][AccountOrder.bsb],
-            order: accountIDs[index][AccountOrder.order]));
+            order: accountIDs[index][AccountOrder.order],
+            hidden: accountIDs[index][AccountOrder.hidden]));
 
     return accountIDOrders;
   }
@@ -76,20 +77,19 @@ class SQLiteController {
         whereArgs: [/* TODO: member id */]);
     for (AccountIDOrder accountIDOrder in accountIDOrders) {
       batch.insert(
-          AccountOrder.tableName,
-          getAccountIDMap(
-              accountIDOrder.getAccountID, accountIDOrder.getOrder));
+          AccountOrder.tableName, getAccountIDOrderMap(accountIDOrder));
     }
 
     batch.commit();
   }
 
-  Map<String, Object?> getAccountIDMap(AccountID account, int order) {
+  Map<String, Object?> getAccountIDOrderMap(AccountIDOrder accountIDOrder) {
     return {
       //TODO: member id
-      AccountOrder.order: order,
-      AccountOrder.number: account.getNumber,
-      AccountOrder.bsb: account.getBsb
+      AccountOrder.order: accountIDOrder.order,
+      AccountOrder.number: accountIDOrder.getAccountID.getNumber,
+      AccountOrder.bsb: accountIDOrder.getAccountID.getBsb,
+      AccountOrder.hidden: accountIDOrder.getHidden
     };
   }
 }

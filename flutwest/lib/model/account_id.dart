@@ -15,9 +15,14 @@ class AccountID {
 
 class AccountIDOrder {
   late AccountID accountID;
+  late bool hidden;
   late int order;
 
-  AccountIDOrder({required number, required bsb, required this.order})
+  AccountIDOrder(
+      {required number,
+      required bsb,
+      required this.order,
+      required this.hidden})
       : accountID = AccountID(number: number, bsb: bsb);
 
   get getAccountID => this.accountID;
@@ -27,4 +32,8 @@ class AccountIDOrder {
   get getOrder => this.order;
 
   set setOrder(order) => this.order = order;
+
+  get getHidden => this.hidden;
+
+  set setHidden(hidden) => this.hidden = hidden;
 }
