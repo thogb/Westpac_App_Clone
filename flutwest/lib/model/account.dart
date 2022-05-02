@@ -65,3 +65,28 @@ class Account {
   factory Account.fromJson(String source) =>
       Account.fromMap(json.decode(source));
 }
+
+class AccountOrder {
+  late Account account;
+  late int order;
+  late int hidden;
+
+  AccountOrder(
+      {required this.account, required this.order, required this.hidden});
+
+  get getOrder => this.order;
+
+  set setOrder(order) => this.order = order;
+
+  get getHidden => this.hidden;
+
+  set setHidden(hidden) => this.hidden = hidden;
+
+  AccountIDOrder getAccountIDOrder() {
+    return AccountIDOrder(
+        number: account.accountID.number,
+        bsb: account.accountID.bsb,
+        order: order,
+        hidden: hidden);
+  }
+}
