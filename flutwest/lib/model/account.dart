@@ -66,12 +66,12 @@ class Account {
       Account.fromMap(json.decode(source));
 }
 
-class AccountOrder {
+class AccountOrderInfo {
   late Account account;
   late int order;
   late int hidden;
 
-  AccountOrder(
+  AccountOrderInfo(
       {required this.account, required this.order, required this.hidden});
 
   get getOrder => this.order;
@@ -81,6 +81,17 @@ class AccountOrder {
   get getHidden => this.hidden;
 
   set setHidden(hidden) => this.hidden = hidden;
+
+  get isHidden => hidden == 1 ? true : false;
+
+  @override
+  String toString() {
+    return account.type;
+  }
+
+  Account getAccount() {
+    return account;
+  }
 
   AccountIDOrder getAccountIDOrder() {
     return AccountIDOrder(

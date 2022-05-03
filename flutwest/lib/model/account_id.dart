@@ -15,7 +15,7 @@ class AccountID {
 
 class AccountIDOrder {
   late AccountID accountID;
-  late bool hidden;
+  late int hidden;
   late int order;
 
   AccountIDOrder(
@@ -36,4 +36,6 @@ class AccountIDOrder {
   get getHidden => this.hidden;
 
   set setHidden(hidden) => this.hidden = hidden;
+
+  get isHidden => hidden == 1 ? true : false;
 }
