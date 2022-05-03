@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
 import 'package:flutwest/cust_widget/outlined_container.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/cust_widget/west_logo.dart';
 import 'package:flutwest/model/account.dart';
+import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/navbar_state.dart';
 import 'package:flutwest/model/vars.dart';
+import 'package:flutwest/ui_page/account_ordering_page.dart';
 
 import 'account_detail_page.dart';
 
@@ -119,7 +122,12 @@ class _HomeContentPageState extends State<HomeContentPage>
         cardNumber: "")
   ];
 
+  List<AccountOrderInfo> _accountOrderInfos = [];
+
   bool _dragging = false;
+  int _numOfAccountsHidden = 0;
+
+  late Future<bool> _futureAccountOrders;
 
   @override
   void initState() {
@@ -133,6 +141,8 @@ class _HomeContentPageState extends State<HomeContentPage>
         Tween<Offset>(begin: const Offset(0.0, 2.0), end: Offset.zero).animate(
             CurvedAnimation(parent: _welcomeController, curve: Curves.easeIn));
 
+    _futureAccountOrders = _createOrderInfos(accounts);
+
     /*for (Account account in accounts) {
       AnimationController controller = AnimationController(
           duration: const Duration(milliseconds: 300), vsync: this);
@@ -144,6 +154,18 @@ class _HomeContentPageState extends State<HomeContentPage>
       _accountAnimationControllers[account.bsb] = controller;
       _accountRedBorderState[account.bsb] = false;
     }*/
+
+    /*
+    int order = 1;
+
+    for (Account account in accounts) {
+      _accountOrderInfos
+          .add(AccountOrderInfo(account: account, order: order, hidden: 0));
+      order++;
+    }*/
+
+    //await _createOrderInfos(accounts);
+    //print(_accountOrderInfos.length);
 
     super.initState();
 
@@ -218,6 +240,56 @@ class _HomeContentPageState extends State<HomeContentPage>
         ],
       ),
     );
+  }
+
+  Future<bool> _createOrderInfos(List<Account> accounts) async {
+    print("Accounts +" + accounts.length.toString());
+    //TODO: memberID update with auth
+    List<Account> accountsClone = accounts.toList();
+    print("Accountcxlones +" + accountsClone.length.toString());
+
+    List<AccountIDOrder> accountIDOrders =
+        await SQLiteController.instance.getAccountIDsOrdered();
+
+    AccountOrderInfo? temp;
+
+    for (AccountIDOrder accountIDOrder in accountIDOrders) {
+      AccountID accountID = accountIDOrder.getAccountID;
+      temp = null;
+      for (Account account in accountsClone) {
+        if (account.getNumber == accountID.getNumber &&
+            account.getBsb == accountID.getBsb) {
+          temp = AccountOrderInfo(
+              account: account,
+              order: accountIDOrder.getOrder,
+              hidden: accountIDOrder.getHidden);
+          accountsClone.remove(account);
+          _accountOrderInfos.add(temp);
+          break;
+        }
+      }
+    }
+
+    for (Account account in accountsClone) {
+      _accountOrderInfos.add(AccountOrderInfo(
+          account: account, order: _accountOrderInfos.length, hidden: 0));
+    }
+
+    return true;
+  }
+
+  void _updateNOfHiddenAccount() {
+    int count = 0;
+    for (AccountOrderInfo accountOrderInfo in _accountOrderInfos) {
+      count = accountOrderInfo.isHidden ? count + 1 : count;
+    }
+
+    _numOfAccountsHidden = count;
+
+    /*
+    setState(() {
+      _numOfAccountHidden = count;
+    });*/
   }
 
   /// check if home content page is opened from another page
@@ -360,20 +432,92 @@ class _HomeContentPageState extends State<HomeContentPage>
           const SizedBox(height: 3.0),
           Container(height: 0.25, color: Colors.black45),
           const SizedBox(height: 4.0),
-          Column(
-              children: List.generate(accounts.length, (index) {
-            return _getAccountDrag(accounts[index]);
-          })),
-          Align(
+          FutureBuilder(
+              future: _futureAccountOrders,
+              builder: ((context, snapshot) {
+                if (snapshot.hasData) {
+                  _updateNOfHiddenAccount();
+                  if (_numOfAccountsHidden == _accountOrderInfos.length) {
+                    return const Padding(
+                      padding: EdgeInsets.only(top: Vars.topBotPaddingSize),
+                      child: Text(
+                          "No accounts to see here. Looks like you've hidden all your accounts",
+                          style: TextStyle(fontSize: 18.0)),
+                    );
+                  }
+
+                  return Column(
+                      children:
+                          List.generate(_accountOrderInfos.length, (index) {
+                    return !_accountOrderInfos[index].isHidden
+                        ? _getAccountDrag(_accountOrderInfos[index].account)
+                        : const SizedBox();
+                  }));
+                }
+
+                return const Text("loading");
+              })),
+          Padding(
+            padding: const EdgeInsets.only(top: Vars.topBotPaddingSize - 4.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                FutureBuilder(
+                  future: _futureAccountOrders,
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      _updateNOfHiddenAccount();
+                      return _numOfAccountsHidden > 0
+                          ? GestureDetector(
+                              onTap: () {},
+                              child: Text(
+                                  "$_numOfAccountsHidden hidden account",
+                                  style: const TextStyle(color: Colors.red)))
+                          : const SizedBox();
+                    }
+                    return const SizedBox();
+                  },
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: ((context) => AccountOrderingPage(
+                                  accountOrderInfos: _accountOrderInfos,
+                                ))));
+                    print(_accountOrderInfos.toString());
+                    setState(() {
+                      _accountOrderInfos.length;
+                    });
+                    _updateNOfHiddenAccount();
+                  },
+                  child: Icon(Icons.settings, color: Colors.red[700]),
+                )
+              ],
+            ),
+          )
+          /*Align(
               alignment: Alignment.bottomRight,
               child: Padding(
                 padding:
                     const EdgeInsets.only(top: Vars.topBotPaddingSize - 4.0),
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap: () async {
+                    await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: ((context) => AccountOrderingPage(
+                                  accountOrderInfos: _accountOrderInfos,
+                                ))));
+                    print(_accountOrderInfos.toString());
+                    setState(() {
+                      _accountOrderInfos.length;
+                    });
+                  },
                   child: Icon(Icons.settings, color: Colors.red[700]),
                 ),
-              )),
+              )),*/
         ]));
   }
 
