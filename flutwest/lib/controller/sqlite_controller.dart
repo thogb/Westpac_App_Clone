@@ -5,7 +5,7 @@ import '../model/account_id.dart';
 
 class AccountOrder {
   static const String tableName = "accounts";
-  static const String order = "order";
+  static const String order = "order_val";
   static const String number = "number";
   static const String bsb = "bsb";
   static const String hidden = "hidden";
@@ -16,18 +16,31 @@ class AccountOrder {
 
 class SQLiteController {
   static const String dbName = "flutWest.db";
+  static const String testID = "22222222";
 
-  static late final SQLiteController? _controller;
+  //static SQLiteController? _controller;
+  static final SQLiteController _controller = SQLiteController._internal();
 
   late final Database dataBase;
 
-  SQLiteController._() {}
+  SQLiteController._internal() {}
 
-  SQLiteController getInstance() {
+  static SQLiteController get instance => _controller;
+
+  factory SQLiteController() {
+    return _controller;
+  }
+
+  /*
+  static SQLiteController getInstance() {
+    /*if (_controller == null) {
+      _controller = SQLiteController._();
+    }*/
     _controller ??= SQLiteController._();
+    //_controller = SQLiteController._();
 
     return _controller!;
-  }
+  }*/
 
   void loadDB() async {
     String databasesPath = await getDatabasesPath();
@@ -35,7 +48,7 @@ class SQLiteController {
 
     dataBase = await openDatabase(path, onCreate: ((db, version) {
       return db.execute(
-          'CREATE TABLE ${AccountOrder.tableName}(${AccountOrder.memberID} TEXT NOT NULL, ${AccountOrder.order} INTEGER NOT NULL, ${AccountOrder.number} TEXT, ${AccountOrder.bsb} TEXT,  ${AccountOrder.hidden} INTEGER,PRIMARY KEY (${AccountOrder.memberID}, ${AccountOrder.order}))');
+          'CREATE TABLE ${AccountOrder.tableName}(${AccountOrder.memberID} TEXT NOT NULL, ${AccountOrder.order} INTEGER NOT NULL, ${AccountOrder.number} TEXT, ${AccountOrder.bsb} TEXT,  ${AccountOrder.hidden} INTEGER, PRIMARY KEY (${AccountOrder.memberID}, ${AccountOrder.order}))');
     }), version: 1);
   }
 
@@ -48,7 +61,7 @@ class SQLiteController {
     final List<Map<String, dynamic>> accountIDs = await dataBase.query(
         AccountOrder.tableName,
         where: "${AccountOrder.memberID} = ?",
-        whereArgs: [/*TODO: memberid*/]);
+        whereArgs: [/*TODO: memberid*/ testID]);
 
     List<AccountIDOrder> accountIDOrders = List.generate(
         accountIDs.length,
@@ -74,7 +87,7 @@ class SQLiteController {
 
     batch.delete(AccountOrder.tableName,
         where: "${AccountOrder.memberID} = ?",
-        whereArgs: [/* TODO: member id */]);
+        whereArgs: [/* TODO: member id */ testID]);
     for (AccountIDOrder accountIDOrder in accountIDOrders) {
       batch.insert(
           AccountOrder.tableName, getAccountIDOrderMap(accountIDOrder));
@@ -86,6 +99,7 @@ class SQLiteController {
   Map<String, Object?> getAccountIDOrderMap(AccountIDOrder accountIDOrder) {
     return {
       //TODO: member id
+      AccountOrder.memberID: testID,
       AccountOrder.order: accountIDOrder.order,
       AccountOrder.number: accountIDOrder.getAccountID.getNumber,
       AccountOrder.bsb: accountIDOrder.getAccountID.getBsb,
