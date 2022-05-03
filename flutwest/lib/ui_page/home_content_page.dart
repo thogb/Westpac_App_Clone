@@ -243,10 +243,8 @@ class _HomeContentPageState extends State<HomeContentPage>
   }
 
   Future<bool> _createOrderInfos(List<Account> accounts) async {
-    print("Accounts +" + accounts.length.toString());
     //TODO: memberID update with auth
     List<Account> accountsClone = accounts.toList();
-    print("Accountcxlones +" + accountsClone.length.toString());
 
     List<AccountIDOrder> accountIDOrders =
         await SQLiteController.instance.getAccountIDsOrdered();
@@ -486,7 +484,7 @@ class _HomeContentPageState extends State<HomeContentPage>
                             builder: ((context) => AccountOrderingPage(
                                   accountOrderInfos: _accountOrderInfos,
                                 ))));
-                    print(_accountOrderInfos.toString());
+                    //print(_accountOrderInfos.toString());
                     setState(() {
                       _accountOrderInfos.length;
                     });
@@ -565,186 +563,6 @@ class _HomeContentPageState extends State<HomeContentPage>
       },
     );
   }
-
-  /*
-  Widget _getAccountDrag(Account account) {
-    return DragTarget<Account>(
-      builder: (BuildContext context, List<dynamic> accepted,
-          List<dynamic> rejected) {
-        return LongPressDraggable(
-          data: account,
-          child: _getAccountButton(account, false),
-          feedback: dollarIcon,
-          childWhenDragging: _getAccountButton(account, true),
-          onDragStarted: () {
-            _welcomeFadeController.duration = topFadeDuration;
-            _welcomeFadeController.reverse();
-            _topAnimationController.reverse();
-            _paymentContentFadeController.reverse();
-
-            _scrollController.jumpTo(_scrollController.offset + 40.0);
-
-            _accountAnimationControllers[account.bsb]!.forward();
-            if (_scrollController.offset > 160.0) {
-              _scrollController.jumpTo(150.0);
-            }
-
-            widget.navbarState.hide();
-
-            setState(() {
-              _dragging = true;
-            });
-          },
-          onDragEnd: (DraggableDetails details) {
-            _welcomeFadeController.forward();
-            _topAnimationController.forward();
-            _paymentContentFadeController.forward();
-            _welcomeController.duration = topFadeDuration;
-
-            _scrollController.jumpTo(_scrollController.offset - 40.0);
-            /*if (_overScrolled) {
-                _scrollController.jumpTo(_scrollController.offset - 30.0);
-              }*/
-            _accountAnimationControllers[account.bsb]!.reverse();
-
-            widget.navbarState.show();
-
-            setState(() {
-              _dragging = false;
-            });
-          },
-        );
-      },
-      onWillAccept: (Account? inAccount) {
-        if (account.bsb != inAccount!.bsb) {
-          setState(() {
-            _accountRedBorderState[account.bsb] = true;
-            _accountAnimationControllers[account.bsb]!.forward();
-          });
-        }
-        return true;
-      },
-      onLeave: (Account? inAccount) {
-        if (account.bsb != inAccount!.bsb) {
-          setState(() {
-            _accountRedBorderState[account.bsb] = false;
-            _accountAnimationControllers[account.bsb]!.reverse();
-          });
-        }
-      },
-      onAccept: (Account inAccount) {
-        //TODO: open transaction page
-        if (account.bsb != inAccount.bsb) {
-          setState(() {
-            _accountRedBorderState[account.bsb] = false;
-            _accountAnimationControllers[account.bsb]!.reverse();
-          });
-        }
-      },
-    );
-  }
-
-  Widget _getAccountButton(Account account, bool inDrag) {
-    return ScaleTransition(
-      scale: _accountAnimations[account.bsb]!,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4.0),
-        decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(4.0),
-            boxShadow: [
-              BoxShadow(
-                  color: Colors.grey.shade400,
-                  blurRadius: 3,
-                  offset: const Offset(0, 3))
-            ],
-            border: inDrag
-                ? Border.all(width: 2.0, color: Colors.black)
-                : !_accountRedBorderState[account.bsb]!
-                    ? Border.all(width: 0.5, color: Colors.black12)
-                    : Border.all(width: 2.0, color: Colors.red)),
-        child: Material(
-          borderRadius: BorderRadius.circular(4.0),
-          child: InkWell(
-            onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          AccountDetailPage(accounts: accounts, currIndex: 0)));
-            },
-            child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    Vars.standardPaddingSize,
-                    Vars.topBotPaddingSize,
-                    Vars.standardPaddingSize,
-                    Vars.topBotPaddingSize * 2.5),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Westpac ${account.type}",
-                      style: const TextStyle(fontSize: 16.0),
-                    ),
-                    Text("\$${account.balance}",
-                        style: const TextStyle(
-                            fontSize: 16.0, fontWeight: FontWeight.bold))
-                  ],
-                )),
-          ),
-        ),
-      ),
-    );
-  }*/
-
-  /*
-  Widget _getAccountButton(Account account, bool inDrag) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) =>
-                    AccountDetailPage(accounts: accounts, currIndex: 0)));
-      },
-      child: ScaleTransition(
-        scale: _accountAnimations[account.bsb]!,
-        child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 4.0),
-            padding: const EdgeInsets.fromLTRB(
-                Vars.standardPaddingSize,
-                Vars.topBotPaddingSize,
-                Vars.standardPaddingSize,
-                Vars.topBotPaddingSize * 2.5),
-            decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(4.0),
-                boxShadow: [
-                  BoxShadow(
-                      color: Colors.grey.shade400,
-                      blurRadius: 3,
-                      offset: const Offset(0, 3))
-                ],
-                border: inDrag
-                    ? Border.all(width: 2.0, color: Colors.black)
-                    : !_accountRedBorderState[account.bsb]!
-                        ? Border.all(width: 0.5, color: Colors.black12)
-                        : Border.all(width: 2.0, color: Colors.red)),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Westpac ${account.type}",
-                  style: const TextStyle(fontSize: 16.0),
-                ),
-                Text("\$${account.balance}",
-                    style: const TextStyle(
-                        fontSize: 16.0, fontWeight: FontWeight.bold))
-              ],
-            )),
-      ),
-    );
-  }*/
 }
 
 class DraggableAccountButton extends StatefulWidget {
