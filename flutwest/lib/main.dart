@@ -1,11 +1,17 @@
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutwest/controller/firestore_controller.dart';
+import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/cust_widget/west_logo.dart';
+import 'package:flutwest/model/account_id.dart';
+import 'package:flutwest/model/bank_card.dart';
+import 'package:flutwest/model/member.dart';
 import 'package:flutwest/ui_page/cards_page.dart';
 import 'package:flutwest/ui_page/guest_page.dart';
 import 'package:flutwest/ui_page/home_page.dart';
 
-void main() {
+void main() async {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
@@ -17,6 +23,11 @@ void main() {
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge, overlays: [
     SystemUiOverlay.top,
   ]);
+
+  SQLiteController.instance.loadDB();
+
+  // WidgetsFlutterBinding.ensureInitialized();
+  FirestoreController.instance.setFirebaseFireStore(FakeFirebaseFirestore());
 
   runApp(const MyApp());
 }
