@@ -1,3 +1,4 @@
+import 'package:flutwest/model/vars.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -16,7 +17,7 @@ class AccountOrder {
 
 class SQLiteController {
   static const String dbName = "flutWest.db";
-  static const String testID = "22222222";
+  static const String testID = Vars.fakeMemberID;
 
   //static SQLiteController? _controller;
   static final SQLiteController _controller = SQLiteController._internal();
