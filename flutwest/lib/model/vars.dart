@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutwest/model/account_id.dart';
 
 class Vars {
   Vars._();
@@ -40,6 +41,8 @@ class Vars {
       fontWeight: FontWeight.bold,
       color: Colors.black);
 
+  static const String fakeMemberID = "22222222";
+
   static const List<String> days = [
     "",
     "Mon",
@@ -72,4 +75,7 @@ class Vars {
         dateTime.month == otherDateTime.month &&
         dateTime.day == otherDateTime.day;
   }
+
+  static final invalidDateTime = DateTime(1000);
+  static final invalidAccountID = AccountID(number: "", bsb: "");
 }
