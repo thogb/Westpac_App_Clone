@@ -4,7 +4,7 @@ import 'package:flutwest/cust_widget/cust_button.dart';
 import 'package:flutwest/cust_widget/outlined_container.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account_id.dart';
-import 'package:flutwest/model/transaction.dart';
+import 'package:flutwest/model/account_transaction.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/transaction_detail_page.dart';
 
@@ -184,7 +184,7 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
     );
   }
 
-  Widget _getTransactionButton(Transaction transaction, double balance) {
+  Widget _getTransactionButton(AccountTransaction transaction, double balance) {
     return CustButton(
       onTap: () {},
       borderOn: false,
@@ -310,36 +310,36 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
   }
 
   Widget _getTransactionSummary(Account account) {
-    List<Transaction> trans = [
-      Transaction(
+    List<AccountTransaction> trans = [
+      AccountTransaction(
           sender: AccountID(number: "23232323", bsb: "123-123"),
           receiver: AccountID(number: "23232328", bsb: "423-123"),
           dateTime: DateTime.now(),
           id: "asdasd",
           description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
           amount: 23.0),
-      Transaction(
+      AccountTransaction(
           sender: AccountID(number: "23232323", bsb: "123-123"),
           receiver: AccountID(number: "23232328", bsb: "423-123"),
           dateTime: DateTime(2022, 4, 10),
           id: "asdasd",
           description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
           amount: -23.0),
-      Transaction(
+      AccountTransaction(
           sender: AccountID(number: "23232323", bsb: "123-123"),
           receiver: AccountID(number: "23232328", bsb: "423-123"),
           dateTime: DateTime(2022, 3, 2),
           id: "asdasd",
           description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
           amount: 23.0),
-      Transaction(
+      AccountTransaction(
           sender: AccountID(number: "23232323", bsb: "123-123"),
           receiver: AccountID(number: "23232328", bsb: "423-123"),
           dateTime: DateTime(2022, 3, 2),
           id: "asdasd",
           description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
           amount: 23.0),
-      Transaction(
+      AccountTransaction(
           sender: AccountID(number: "23232323", bsb: "123-123"),
           receiver: AccountID(number: "23232328", bsb: "423-123"),
           dateTime: DateTime(2022, 3, 2),

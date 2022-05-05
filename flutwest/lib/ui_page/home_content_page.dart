@@ -143,44 +143,7 @@ class _HomeContentPageState extends State<HomeContentPage>
 
     _futureAccountOrders = _createOrderInfos(accounts);
 
-    /*for (Account account in accounts) {
-      AnimationController controller = AnimationController(
-          duration: const Duration(milliseconds: 300), vsync: this);
-
-      Animation<double> animation = Tween<double>(begin: 1.0, end: 1.02)
-          .animate(CurvedAnimation(parent: controller, curve: Curves.linear));
-
-      _accountAnimations[account.bsb] = animation;
-      _accountAnimationControllers[account.bsb] = controller;
-      _accountRedBorderState[account.bsb] = false;
-    }*/
-
-    /*
-    int order = 1;
-
-    for (Account account in accounts) {
-      _accountOrderInfos
-          .add(AccountOrderInfo(account: account, order: order, hidden: 0));
-      order++;
-    }*/
-
-    //await _createOrderInfos(accounts);
-    //print(_accountOrderInfos.length);
-
     super.initState();
-
-    /*
-    Future.delayed(const Duration(milliseconds: 1000), () {
-      _topAnimationController.forward();
-    });*/
-
-    /*
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      _welcomeController.forward();
-      Future.delayed(const Duration(milliseconds: 800), () {
-        _welcomeFadeController.forward();
-      });
-    });*/
   }
 
   @override

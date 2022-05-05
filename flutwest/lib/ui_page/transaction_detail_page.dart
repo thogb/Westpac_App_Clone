@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutwest/cust_widget/cust_radio.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account.dart';
-import 'package:flutwest/model/transaction.dart';
+import 'package:flutwest/model/account_transaction.dart';
 import 'package:flutwest/model/vars.dart';
+
+import '../cust_widget/cust_button.dart';
 
 class TransactionDetailPage extends StatefulWidget {
   final Account account;
@@ -36,7 +38,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
       Tween<double>(begin: 1.0, end: 0.0).animate(
           CurvedAnimation(parent: _fakeAppBarController, curve: Curves.linear));
 
-  String _transactionType = Transaction.types[0];
+  String _transactionType = AccountTransaction.types[0];
 
   bool _isInputting = false;
   bool _showElevation = false;
@@ -94,6 +96,52 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
             ),
           ),
           Expanded(child: _getTransactionList())
+        ],
+      ),
+    );
+  }
+
+  Widget _getTransactionLineBr(DateTime dateTime) {
+    return StandardPadding(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(
+            height: Vars.heightGapBetweenWidgets / 2.0,
+          ),
+          Text(
+              "${Vars.days[dateTime.weekday]} ${dateTime.day} ${Vars.months[dateTime.month]} ${dateTime.year}"),
+          const SizedBox(height: 2.0),
+          Container(
+            height: 1,
+            color: Colors.black12,
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _getTransactionButton(AccountTransaction transaction, double balance) {
+    return CustButton(
+      onTap: () {},
+      padding: const EdgeInsets.fromLTRB(Vars.standardPaddingSize, 5.0,
+          Vars.standardPaddingSize, Vars.topBotPaddingSize),
+      borderOn: false,
+      paragraphStype: const TextStyle(fontSize: 16.0),
+      leftWidget: const Icon(
+        Icons.monetization_on_sharp,
+        size: 30,
+      ),
+      paragraph: transaction.getDescription,
+      rightWidget: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            "\$${transaction.getAmount}",
+            style: TextStyle(
+                color: transaction.getAmount > 0.0 ? Colors.green : null),
+          ),
+          Text("bal \$$balance")
         ],
       ),
     );
@@ -173,7 +221,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-          children: List.generate(Transaction.types.length + 1, (index) {
+          children: List.generate(AccountTransaction.types.length + 1, (index) {
         if (index == 0) {
           return Padding(
             padding: const EdgeInsets.only(
@@ -190,14 +238,14 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
           padding: const EdgeInsets.symmetric(
               horizontal: Vars.heightGapBetweenWidgets / 2),
           child: CustRadio.typeOne(
-              value: Transaction.types[index - 1],
+              value: AccountTransaction.types[index - 1],
               groupValue: _transactionType,
               onChanged: (value) {
                 setState(() {
-                  _transactionType = value;
+                  //_transactionType = value;
                 });
               },
-              name: Transaction.types[index - 1]),
+              name: AccountTransaction.types[index - 1]),
         );
       })),
     );
