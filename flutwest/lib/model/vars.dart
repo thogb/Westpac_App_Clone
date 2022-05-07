@@ -42,6 +42,7 @@ class Vars {
       color: Colors.black);
 
   static const String fakeMemberID = "22222222";
+  static const String fakeCardNumber = "5166623996788864";
 
   static const List<String> days = [
     "",
