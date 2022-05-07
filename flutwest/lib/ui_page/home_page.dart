@@ -1,6 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutwest/controller/firestore_controller.dart';
+import 'package:flutwest/cust_widget/background_image.dart';
+import 'package:flutwest/model/account.dart';
+import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/navbar_state.dart';
+import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/cards_page.dart';
 import 'package:flutwest/ui_page/home_content_page.dart';
 import 'package:flutwest/ui_page/products_page.dart';
@@ -26,6 +32,16 @@ class _HomePageState extends State<HomePage> {
 
   final List<Widget> _pages = [];
 
+  final Future<DocumentSnapshot<Map<String, dynamic>>> _futureMember =
+      FirestoreController.instance.getMember(Vars.fakeMemberID);
+  final Future<QuerySnapshot<Map<String, dynamic>>> _futureAccounts =
+      FirestoreController.instance.getAccounts(Vars.fakeMemberID);
+
+  late final Future<List<Object>>? futures;
+
+  late Member _member;
+  late List<Account> _accounts;
+
   @override
   void initState() {
     navbarState = NavbarState(
@@ -33,17 +49,84 @@ class _HomePageState extends State<HomePage> {
         hideNavBar: hideNavBar,
         changeToPage: _onNavbarTap);
 
-    _pages.add(HomeContentPage(navbarState: navbarState));
-    _pages.add(const CardsPage());
-    _pages.add(const SizedBox());
-    _pages.add(const ProductsPage());
-    _pages.add(const ProfilePage());
+    // _pages.add(HomeContentPage(navbarState: navbarState));
+    // _pages.add(const CardsPage());
+    // _pages.add(const SizedBox());
+    // _pages.add(const ProductsPage());
+    // _pages.add(const ProfilePage());
+
+    futures = Future.wait([_futureMember, _futureAccounts]);
 
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder(
+      future: futures,
+      builder: (BuildContext context, AsyncSnapshot<List<Object>> snapshots) {
+        if (snapshots.hasError) {
+          return _getErrorPage("Error, could not retrieve data");
+        }
+
+        if (snapshots.hasData && snapshots.data!.isEmpty) {
+          return _getErrorPage("Document does not exist");
+        }
+
+        if (snapshots.connectionState == ConnectionState.done) {
+          QuerySnapshot<Map<String, dynamic>> queryAccounts =
+              snapshots.data![1] as QuerySnapshot<Map<String, dynamic>>;
+          DocumentSnapshot<Map<String, dynamic>> queryMember =
+              snapshots.data![0] as DocumentSnapshot<Map<String, dynamic>>;
+
+          if (queryMember.data() == null) {
+            return _getErrorPage(
+                "Could not load member data of member: ${Vars.fakeMemberID}");
+          }
+
+          _accounts =
+              queryAccounts.docs.map((e) => Account.fromMap(e.data())).toList();
+          _member = Member.fromMap(
+              (queryMember.data() as Map<String, dynamic>), _accounts);
+
+          _pages.add(HomeContentPage(
+            navbarState: navbarState,
+            member: _member,
+          ));
+          _pages.add(const CardsPage());
+          _pages.add(const SizedBox());
+          _pages.add(const ProductsPage());
+          _pages.add(const ProfilePage());
+
+          print("Opening home page in future");
+          return _getHomePage();
+        }
+
+        return const BackgroundImage();
+      },
+    );
+  }
+
+  Widget _getErrorPage(String errorMsg) {
+    return Scaffold(
+      body: Stack(children: [
+        const BackgroundImage(),
+        Center(
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width / 2,
+            child: Text(
+              errorMsg,
+              style: const TextStyle(color: Colors.white, fontSize: 18.0),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        )
+      ]),
+    );
+  }
+
+  Widget _getHomePage() {
+    print("Home Page recreated");
     return Theme(
         data: ThemeData(
             scaffoldBackgroundColor: Colors.grey[50],
