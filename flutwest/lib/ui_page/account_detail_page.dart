@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
 import 'package:flutwest/cust_widget/outlined_container.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
@@ -11,7 +13,7 @@ import 'package:flutwest/ui_page/transaction_detail_page.dart';
 import '../model/account.dart';
 
 class AccountDetailPage extends StatefulWidget {
-  final List<Account> accounts;
+  final List<AccountOrderInfo> accounts;
   final int currIndex;
 
   const AccountDetailPage(
@@ -23,14 +25,17 @@ class AccountDetailPage extends StatefulWidget {
 }
 
 class _AccountDetailPageState extends State<AccountDetailPage> {
-  late Account _currAccount;
+  late AccountOrderInfo _currAccount;
   bool _showNavBarTitle = false;
   late AppbarTitleStatus appbarTitleStatus;
+
+  late final PageController _pageController;
 
   @override
   void initState() {
     appbarTitleStatus = AppbarTitleStatus(show: _showTitle, hide: _hideTitle);
-    _currAccount = widget.accounts[0];
+    _currAccount = widget.accounts[widget.currIndex];
+    _pageController = PageController(initialPage: widget.currIndex);
     super.initState();
   }
 
@@ -54,13 +59,13 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Westpac ${_currAccount.type}",
+                        "Westpac ${_currAccount.getAccount().type}",
                         style: const TextStyle(
                             color: Colors.black,
                             fontSize: 16.0,
                             fontWeight: FontWeight.bold),
                       ),
-                      Text("\$${_currAccount.balance}",
+                      Text("\$${_currAccount.getAccount().balance}",
                           style: const TextStyle(
                               color: Colors.black54, fontSize: 12.0))
                     ],
@@ -82,6 +87,7 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
               )
             ]),
         body: PageView(
+          controller: _pageController,
           onPageChanged: (int index) {
             setState(() {
               _currAccount = widget.accounts[index];
@@ -89,8 +95,9 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
             });
           },
           children: widget.accounts
-              .map((Account account) => AccountDetailSection(
-                  account: account, appbarTitleStatus: appbarTitleStatus))
+              .map((AccountOrderInfo account) => AccountDetailSection(
+                  account: account.getAccount(),
+                  appbarTitleStatus: appbarTitleStatus))
               .toList(),
         ));
   }
@@ -156,8 +163,18 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
 
   final ScrollController _scrollController = ScrollController();
 
+  late final Future<QuerySnapshot<Map<String, dynamic>>> _recentTransactions;
+
+  @override
+  void initState() {
+    _recentTransactions = FirestoreController.instance
+        .getTransactionLimitBy(widget.account.getNumber, 5);
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return _getAccountDetail(widget.account);
   }
 
@@ -310,44 +327,6 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
   }
 
   Widget _getTransactionSummary(Account account) {
-    List<AccountTransaction> trans = [
-      AccountTransaction(
-          sender: AccountID(number: "23232323", bsb: "123-123"),
-          receiver: AccountID(number: "23232328", bsb: "423-123"),
-          dateTime: DateTime.now(),
-          id: "asdasd",
-          description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
-          amount: 23.0),
-      AccountTransaction(
-          sender: AccountID(number: "23232323", bsb: "123-123"),
-          receiver: AccountID(number: "23232328", bsb: "423-123"),
-          dateTime: DateTime(2022, 4, 10),
-          id: "asdasd",
-          description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
-          amount: -23.0),
-      AccountTransaction(
-          sender: AccountID(number: "23232323", bsb: "123-123"),
-          receiver: AccountID(number: "23232328", bsb: "423-123"),
-          dateTime: DateTime(2022, 3, 2),
-          id: "asdasd",
-          description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
-          amount: 23.0),
-      AccountTransaction(
-          sender: AccountID(number: "23232323", bsb: "123-123"),
-          receiver: AccountID(number: "23232328", bsb: "423-123"),
-          dateTime: DateTime(2022, 3, 2),
-          id: "asdasd",
-          description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
-          amount: 23.0),
-      AccountTransaction(
-          sender: AccountID(number: "23232323", bsb: "123-123"),
-          receiver: AccountID(number: "23232328", bsb: "423-123"),
-          dateTime: DateTime(2022, 3, 2),
-          id: "asdasd",
-          description: "test trasnastion teasdnasd asdasdasdasdasdasdasd",
-          amount: 23.0)
-    ];
-
     double balance = account.getBalance;
     DateTime dateTime = DateTime(1000);
 
@@ -379,27 +358,48 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
                   ],
                 ),
               ),
-              Column(
-                children: trans.map(((transaction) {
-                  Widget widget;
+              FutureBuilder(
+                  future: _recentTransactions,
+                  builder: (context, snapshots) {
+                    if (snapshots.hasError) {
+                      return const Text("Error while retrieving transactions");
+                    }
 
-                  if (Vars.isSameDay(dateTime, transaction.getDateTime)) {
-                    widget = _getTransactionButton(transaction, balance);
-                  } else {
-                    dateTime = transaction.dateTime;
-                    widget = Column(
-                      children: [
-                        _getTransactionLineBr(dateTime),
-                        _getTransactionButton(transaction, balance)
-                      ],
-                    );
-                  }
+                    if (snapshots.hasData &&
+                        snapshots.connectionState == ConnectionState.done) {
+                      QuerySnapshot<Map<String, dynamic>> readTransactions =
+                          snapshots.data as QuerySnapshot<Map<String, dynamic>>;
+                      List<AccountTransaction> transactions = readTransactions
+                          .docs
+                          .map(
+                              (e) => AccountTransaction.fromMap(e.data(), e.id))
+                          .toList();
+                      return Column(
+                        children: transactions.map(((transaction) {
+                          Widget widget;
 
-                  balance = balance - transaction.getAmount;
+                          if (Vars.isSameDay(
+                              dateTime, transaction.getDateTime)) {
+                            widget =
+                                _getTransactionButton(transaction, balance);
+                          } else {
+                            dateTime = transaction.dateTime;
+                            widget = Column(
+                              children: [
+                                _getTransactionLineBr(dateTime),
+                                _getTransactionButton(transaction, balance)
+                              ],
+                            );
+                          }
 
-                  return widget;
-                })).toList(),
-              ),
+                          balance = balance - transaction.getAmount;
+
+                          return widget;
+                        })).toList(),
+                      );
+                    }
+                    return const Text("Loading");
+                  }),
               const SizedBox(height: 20.0),
               Container(
                 decoration: const BoxDecoration(
