@@ -7,6 +7,7 @@ import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/cust_widget/west_logo.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_id.dart';
+import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/navbar_state.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/account_ordering_page.dart';
@@ -15,8 +16,10 @@ import 'account_detail_page.dart';
 
 class HomeContentPage extends StatefulWidget {
   final NavbarState navbarState;
+  final Member member;
 
-  const HomeContentPage({Key? key, required this.navbarState})
+  const HomeContentPage(
+      {Key? key, required this.navbarState, required this.member})
       : super(key: key);
 
   @override
@@ -101,7 +104,7 @@ class _HomeContentPageState extends State<HomeContentPage>
 
   final ScrollController _scrollController = ScrollController();
 
-  static List<Account> accounts = [
+  /*static List<Account> accounts = [
     Account(
         type: Account.typeChocie,
         bsb: "666-777",
@@ -120,9 +123,11 @@ class _HomeContentPageState extends State<HomeContentPage>
         number: "231231",
         balance: 100000.0,
         cardNumber: "")
-  ];
+  ];*/
 
-  List<AccountOrderInfo> _accountOrderInfos = [];
+  late List<Account> accounts;
+
+  final List<AccountOrderInfo> _accountOrderInfos = [];
 
   bool _dragging = false;
   int _numOfAccountsHidden = 0;
@@ -141,6 +146,7 @@ class _HomeContentPageState extends State<HomeContentPage>
         Tween<Offset>(begin: const Offset(0.0, 2.0), end: Offset.zero).animate(
             CurvedAnimation(parent: _welcomeController, curve: Curves.easeIn));
 
+    accounts = widget.member.accounts;
     _futureAccountOrders = _createOrderInfos(accounts);
 
     super.initState();
@@ -149,6 +155,12 @@ class _HomeContentPageState extends State<HomeContentPage>
   @override
   void dispose() {
     WidgetsBinding.instance?.removeObserver(this);
+
+    _topAnimationController.dispose();
+    _welcomeFadeController.dispose();
+    _paymentContentFadeController.dispose();
+    _welcomeController.dispose();
+    _botAnimationController.dispose();
 
     super.dispose();
   }
@@ -411,7 +423,7 @@ class _HomeContentPageState extends State<HomeContentPage>
                       children:
                           List.generate(_accountOrderInfos.length, (index) {
                     return !_accountOrderInfos[index].isHidden
-                        ? _getAccountDrag(_accountOrderInfos[index].account)
+                        ? _getAccountDrag(_accountOrderInfos[index])
                         : const SizedBox();
                   }));
                 }
@@ -482,9 +494,9 @@ class _HomeContentPageState extends State<HomeContentPage>
         ]));
   }
 
-  Widget _getAccountDrag(Account account) {
+  Widget _getAccountDrag(AccountOrderInfo accountOrderInfo) {
     return DraggableAccountButton(
-      account: account,
+      account: accountOrderInfo.getAccount(),
       feedback: dollarIcon,
       onDragStart: () {
         _welcomeFadeController.duration = topFadeDuration;
@@ -521,8 +533,9 @@ class _HomeContentPageState extends State<HomeContentPage>
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) =>
-                    AccountDetailPage(accounts: accounts, currIndex: 0)));
+                builder: (context) => AccountDetailPage(
+                    accounts: _accountOrderInfos,
+                    currIndex: _accountOrderInfos.indexOf(accountOrderInfo))));
       },
     );
   }
