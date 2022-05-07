@@ -30,7 +30,7 @@ class FirestoreController {
     await _firebaseFirestore.collection(colMember).doc(id).set(member.toMap());
   }
 
-  Future<DocumentSnapshot<Map<String, dynamic>>> getMember(String id) {
+  Future<DocumentSnapshot<Map<String, dynamic>>> getMember(String id) async {
     return _firebaseFirestore.collection(colMember).doc(id).get();
   }
 
@@ -55,7 +55,8 @@ class FirestoreController {
         .set(account.toMap());
   }
 
-  Future<QuerySnapshot<Map<String, dynamic>>> getAccounts(String memberId) {
+  Future<QuerySnapshot<Map<String, dynamic>>> getAccounts(
+      String memberId) async {
     return _firebaseFirestore
         .collection(colMember)
         .doc(memberId)
