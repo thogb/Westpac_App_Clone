@@ -1,6 +1,5 @@
 import 'dart:collection';
 
-import 'package:sticky_headers/sticky_headers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
@@ -9,6 +8,7 @@ import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_transaction.dart';
 import 'package:flutwest/model/vars.dart';
+import 'package:sticky_headers/sticky_headers.dart';
 
 import '../cust_widget/cust_button.dart';
 
@@ -47,12 +47,13 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
 
   bool _isInputting = false;
   bool _showElevation = false;
-  final HashSet<int> _headerIndexes = HashSet();
   int _nOfProcessed = 0;
   int _readLimits = 20;
   int _nOfTransactions = 0;
-  final List<double> _balances = [];
-  DateTime _recentDateTime = Vars.invalidDateTime;
+  late double _prevbalance;
+  DateTime _prevDateTime = Vars.invalidDateTime;
+
+  final List<TransactionGroup> _transactionGroups = [];
 
   final ScrollController _scrollController = ScrollController();
 
@@ -73,10 +74,19 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
           });
         }
       }
+      _onScrollTransactions();
     });
 
-    _balances.add(widget.account.getBalance);
+    _prevbalance = widget.account.getBalance;
+
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+
+    super.dispose();
   }
 
   @override
@@ -127,15 +137,43 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                   return const Center(child: Text("No Transactions"));
                 }
 
-                _nOfTransactions = readTransactions.docs.length;
+                //_nOfTransactions = readTransactions.docs.length;
+
+                AccountTransaction accountTransaction;
+                AccountTransactionPersp accountTransactionPersp;
+                double actualAmount;
+
+                while (_nOfProcessed < readTransactions.docs.length) {
+                  accountTransaction = AccountTransaction.fromMap(
+                      readTransactions.docs[_nOfProcessed].data(),
+                      readTransactions.docs[_nOfProcessed].id);
+                  actualAmount = accountTransaction
+                      .getAmountPerspReceiver(widget.account.getNumber);
+                  accountTransactionPersp = AccountTransactionPersp(
+                      actualAmount: actualAmount,
+                      balance: _prevbalance,
+                      accountTransaction: accountTransaction);
+
+                  if (Vars.isSameDay(
+                      accountTransaction.getDateTime, _prevDateTime)) {
+                    _transactionGroups[_transactionGroups.length - 1]
+                        .add(accountTransactionPersp);
+                        _transactionGroups[_transactionGroups.length - 1]
+                  } else {
+                    _prevDateTime = accountTransaction.getDateTime;
+                    _transactionGroups.add(TransactionGroup(
+                        transactions: [accountTransactionPersp],
+                        dateTime: accountTransaction.getDateTime));
+                  }
+
+                  _prevbalance = _prevbalance - actualAmount;
+                  _nOfProcessed++;
+                }
 
                 return ListView.builder(
                     controller: _scrollController,
-                    itemCount: readTransactions.docs.length,
-                    itemBuilder: (context, index) => _getTransactionButton(
-                        readTransactions.docs[index].data(),
-                        index,
-                        readTransactions.docs[index].id));
+                    itemCount: _transactionGroups.length,
+                    itemBuilder: (context, index) => _transactionGroups[index]);
               }
 
               return const CircularProgressIndicator();
@@ -146,74 +184,12 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
     );
   }
 
-  Widget _getTransactionLineBr(DateTime dateTime) {
-    return Material(
-      color: Colors.grey[50],
-      child: StandardPadding(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(
-              height: Vars.heightGapBetweenWidgets / 2.0,
-            ),
-            Text(
-                "${Vars.days[dateTime.weekday]} ${dateTime.day} ${Vars.months[dateTime.month]} ${dateTime.year}"),
-            const SizedBox(height: 2.0),
-            Container(
-              height: 1,
-              color: Colors.black12,
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _getTransactionButton(Map<String, dynamic> map, int index, String id) {
-    AccountTransaction accountTransaction = AccountTransaction.fromMap(map, id);
-    double actualAmount =
-        accountTransaction.getAmountPerspReceiver(widget.account.getNumber);
-
-    if (_nOfProcessed <= index) {
-      _balances.add(_balances[index] - actualAmount);
-      if (!Vars.isSameDay(_recentDateTime, accountTransaction.getDateTime)) {
-        _recentDateTime = accountTransaction.getDateTime;
-        _headerIndexes.add(index);
-      }
-
-      _nOfProcessed++;
+  void _onScrollTransactions() {
+    if (_scrollController.position.extentAfter < 10) {
+      setState(() {
+        _readLimits += 10;
+      });
     }
-
-    Widget custButton = CustButton(
-      onTap: () {},
-      padding: const EdgeInsets.fromLTRB(Vars.standardPaddingSize, 5.0,
-          Vars.standardPaddingSize, Vars.topBotPaddingSize),
-      borderOn: false,
-      paragraphStype: const TextStyle(fontSize: 16.0),
-      leftWidget: const Icon(
-        Icons.monetization_on_sharp,
-        size: 30,
-      ),
-      paragraph: accountTransaction.getDescription,
-      rightWidget: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            actualAmount >= 0.0 ? "\$$actualAmount" : "-\$${-actualAmount}",
-            style: TextStyle(color: actualAmount > 0.0 ? Colors.green : null),
-          ),
-          Text("bal \$${_balances[index]}")
-        ],
-      ),
-    );
-
-    if (_headerIndexes.contains(index)) {
-      return StickyHeader(
-          header: _getTransactionLineBr(accountTransaction.getDateTime),
-          content: custButton);
-    }
-
-    return custButton;
   }
 
   Widget _getFakeAppBar() {
@@ -327,8 +303,111 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
       itemCount: 20,
       itemBuilder: (BuildContext context, int index) {
         return Container(
-            color: Colors.green, height: 50.0, margin: EdgeInsets.all(5.0));
+            color: Colors.green,
+            height: 50.0,
+            margin: const EdgeInsets.all(5.0));
       },
+    );
+  }
+}
+
+class AccountTransactionPersp {
+  final double actualAmount;
+  final double balance;
+  final AccountTransaction accountTransaction;
+
+  AccountTransactionPersp({
+    required this.actualAmount,
+    required this.balance,
+    required this.accountTransaction,
+  });
+}
+
+class TransactionGroup extends StatefulWidget {
+  final DateTime dateTime;
+  final List<AccountTransactionPersp> transactions;
+
+  static _TransactionGroupState of(BuildContext context) =>
+      context.findRootAncestorStateOfType() ??
+      context.findAncestorStateOfType<_TransactionGroupState>()!;
+
+  const TransactionGroup(
+      {Key? key, required this.transactions, required this.dateTime})
+      : super(key: key);
+
+  void add(AccountTransactionPersp accountTransactionPersp) {
+    transactions.add(accountTransactionPersp);
+  }
+
+  @override
+  _TransactionGroupState createState() => _TransactionGroupState();
+}
+
+class _TransactionGroupState extends State<TransactionGroup> {
+  @override
+  Widget build(BuildContext context) {
+    return StickyHeader(
+        header: _getTransactionLineBr(widget.dateTime),
+        content: ListView.builder(
+            shrinkWrap: true,
+            physics: const ClampingScrollPhysics(),
+            itemCount: widget.transactions.length,
+            itemBuilder: ((context, index) {
+              return _getTransactionButton(widget.transactions[index]);
+            })));
+  }
+
+  Widget _getTransactionLineBr(DateTime dateTime) {
+    return Material(
+      color: Colors.grey[50],
+      child: StandardPadding(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(
+              height: Vars.heightGapBetweenWidgets / 2.0,
+            ),
+            Text(
+                "${Vars.days[dateTime.weekday]} ${dateTime.day} ${Vars.months[dateTime.month]} ${dateTime.year}"),
+            const SizedBox(height: 2.0),
+            Container(
+              height: 1,
+              color: Colors.black12,
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _getTransactionButton(
+      AccountTransactionPersp accountTransactionPersp) {
+    AccountTransaction accountTransaction =
+        accountTransactionPersp.accountTransaction;
+    double actualAmount = accountTransactionPersp.actualAmount;
+    double balance = accountTransactionPersp.balance;
+
+    return CustButton(
+      onTap: () {},
+      padding: const EdgeInsets.fromLTRB(Vars.standardPaddingSize, 5.0,
+          Vars.standardPaddingSize, Vars.topBotPaddingSize),
+      borderOn: false,
+      paragraphStype: const TextStyle(fontSize: 16.0),
+      leftWidget: const Icon(
+        Icons.monetization_on_sharp,
+        size: 30,
+      ),
+      paragraph: accountTransaction.getDescription,
+      rightWidget: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            actualAmount >= 0.0 ? "\$$actualAmount" : "-\$${-actualAmount}",
+            style: TextStyle(color: actualAmount > 0.0 ? Colors.green : null),
+          ),
+          Text("bal \$$balance")
+        ],
+      ),
     );
   }
 }

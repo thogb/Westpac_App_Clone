@@ -29,7 +29,7 @@ void main() async {
   runApp(const MyApp());
 }
 
-void putData() {
+void putData() async {
   AccountID accountID = AccountID(number: "111111", bsb: "111-111");
   Account account1 = Account(
       type: Account.typeChocie,
@@ -189,7 +189,7 @@ void putData() {
         receiver = account1.accountID;
       }
 
-      FirestoreController.instance.addTransaction(AccountTransaction(
+      await FirestoreController.instance.addTransaction(AccountTransaction(
           sender: sender,
           receiver: receiver,
           dateTime: DateTime(2022, 1, 1 + i),
@@ -197,6 +197,21 @@ void putData() {
           description:
               "account 1 send to account 2, the ${count}th transaction",
           amount: amount));
+      count++;
+
+      if (i == 29 && j == num - 1) {
+        for (int k = 0; k < 500; k++) {
+          await FirestoreController.instance.addTransaction(AccountTransaction(
+              sender: sender,
+              receiver: receiver,
+              dateTime: DateTime(2022, 1, 1 + i),
+              id: "",
+              description:
+                  "account 1 send to account 2, the ${count}th transaction",
+              amount: amount));
+          count++;
+        }
+      }
     }
   }
 }
