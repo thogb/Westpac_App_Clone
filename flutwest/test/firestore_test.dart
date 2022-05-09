@@ -204,5 +204,8 @@ void main() {
     for (var element in readTransactions2) {
       print(element.toMap());
     }
+
+    DateTime dateTime = DateTime(2022, 2, 400);
+    print(dateTime.toString());
   });
 }

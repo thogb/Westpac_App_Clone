@@ -201,7 +201,8 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
     );
   }
 
-  Widget _getTransactionButton(AccountTransaction transaction, double balance) {
+  Widget _getTransactionButton(
+      AccountTransaction transaction, double balance, double actualAmount) {
     return CustButton(
       onTap: () {},
       borderOn: false,
@@ -215,9 +216,8 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
-            "\$${transaction.getAmount}",
-            style: TextStyle(
-                color: transaction.getAmount > 0.0 ? Colors.green : null),
+            actualAmount > 0.0 ? "\$$actualAmount" : "-\$${-actualAmount}",
+            style: TextStyle(color: actualAmount > 0.0 ? Colors.green : null),
           ),
           Text("bal \$$balance")
         ],
@@ -377,22 +377,25 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
                       return Column(
                         children: transactions.map(((transaction) {
                           Widget widget;
+                          double actualAmount = transaction
+                              .getAmountPerspReceiver(account.getNumber);
 
                           if (Vars.isSameDay(
                               dateTime, transaction.getDateTime)) {
-                            widget =
-                                _getTransactionButton(transaction, balance);
+                            widget = _getTransactionButton(
+                                transaction, balance, actualAmount);
                           } else {
                             dateTime = transaction.dateTime;
                             widget = Column(
                               children: [
                                 _getTransactionLineBr(dateTime),
-                                _getTransactionButton(transaction, balance)
+                                _getTransactionButton(
+                                    transaction, balance, actualAmount)
                               ],
                             );
                           }
 
-                          balance = balance - transaction.getAmount;
+                          balance = balance - actualAmount;
 
                           return widget;
                         })).toList(),

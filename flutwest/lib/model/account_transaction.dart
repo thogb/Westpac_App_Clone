@@ -6,6 +6,7 @@ import 'package:flutwest/model/vars.dart';
 class AccountTransaction {
   static const String fnAccountNumbers = "accountNumbers";
   static const String fnAccountBSBs = "accountBSBs";
+  static const String fnDateTime = "dateTime";
   static const int senderIndex = 0;
   static const int receiverIndex = 1;
 
@@ -46,11 +47,11 @@ class AccountTransaction {
       required this.amount,
       this.type = credits});
 
-  get getSender => this.sender;
+  AccountID get getSender => this.sender;
 
   set setSender(sender) => this.sender = sender;
 
-  get getReceiver => this.receiver;
+  AccountID get getReceiver => this.receiver;
 
   set setReceiver(receiver) => this.receiver = receiver;
 
@@ -70,6 +71,10 @@ class AccountTransaction {
 
   set setAmount(amount) => this.amount = amount;
 
+  double getAmountPerspReceiver(String subjectNumber) {
+    return receiver.number == subjectNumber ? amount : -amount;
+  }
+
   Map<String, dynamic> toMap() {
     final result = <String, dynamic>{};
 
@@ -83,7 +88,7 @@ class AccountTransaction {
     result.addAll({
       fnAccountBSBs: [sender.bsb, receiver.bsb]
     });
-    result.addAll({'dateTime': dateTime.millisecondsSinceEpoch});
+    result.addAll({fnDateTime: dateTime.millisecondsSinceEpoch});
     //result.addAll({'id': id});
     result.addAll({'description': description});
     result.addAll({'amount': amount});
@@ -94,6 +99,8 @@ class AccountTransaction {
   factory AccountTransaction.fromMap(Map<String, dynamic> map, String inId) {
     List<String> numbers = List<String>.from(map[fnAccountNumbers] ?? []);
     List<String> bsbs = List<String>.from(map[fnAccountBSBs] ?? []);
+    // print(map["dateTime"] as int);
+    // print(DateTime.fromMillisecondsSinceEpoch(map["dateTime"] as int).year);
     return AccountTransaction(
       /*
       sender: map['senderNumber'] != null && map["senderBsb"] != null
@@ -109,8 +116,8 @@ class AccountTransaction {
       receiver: numbers.length == 2 && bsbs.length == 2
           ? AccountID(number: numbers[receiverIndex], bsb: bsbs[receiverIndex])
           : Vars.invalidAccountID,
-      dateTime: map['dateTime'] != null
-          ? DateTime.fromMicrosecondsSinceEpoch(map["dateTime"])
+      dateTime: map[fnDateTime] != null
+          ? DateTime.fromMillisecondsSinceEpoch(map[fnDateTime] as int)
           : Vars.invalidDateTime,
       //id: map['id'] ?? "",
       id: inId,

@@ -6,6 +6,7 @@ import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/navbar_state.dart';
+import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/cards_page.dart';
 import 'package:flutwest/ui_page/home_content_page.dart';
@@ -44,6 +45,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+    Utils.showSysNavBarColour();
     navbarState = NavbarState(
         showNavBar: showNavBar,
         hideNavBar: hideNavBar,
@@ -58,6 +60,13 @@ class _HomePageState extends State<HomePage> {
     futures = Future.wait([_futureMember, _futureAccounts]);
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    Utils.hideSysNavBarColour();
+
+    super.dispose();
   }
 
   @override

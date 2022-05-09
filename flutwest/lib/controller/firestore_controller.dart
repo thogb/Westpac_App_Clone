@@ -73,6 +73,7 @@ class FirestoreController {
     return _firebaseFirestore
         .collection(colTransaction)
         .where(AccountTransaction.fnAccountNumbers, arrayContains: accountId)
+        .orderBy(AccountTransaction.fnDateTime, descending: true)
         .get();
   }
 
@@ -81,6 +82,7 @@ class FirestoreController {
     return _firebaseFirestore
         .collection(colTransaction)
         .where(AccountTransaction.fnAccountNumbers, arrayContains: accountId)
+        .orderBy(AccountTransaction.fnDateTime, descending: true)
         .limit(limit)
         .get();
   }
