@@ -84,12 +84,12 @@ class BankCard {
         number: map['number'] ?? "",
         name: map['name'] ?? "",
         expiry: map['expiry'] != null
-            ? DateTime.fromMillisecondsSinceEpoch(map['expiry'])
+            ? DateTime.fromMillisecondsSinceEpoch(map['expiry'] as int)
             : Vars.invalidDateTime,
         cvc: map['cvc'] ?? "",
         dynamicCVC: map['dynamicCVC'] ?? "",
         dynamicCVCExpiry:
-            DateTime.fromMillisecondsSinceEpoch(map['dynamicCVCExpiry']),
+            DateTime.fromMillisecondsSinceEpoch(map['dynamicCVCExpiry'] as int),
         locked: map['locked'] ?? "",
         accountNumber: map[fnAccountNumber] ?? "",
         accountBSB: map[fnAccountBSB] ?? "");
