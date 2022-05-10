@@ -200,7 +200,7 @@ void putData() async {
       count++;
 
       if (i == 29 && j == num - 1) {
-        for (int k = 0; k < 500; k++) {
+        for (int k = 0; k < 20; k++) {
           await FirestoreController.instance.addTransaction(AccountTransaction(
               sender: sender,
               receiver: receiver,

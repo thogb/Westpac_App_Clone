@@ -26,6 +26,8 @@ class TransactionDetailPage extends StatefulWidget {
 
 class _TransactionDetailPageState extends State<TransactionDetailPage>
     with TickerProviderStateMixin {
+  static const int loadingIncrement = 10;
+
   late final AnimationController _fakeAppBarController = AnimationController(
       duration: const Duration(milliseconds: 300), vsync: this);
   /*
@@ -49,9 +51,11 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
   bool _showElevation = false;
   int _nOfProcessed = 0;
   int _readLimits = 20;
-  int _nOfTransactions = 0;
   late double _prevbalance;
   DateTime _prevDateTime = Vars.invalidDateTime;
+
+  bool _loadingData = false;
+  bool _noMoreDataToLoad = false;
 
   final List<TransactionGroup> _transactionGroups = [];
 
@@ -60,22 +64,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
   @override
   void initState() {
     _isInputting = widget.isInputting;
-    _scrollController.addListener(() {
-      if (_scrollController.offset > 5.0) {
-        if (_showElevation == false) {
-          setState(() {
-            _showElevation = true;
-          });
-        }
-      } else {
-        if (_showElevation == true) {
-          setState(() {
-            _showElevation = false;
-          });
-        }
-      }
-      _onScrollTransactions();
-    });
+    _scrollController.addListener(_onScrollTransactions);
 
     _prevbalance = widget.account.getBalance;
 
@@ -142,6 +131,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                 AccountTransaction accountTransaction;
                 AccountTransactionPersp accountTransactionPersp;
                 double actualAmount;
+                bool hasDataToProcess =
+                    _nOfProcessed < readTransactions.docs.length;
 
                 while (_nOfProcessed < readTransactions.docs.length) {
                   accountTransaction = AccountTransaction.fromMap(
@@ -158,7 +149,18 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                       accountTransaction.getDateTime, _prevDateTime)) {
                     _transactionGroups[_transactionGroups.length - 1]
                         .add(accountTransactionPersp);
-                        _transactionGroups[_transactionGroups.length - 1]
+                    if (_loadingData) {
+                      _transactionGroups[
+                          _transactionGroups.length -
+                              1] = TransactionGroup(
+                          transactions:
+                              _transactionGroups[_transactionGroups.length - 1]
+                                  .transactions,
+                          dateTime:
+                              _transactionGroups[_transactionGroups.length - 1]
+                                  .dateTime);
+                    }
+                    //TransactionGroup.of(_transactionGroups[_transactionGroups.length - 1]);
                   } else {
                     _prevDateTime = accountTransaction.getDateTime;
                     _transactionGroups.add(TransactionGroup(
@@ -170,24 +172,84 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                   _nOfProcessed++;
                 }
 
+                _noMoreDataToLoad = _readLimits >
+                    readTransactions.docs.length + loadingIncrement;
+
+                if (hasDataToProcess && !_noMoreDataToLoad) {
+                  _loadingData = false;
+                }
+
                 return ListView.builder(
                     controller: _scrollController,
-                    itemCount: _transactionGroups.length,
-                    itemBuilder: (context, index) => _transactionGroups[index]);
+                    itemCount: _transactionGroups.length + 1,
+                    itemBuilder: (context, index) {
+                      //return _transactionGroups[index];
+                      if (index == _transactionGroups.length) {
+                        if (!_noMoreDataToLoad && _loadingData) {
+                          return Container(
+                              padding: const EdgeInsets.only(
+                                  bottom: Vars.topBotPaddingSize),
+                              child: const Center(
+                                child: CircularProgressIndicator(),
+                              ));
+                        }
+
+                        if (_noMoreDataToLoad) {
+                          return const SizedBox(height: Vars.topBotPaddingSize);
+                        }
+
+                        return const SizedBox(
+                            height: Vars.topBotPaddingSize * 3);
+                      }
+
+                      return StickyHeader(
+                          header: _getTransactionLineBr(
+                              _transactionGroups[index].dateTime),
+                          content: ListView.builder(
+                              itemCount:
+                                  _transactionGroups[index].transactions.length,
+                              shrinkWrap: true,
+                              physics: const ClampingScrollPhysics(),
+                              itemBuilder: (context, indexTwo) {
+                                return _getTransactionButton(
+                                    _transactionGroups[index]
+                                        .transactions[indexTwo]);
+                              }));
+                    });
               }
 
-              return const CircularProgressIndicator();
+              return const Align(
+                alignment: Alignment.topCenter,
+                child: CircularProgressIndicator(),
+              );
             },
-          ))
+          )),
         ],
       ),
     );
   }
 
   void _onScrollTransactions() {
-    if (_scrollController.position.extentAfter < 10) {
+    if (_scrollController.offset > 5.0) {
+      if (_showElevation == false) {
+        setState(() {
+          _showElevation = true;
+        });
+      }
+    } else {
+      if (_showElevation == true) {
+        setState(() {
+          _showElevation = false;
+        });
+      }
+    }
+
+    if (!_loadingData &&
+        !_noMoreDataToLoad &&
+        _scrollController.position.extentAfter == 0.0) {
+      _loadingData = true;
       setState(() {
-        _readLimits += 10;
+        _readLimits += loadingIncrement;
       });
     }
   }
@@ -296,67 +358,6 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
     );
   }
 
-  Widget _getTransactionList() {
-    return ListView.builder(
-      controller: _scrollController,
-      shrinkWrap: true,
-      itemCount: 20,
-      itemBuilder: (BuildContext context, int index) {
-        return Container(
-            color: Colors.green,
-            height: 50.0,
-            margin: const EdgeInsets.all(5.0));
-      },
-    );
-  }
-}
-
-class AccountTransactionPersp {
-  final double actualAmount;
-  final double balance;
-  final AccountTransaction accountTransaction;
-
-  AccountTransactionPersp({
-    required this.actualAmount,
-    required this.balance,
-    required this.accountTransaction,
-  });
-}
-
-class TransactionGroup extends StatefulWidget {
-  final DateTime dateTime;
-  final List<AccountTransactionPersp> transactions;
-
-  static _TransactionGroupState of(BuildContext context) =>
-      context.findRootAncestorStateOfType() ??
-      context.findAncestorStateOfType<_TransactionGroupState>()!;
-
-  const TransactionGroup(
-      {Key? key, required this.transactions, required this.dateTime})
-      : super(key: key);
-
-  void add(AccountTransactionPersp accountTransactionPersp) {
-    transactions.add(accountTransactionPersp);
-  }
-
-  @override
-  _TransactionGroupState createState() => _TransactionGroupState();
-}
-
-class _TransactionGroupState extends State<TransactionGroup> {
-  @override
-  Widget build(BuildContext context) {
-    return StickyHeader(
-        header: _getTransactionLineBr(widget.dateTime),
-        content: ListView.builder(
-            shrinkWrap: true,
-            physics: const ClampingScrollPhysics(),
-            itemCount: widget.transactions.length,
-            itemBuilder: ((context, index) {
-              return _getTransactionButton(widget.transactions[index]);
-            })));
-  }
-
   Widget _getTransactionLineBr(DateTime dateTime) {
     return Material(
       color: Colors.grey[50],
@@ -409,5 +410,28 @@ class _TransactionGroupState extends State<TransactionGroup> {
         ],
       ),
     );
+  }
+}
+
+class AccountTransactionPersp {
+  final double actualAmount;
+  final double balance;
+  final AccountTransaction accountTransaction;
+
+  AccountTransactionPersp({
+    required this.actualAmount,
+    required this.balance,
+    required this.accountTransaction,
+  });
+}
+
+class TransactionGroup {
+  final DateTime dateTime;
+  final List<AccountTransactionPersp> transactions;
+
+  const TransactionGroup({required this.transactions, required this.dateTime});
+
+  void add(AccountTransactionPersp accountTransactionPersp) {
+    transactions.add(accountTransactionPersp);
   }
 }

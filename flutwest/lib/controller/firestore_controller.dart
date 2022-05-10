@@ -78,7 +78,7 @@ class FirestoreController {
   }
 
   Future<QuerySnapshot<Map<String, dynamic>>> getTransactionLimitBy(
-      String accountId, int limit) {
+      String accountId, int limit) async {
     return _firebaseFirestore
         .collection(colTransaction)
         .where(AccountTransaction.fnAccountNumbers, arrayContains: accountId)
