@@ -160,7 +160,6 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                               _transactionGroups[_transactionGroups.length - 1]
                                   .dateTime);
                     }
-                    //TransactionGroup.of(_transactionGroups[_transactionGroups.length - 1]);
                   } else {
                     _prevDateTime = accountTransaction.getDateTime;
                     _transactionGroups.add(TransactionGroup(
@@ -189,9 +188,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                           return Container(
                               padding: const EdgeInsets.only(
                                   bottom: Vars.topBotPaddingSize),
-                              child: const Center(
-                                child: CircularProgressIndicator(),
-                              ));
+                              child: _getLoading("Loading more"));
                         }
 
                         if (_noMoreDataToLoad) {
@@ -218,9 +215,9 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                     });
               }
 
-              return const Align(
+              return Align(
                 alignment: Alignment.topCenter,
-                child: CircularProgressIndicator(),
+                child: _getLoading("Loading"),
               );
             },
           )),
@@ -252,6 +249,24 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
         _readLimits += loadingIncrement;
       });
     }
+  }
+
+  Widget _getLoading(String msg) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(msg,
+            style: const TextStyle(fontSize: 15.0, color: Colors.black54)),
+        const SizedBox(width: Vars.heightGapBetweenWidgets / 2),
+        const SizedBox(
+            height: 15.0,
+            width: 15.0,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              color: Colors.black54,
+            )),
+      ],
+    );
   }
 
   Widget _getFakeAppBar() {
