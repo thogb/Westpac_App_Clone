@@ -1,5 +1,7 @@
 //import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 
+import 'dart:ffi';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_transaction.dart';
@@ -78,12 +80,48 @@ class FirestoreController {
   }
 
   Future<QuerySnapshot<Map<String, dynamic>>> getTransactionLimitBy(
-      String accountId, int limit) async {
-    return _firebaseFirestore
+      String accountId, int limit,
+      {String transactionType = AccountTransaction.allTypes,
+      double amount = double.infinity}) async {
+    await Future.delayed(const Duration(milliseconds: 1000));
+    Query<Map<String, dynamic>> query = _firebaseFirestore
         .collection(colTransaction)
-        .where(AccountTransaction.fnAccountNumbers, arrayContains: accountId)
+        .where(AccountTransaction.fnAccountNumbers, arrayContains: accountId);
+
+    if (amount != double.infinity) {
+      query = query.where(AccountTransaction.fnAmount, isEqualTo: amount.abs());
+    }
+
+    if (transactionType != AccountTransaction.allTypes) {
+      query = query.where(AccountTransaction.fnTransactionTtypes,
+          arrayContains: transactionType);
+    }
+
+    return query
         .orderBy(AccountTransaction.fnDateTime, descending: true)
         .limit(limit)
         .get();
+  }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> getTransactionLimitByStream(
+      String accountId, int limit,
+      {String transactionType = AccountTransaction.allTypes,
+      double amount = double.infinity}) {
+    Query<Map<String, dynamic>> query = _firebaseFirestore
+        .collection(colTransaction)
+        .where(AccountTransaction.fnAccountNumbers, arrayContains: accountId);
+    if (amount != double.infinity) {
+      query = query.where(AccountTransaction.fnAmount, isEqualTo: amount.abs());
+    }
+
+    if (transactionType != AccountTransaction.allTypes) {
+      query = query.where(AccountTransaction.fnTransactionTtypes,
+          arrayContains: transactionType);
+    }
+
+    return query
+        .orderBy(AccountTransaction.fnDateTime, descending: true)
+        .limit(limit)
+        .snapshots();
   }
 }
