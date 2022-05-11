@@ -7,12 +7,16 @@ class AccountTransaction {
   static const String fnAccountNumbers = "accountNumbers";
   static const String fnAccountBSBs = "accountBSBs";
   static const String fnDateTime = "dateTime";
+  static const String fnTransactionTtypes = "transactionTypes";
+  static const String fnAmount = "amount";
+  static const String fnDescription = "description";
   static const int senderIndex = 0;
   static const int receiverIndex = 1;
 
+  static const String allTypes = "All types";
   static const String debits = "Debits";
   static const String credits = "Credits";
-  static const String atimAndCash = "ATM and cash";
+  static const String atmAndCash = "ATM and cash";
   static const String cheques = "Cheques";
   static const String deposits = "Deposits";
   static const String dividendPayments = "Dividend payments";
@@ -20,9 +24,10 @@ class AccountTransaction {
   static const String paymentsAndTransfers = "Payments and transfers";
 
   static const List<String> types = [
+    allTypes,
     debits,
     credits,
-    atimAndCash,
+    atmAndCash,
     cheques,
     deposits,
     dividendPayments,
@@ -36,7 +41,7 @@ class AccountTransaction {
   late final String id;
   late final String description;
   late final double amount;
-  late final String type;
+  late final List<String> transactionTypes;
 
   AccountTransaction(
       {required this.sender,
@@ -45,7 +50,7 @@ class AccountTransaction {
       required this.id,
       required this.description,
       required this.amount,
-      this.type = credits});
+      this.transactionTypes = const []});
 
   AccountID get getSender => this.sender;
 
@@ -90,19 +95,24 @@ class AccountTransaction {
     });
     result.addAll({fnDateTime: dateTime.millisecondsSinceEpoch});
     //result.addAll({'id': id});
-    result.addAll({'description': description});
-    result.addAll({'amount': amount});
+    result.addAll({fnDescription: description});
+    result.addAll({fnAmount: amount});
+    if (transactionTypes.isNotEmpty) {
+      result.addAll({fnTransactionTtypes: transactionTypes});
+    }
 
     return result;
   }
 
   factory AccountTransaction.fromMap(Map<String, dynamic> map, String inId) {
-    List<String> numbers = List<String>.from(map[fnAccountNumbers] ?? []);
-    List<String> bsbs = List<String>.from(map[fnAccountBSBs] ?? []);
+    List<String> numbers = List<String>.from(map[fnAccountNumbers] ?? const []);
+    List<String> bsbs = List<String>.from(map[fnAccountBSBs] ?? const []);
+    List<String> readTransactionTypes =
+        List<String>.from(map[fnTransactionTtypes] ?? const []);
     // print(map["dateTime"] as int);
     // print(DateTime.fromMillisecondsSinceEpoch(map["dateTime"] as int).year);
     return AccountTransaction(
-      /*
+        /*
       sender: map['senderNumber'] != null && map["senderBsb"] != null
           ? AccountID(number: map["senderNumber"], bsb: map["senderBsb"])
           : Vars.invalidAccountID,
@@ -110,20 +120,21 @@ class AccountTransaction {
           ? AccountID(number: map["receiverNumber"], bsb: map["receiverBsb"])
           : Vars.invalidAccountID,
       */
-      sender: numbers.length == 2 && bsbs.length == 2
-          ? AccountID(number: numbers[senderIndex], bsb: numbers[senderIndex])
-          : Vars.invalidAccountID,
-      receiver: numbers.length == 2 && bsbs.length == 2
-          ? AccountID(number: numbers[receiverIndex], bsb: bsbs[receiverIndex])
-          : Vars.invalidAccountID,
-      dateTime: map[fnDateTime] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map[fnDateTime] as int)
-          : Vars.invalidDateTime,
-      //id: map['id'] ?? "",
-      id: inId,
-      description: map['description'] ?? "",
-      amount: map['amount'] ?? "",
-    );
+        sender: numbers.length == 2 && bsbs.length == 2
+            ? AccountID(number: numbers[senderIndex], bsb: numbers[senderIndex])
+            : Vars.invalidAccountID,
+        receiver: numbers.length == 2 && bsbs.length == 2
+            ? AccountID(
+                number: numbers[receiverIndex], bsb: bsbs[receiverIndex])
+            : Vars.invalidAccountID,
+        dateTime: map[fnDateTime] != null
+            ? DateTime.fromMillisecondsSinceEpoch(map[fnDateTime] as int)
+            : Vars.invalidDateTime,
+        //id: map['id'] ?? "",
+        id: inId,
+        description: map[fnDescription] ?? "",
+        amount: map[fnAmount] ?? "",
+        transactionTypes: readTransactionTypes);
   }
 
   String toJson() => json.encode(toMap());
