@@ -170,8 +170,33 @@ void putData() async {
 
   Random random = Random();
 
-  for (int i = 0; i < 30; i++) {
-    int num = random.nextInt(4) + 1;
+  List<String> methods = ["DEBIT CARD PURCHASE PAYPAL", "DEBIT CARD PURCHASE"];
+  List<String> payLocation = ["Bob", "John", "Dave", "Dylan"];
+  List<String> atmLocation = [
+    "CANNINGTON ATM",
+    "RIVERTON ATM",
+    "WILLETTON ATM",
+    "CANNING VALE ATM",
+    "PERTH ATM"
+  ];
+  List<String> location = [
+    "CANNINGTON WOOLWORTHS",
+    "STEAM GAMES",
+    "KFC WILLETTON",
+    "TAOBAO.COM Melbourne",
+    "TERRYWHITE ROSTRATA",
+    "MCDONALDS APP RIVERTON",
+    "IGA ROSTRATA",
+    "BIG WILLETTON",
+    "HUNGRY JACKS Myaree",
+    "ebay xxxxxxx-xxxxx Sydney AUS",
+    "EZI City Of Canning Welshpool Dc Aus",
+    "Dominos Estore Willetton dominos.com AUS",
+    "AMAZON MKTPLC AU SYDNEY SOUTH AUS"
+  ];
+
+  for (int i = 0; i < 40; i++) {
+    int num = random.nextInt(5) + 1;
 
     int count = 0;
     AccountID sender;
@@ -189,29 +214,63 @@ void putData() async {
         receiver = account1.accountID;
       }
 
+      String description;
+
+      int methodRand = random.nextInt(100);
+      List<String> transactionTypes;
+
+      if (methodRand <= 9) {
+        description =
+            "WITHDRAWAL AT " + atmLocation[random.nextInt(atmLocation.length)];
+        transactionTypes = [AccountTransaction.atmAndCash];
+      } else if (methodRand >= 10 && methodRand <= 19) {
+        description = "WITHDRAWAL-OSKA PAYMENT " +
+            payLocation[random.nextInt(payLocation.length)];
+        transactionTypes = [
+          AccountTransaction.credits,
+          AccountTransaction.paymentsAndTransfers
+        ];
+      } else if (methodRand >= 20 && methodRand <= 29) {
+        description =
+            "DEPOSIT ONLINE " + payLocation[random.nextInt(payLocation.length)];
+        transactionTypes = [
+          AccountTransaction.credits,
+          AccountTransaction.paymentsAndTransfers
+        ];
+      } else {
+        description = methods[random.nextInt(methods.length)] +
+            " " +
+            location[random.nextInt(location.length)];
+        transactionTypes = [
+          AccountTransaction.debits,
+          AccountTransaction.paymentsAndTransfers
+        ];
+      }
+
       await FirestoreController.instance.addTransaction(AccountTransaction(
           sender: sender,
           receiver: receiver,
-          dateTime: DateTime(2022, 1, 1 + i),
+          dateTime: DateTime(2022, 1, 1 + i, 0, 0, j),
           id: "",
-          description:
-              "account 1 send to account 2, the ${count}th transaction",
-          amount: amount));
+          //description: "1 send to 2, the ${count}th",
+          description: description,
+          amount: amount,
+          transactionTypes: transactionTypes));
       count++;
 
+      /*
       if (i == 29 && j == num - 1) {
-        for (int k = 0; k < 20; k++) {
+        for (int k = 0; k < 100; k++) {
           await FirestoreController.instance.addTransaction(AccountTransaction(
               sender: sender,
               receiver: receiver,
-              dateTime: DateTime(2022, 1, 1 + i),
+              dateTime: DateTime(2022, 1, 1 + i, 0, 0, k),
               id: "",
-              description:
-                  "account 1 send to account 2, the ${count}th transaction",
+              description: "1 send to 2, the ${count}th",
               amount: amount));
           count++;
         }
-      }
+      }*/
     }
   }
 }

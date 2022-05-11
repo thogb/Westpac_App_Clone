@@ -212,15 +212,18 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
         size: 30,
       ),
       paragraph: transaction.getDescription,
-      rightWidget: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            actualAmount > 0.0 ? "\$$actualAmount" : "-\$${-actualAmount}",
-            style: TextStyle(color: actualAmount > 0.0 ? Colors.green : null),
-          ),
-          Text("bal \$$balance")
-        ],
+      rightWidget: Padding(
+        padding: const EdgeInsets.only(left: 45.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              actualAmount > 0.0 ? "\$$actualAmount" : "-\$${-actualAmount}",
+              style: TextStyle(color: actualAmount > 0.0 ? Colors.green : null),
+            ),
+            Text("bal \$$balance")
+          ],
+        ),
       ),
     );
   }

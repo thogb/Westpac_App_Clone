@@ -45,28 +45,33 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
       Tween<double>(begin: 1.0, end: 0.0).animate(CurvedAnimation(
           parent: _fakeAppBarController, curve: Curves.decelerate));
 
-  String _transactionType = AccountTransaction.types[0];
+  final TextEditingController _textEditingController = TextEditingController();
+
+  // String _transactionType = AccountTransaction.allTypes;
+  String _transactionType = AccountTransaction.allTypes;
 
   bool _isInputting = false;
   bool _showElevation = false;
-  int _nOfProcessed = 0;
+  // int _nOfProcessed = 0;
   int _readLimits = 20;
-  late double _prevbalance;
-  DateTime _prevDateTime = Vars.invalidDateTime;
+  // late double _prevbalance;
+  // DateTime _prevDateTime = Vars.invalidDateTime;
 
-  bool _loadingData = false;
   bool _noMoreDataToLoad = false;
 
-  final List<TransactionGroup> _transactionGroups = [];
+  double _amountSearch = double.infinity;
+
+  // final List<TransactionGroup> _transactionGroups = [];
 
   final ScrollController _scrollController = ScrollController();
+  bool _showLoading = false;
 
   @override
   void initState() {
     _isInputting = widget.isInputting;
     _scrollController.addListener(_onScrollTransactions);
 
-    _prevbalance = widget.account.getBalance;
+    // _prevbalance = widget.account.getBalance;
 
     super.initState();
   }
@@ -111,19 +116,31 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
           //Expanded(child: _getTransactionList())
           Expanded(
               child: FutureBuilder(
-            future: FirestoreController.instance
-                .getTransactionLimitBy(widget.account.getNumber, _readLimits),
+            future: FirestoreController.instance.getTransactionLimitBy(
+                widget.account.getNumber, _readLimits,
+                transactionType: _transactionType, amount: _amountSearch),
             builder: (context, snapshots) {
               if (snapshots.hasError) {
                 return const Center(child: Text("Error"));
               }
 
-              if (snapshots.hasData) {
+              // print(
+              // "${DateTime.now()} --- ${_readLimits} --------------------------- before length and hasData = ${snapshots.hasData} + ${(snapshots.data as QuerySnapshot<Map<String, dynamic>>).docs.length} + ${snapshots.connectionState}");
+
+              if ((!_showLoading ||
+                      snapshots.connectionState == ConnectionState.done) &&
+                  snapshots.hasData) {
                 QuerySnapshot<Map<String, dynamic>> readTransactions =
                     snapshots.data as QuerySnapshot<Map<String, dynamic>>;
+                _showLoading = false;
 
                 if (readTransactions.docs.isEmpty) {
-                  return const Center(child: Text("No Transactions"));
+                  return const Align(
+                      alignment: Alignment.topCenter,
+                      child: Padding(
+                        padding: EdgeInsets.all(Vars.standardPaddingSize),
+                        child: Text("No Transactions"),
+                      ));
                 }
 
                 //_nOfTransactions = readTransactions.docs.length;
@@ -131,8 +148,12 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                 AccountTransaction accountTransaction;
                 AccountTransactionPersp accountTransactionPersp;
                 double actualAmount;
-                bool hasDataToProcess =
-                    _nOfProcessed < readTransactions.docs.length;
+                int _nOfProcessed = 0;
+                double _prevbalance = widget.account.getBalance;
+                DateTime _prevDateTime = Vars.invalidDateTime;
+                List<TransactionGroup> _transactionGroups = [];
+                // print(
+                // "------------------------------length is + ${_transactionGroups.length}");
 
                 while (_nOfProcessed < readTransactions.docs.length) {
                   accountTransaction = AccountTransaction.fromMap(
@@ -149,17 +170,6 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                       accountTransaction.getDateTime, _prevDateTime)) {
                     _transactionGroups[_transactionGroups.length - 1]
                         .add(accountTransactionPersp);
-                    if (_loadingData) {
-                      _transactionGroups[
-                          _transactionGroups.length -
-                              1] = TransactionGroup(
-                          transactions:
-                              _transactionGroups[_transactionGroups.length - 1]
-                                  .transactions,
-                          dateTime:
-                              _transactionGroups[_transactionGroups.length - 1]
-                                  .dateTime);
-                    }
                   } else {
                     _prevDateTime = accountTransaction.getDateTime;
                     _transactionGroups.add(TransactionGroup(
@@ -174,9 +184,17 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                 _noMoreDataToLoad = _readLimits >
                     readTransactions.docs.length + loadingIncrement;
 
-                if (hasDataToProcess && !_noMoreDataToLoad) {
-                  _loadingData = false;
-                }
+                /*return ListView.builder(
+                  controller: _scrollController,
+                  itemCount: readTransactions.docs.length,
+                  itemBuilder: (context, index) {
+                    return Container(
+                      height: 30,
+                      child: Text(readTransactions.docs[index]
+                          .data()[AccountTransaction.fnDescription]),
+                    );
+                  },
+                );*/
 
                 return ListView.builder(
                     controller: _scrollController,
@@ -184,7 +202,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                     itemBuilder: (context, index) {
                       //return _transactionGroups[index];
                       if (index == _transactionGroups.length) {
-                        if (!_noMoreDataToLoad && _loadingData) {
+                        if (snapshots.connectionState ==
+                            ConnectionState.waiting) {
                           return Container(
                               padding: const EdgeInsets.only(
                                   bottom: Vars.topBotPaddingSize),
@@ -192,7 +211,11 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                         }
 
                         if (_noMoreDataToLoad) {
-                          return const SizedBox(height: Vars.topBotPaddingSize);
+                          return const Padding(
+                              padding: EdgeInsets.only(
+                                  bottom: Vars.topBotPaddingSize),
+                              child:
+                                  Center(child: Text("No More Transactions")));
                         }
 
                         return const SizedBox(
@@ -208,6 +231,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                               shrinkWrap: true,
                               physics: const ClampingScrollPhysics(),
                               itemBuilder: (context, indexTwo) {
+                                // print(
+                                // "$index + types = ${_transactionGroups[index].transactions[indexTwo].accountTransaction.transactionTypes} ++ = $_transactionType");
                                 return _getTransactionButton(
                                     _transactionGroups[index]
                                         .transactions[indexTwo]);
@@ -217,13 +242,23 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
 
               return Align(
                 alignment: Alignment.topCenter,
-                child: _getLoading("Loading"),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: Vars.topBotPaddingSize),
+                  child: _getLoading("Loading"),
+                ),
               );
             },
           )),
         ],
       ),
     );
+  }
+
+  void _clearTransactions() {
+    _noMoreDataToLoad = false;
+    _showLoading = true;
+    _readLimits = 20;
   }
 
   void _onScrollTransactions() {
@@ -241,10 +276,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
       }
     }
 
-    if (!_loadingData &&
-        !_noMoreDataToLoad &&
-        _scrollController.position.extentAfter == 0.0) {
-      _loadingData = true;
+    if (!_noMoreDataToLoad && _scrollController.position.extentAfter == 0.0) {
       setState(() {
         _readLimits += loadingIncrement;
       });
@@ -306,14 +338,45 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
   Widget _getSearchBar() {
     return StandardPadding(
         child: TextField(
+      controller: _textEditingController,
       onTap: () {
+        _clearTransactions();
         _fakeAppBarController.forward();
         setState(() {
           _isInputting = true;
         });
       },
+      onSubmitted: (String value) {
+        double? val = double.tryParse(value);
+        if (val != null) {
+          _clearTransactions();
+          setState(() {
+            _amountSearch = val;
+          });
+        } else {
+          if (_amountSearch != double.infinity) {
+            setState(() {
+              _amountSearch = double.infinity;
+            });
+          }
+        }
+      },
       style: const TextStyle(fontSize: 18.0),
       decoration: InputDecoration(
+          suffixIcon: _textEditingController.text.isNotEmpty
+              ? GestureDetector(
+                  onTap: () {
+                    _clearTransactions();
+                    if (_textEditingController.text.isNotEmpty) {
+                      setState(() {
+                        _textEditingController.clear();
+                        _amountSearch = double.infinity;
+                      });
+                    }
+                  },
+                  child: const Icon(Icons.close),
+                )
+              : null,
           prefixIcon: !_isInputting
               ? const Icon(Icons.search, color: Colors.black54)
               : GestureDetector(
@@ -323,8 +386,13 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                     if (!currentFocus.hasPrimaryFocus) {
                       currentFocus.unfocus();
                     }
+                    _clearTransactions();
                     setState(() {
                       _isInputting = false;
+                      if (_textEditingController.text.isNotEmpty) {
+                        _textEditingController.clear();
+                        _amountSearch = double.infinity;
+                      }
                     });
                   },
                   child: const Icon(Icons.arrow_back, color: Colors.black54)),
@@ -363,6 +431,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
               value: AccountTransaction.types[index - 1],
               groupValue: _transactionType,
               onChanged: (value) {
+                _clearTransactions();
                 setState(() {
                   _transactionType = value;
                 });
@@ -414,15 +483,18 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
         size: 30,
       ),
       paragraph: accountTransaction.getDescription,
-      rightWidget: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Text(
-            actualAmount >= 0.0 ? "\$$actualAmount" : "-\$${-actualAmount}",
-            style: TextStyle(color: actualAmount > 0.0 ? Colors.green : null),
-          ),
-          Text("bal \$$balance")
-        ],
+      rightWidget: Padding(
+        padding: const EdgeInsets.only(left: 45.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              actualAmount >= 0.0 ? "\$$actualAmount" : "-\$${-actualAmount}",
+              style: TextStyle(color: actualAmount > 0.0 ? Colors.green : null),
+            ),
+            Text("bal \$$balance")
+          ],
+        ),
       ),
     );
   }
