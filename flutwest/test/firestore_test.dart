@@ -7,6 +7,7 @@ import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/account_transaction.dart';
 import 'package:flutwest/model/bank_card.dart';
 import 'package:flutwest/model/member.dart';
+import 'package:decimal/decimal.dart';
 
 void main() {
   test("fake firestore test", () async {
@@ -207,5 +208,12 @@ void main() {
 
     DateTime dateTime = DateTime(2022, 2, 400);
     print(dateTime.toString());
+
+    Decimal decimal = Decimal.parse("0.2");
+    Decimal decimal2 = Decimal.parse("0.3");
+    Decimal decimal3 = decimal + decimal2;
+    print(decimal);
+    print(decimal3);
+    print(decimal3.toString());
   });
 }
