@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage> {
   bool _more = false;
   int _currPage = 0;
 
-  final List<Widget> _pages = [];
+  final List<Widget> _pages = List.filled(5, const SizedBox());
 
   final Future<DocumentSnapshot<Map<String, dynamic>>> _futureMember =
       FirestoreController.instance.getMember(Vars.fakeMemberID);
@@ -42,6 +42,8 @@ class _HomePageState extends State<HomePage> {
 
   late Member _member;
   late List<Account> _accounts;
+
+  final List<AccountOrderInfo> _accountOrderInfos = [];
 
   @override
   void initState() {
@@ -98,14 +100,15 @@ class _HomePageState extends State<HomePage> {
           _member = Member.fromMap(
               (queryMember.data() as Map<String, dynamic>), _accounts);
 
-          _pages.add(HomeContentPage(
+          _pages[0] = (HomeContentPage(
             navbarState: navbarState,
             member: _member,
+            accountOrderInfos: _accountOrderInfos,
           ));
-          _pages.add(const CardsPage());
-          _pages.add(const SizedBox());
-          _pages.add(const ProductsPage());
-          _pages.add(const ProfilePage());
+          //_pages.add(CardsPage(cardNumber: _member.cardNumber));
+          //_pages.add(const SizedBox());
+          //_pages.add(const ProductsPage());
+          //_pages.add(const ProfilePage());
 
           print("Opening home page in future");
           return _getHomePage();
@@ -270,6 +273,24 @@ class _HomePageState extends State<HomePage> {
     if (index == 2) {
       _showBottomSheet();
     } else {
+      if (index == 1) {
+        Account cardAccount = _accounts[0];
+
+        for (Account account in _accounts) {
+          if (account.cardNumber == _member.cardNumber) {
+            cardAccount = account;
+            break;
+          }
+        }
+        _pages[1] = CardsPage(
+            cardNumber: _member.cardNumber,
+            cardAccount: cardAccount,
+            accountOrderInfos: _accountOrderInfos);
+      } else if (index == 3) {
+        _pages[3] = const ProductsPage();
+      } else if (index == 4) {
+        _pages[4] = const ProfilePage();
+      }
       setState(() {
         _currPage = index;
       });

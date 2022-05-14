@@ -17,9 +17,13 @@ import 'account_detail_page.dart';
 class HomeContentPage extends StatefulWidget {
   final NavbarState navbarState;
   final Member member;
+  final List<AccountOrderInfo> accountOrderInfos;
 
   const HomeContentPage(
-      {Key? key, required this.navbarState, required this.member})
+      {Key? key,
+      required this.navbarState,
+      required this.member,
+      required this.accountOrderInfos})
       : super(key: key);
 
   @override
@@ -127,7 +131,7 @@ class _HomeContentPageState extends State<HomeContentPage>
 
   late List<Account> accounts;
 
-  final List<AccountOrderInfo> _accountOrderInfos = [];
+  late final List<AccountOrderInfo> _accountOrderInfos;
 
   bool _dragging = false;
   int _numOfAccountsHidden = 0;
@@ -138,6 +142,8 @@ class _HomeContentPageState extends State<HomeContentPage>
   void initState() {
     WidgetsBinding.instance?.addObserver(this);
     widget.navbarState.addObserver(_checkWelcomeAnimation);
+
+    _accountOrderInfos = widget.accountOrderInfos;
 
     _welcomeController = AnimationController(
         duration: const Duration(milliseconds: 500), vsync: this);
