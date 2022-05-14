@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:decimal/decimal.dart';
 import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/vars.dart';
 
@@ -40,7 +41,7 @@ class AccountTransaction {
   late final DateTime dateTime;
   late final String id;
   late final String description;
-  late final double amount;
+  late final Decimal amount;
   late final List<String> transactionTypes;
 
   AccountTransaction(
@@ -76,7 +77,7 @@ class AccountTransaction {
 
   set setAmount(amount) => this.amount = amount;
 
-  double getAmountPerspReceiver(String subjectNumber) {
+  Decimal getAmountPerspReceiver(String subjectNumber) {
     return receiver.number == subjectNumber ? amount : -amount;
   }
 
@@ -96,7 +97,7 @@ class AccountTransaction {
     result.addAll({fnDateTime: dateTime.millisecondsSinceEpoch});
     //result.addAll({'id': id});
     result.addAll({fnDescription: description});
-    result.addAll({fnAmount: amount});
+    result.addAll({fnAmount: amount.toString()});
     if (transactionTypes.isNotEmpty) {
       result.addAll({fnTransactionTtypes: transactionTypes});
     }
@@ -133,7 +134,7 @@ class AccountTransaction {
         //id: map['id'] ?? "",
         id: inId,
         description: map[fnDescription] ?? "",
-        amount: map[fnAmount] ?? "",
+        amount: Decimal.parse(map[fnAmount] ?? ""),
         transactionTypes: readTransactionTypes);
   }
 

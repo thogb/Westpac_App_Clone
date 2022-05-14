@@ -33,32 +33,32 @@ void main() {
         type: Account.typeChocie,
         bsb: "111-111",
         number: "111111",
-        balance: 4000,
+        balance: Decimal.parse("4000"),
         cardNumber: cardNumber);
     Account account2 = Account(
         type: Account.typeChocie,
         bsb: "111-111",
         number: "111112",
-        balance: 8000,
+        balance: Decimal.parse("8000"),
         cardNumber: "");
     Account account3 = Account(
         type: Account.typeChocie,
         bsb: "111-111",
         number: "111113",
-        balance: 1000,
+        balance: Decimal.parse("1000"),
         cardNumber: "");
 
     Account account4 = Account(
         type: Account.typeChocie,
         bsb: "111-111",
         number: "111114",
-        balance: 8000,
+        balance: Decimal.parse("8000"),
         cardNumber: "");
     Account account5 = Account(
         type: Account.typeChocie,
         bsb: "111-111",
         number: "111115",
-        balance: 9000,
+        balance: Decimal.parse("9000"),
         cardNumber: "");
 
     Member member = Member(
@@ -75,35 +75,35 @@ void main() {
         dateTime: DateTime(2022, 4, 1),
         id: "",
         description: "account 1 to account 2",
-        amount: 100);
+        amount: Decimal.fromInt(100));
     AccountTransaction accountTransaction2 = AccountTransaction(
         sender: account1.accountID,
         receiver: account4.accountID,
         dateTime: DateTime(2022, 4, 2),
         id: "",
         description: "account 1 to account 2",
-        amount: 200);
+        amount: Decimal.fromInt(200));
     AccountTransaction accountTransaction3 = AccountTransaction(
         sender: account1.accountID,
         receiver: account4.accountID,
         dateTime: DateTime(2022, 4, 3),
         id: "",
         description: "account 1 to account 2",
-        amount: 300);
+        amount: Decimal.fromInt(300));
     AccountTransaction accountTransaction4 = AccountTransaction(
         sender: account1.accountID,
         receiver: account4.accountID,
         dateTime: DateTime(2022, 4, 4),
         id: "",
         description: "account 1 to account 2",
-        amount: 400);
+        amount: Decimal.fromInt(400));
     AccountTransaction accountTransaction5 = AccountTransaction(
         sender: account1.accountID,
         receiver: account4.accountID,
         dateTime: DateTime(2022, 4, 5),
         id: "",
         description: "account 1 to account 2",
-        amount: 500);
+        amount: Decimal.fromInt(500));
 
     AccountTransaction accountTransaction6 = AccountTransaction(
         sender: account4.accountID,
@@ -111,35 +111,35 @@ void main() {
         dateTime: DateTime(2022, 4, 5),
         id: "",
         description: "account 1 to account 2",
-        amount: 333);
+        amount: Decimal.fromInt(333));
     AccountTransaction accountTransaction7 = AccountTransaction(
         sender: account3.accountID,
         receiver: account1.accountID,
         dateTime: DateTime(2022, 4, 6),
         id: "",
         description: "account 1 to account 2",
-        amount: 1000);
+        amount: Decimal.fromInt(1000));
     AccountTransaction accountTransaction8 = AccountTransaction(
         sender: account5.accountID,
         receiver: account1.accountID,
         dateTime: DateTime(2022, 4, 3),
         id: "",
         description: "account 1 to account 2",
-        amount: 700);
+        amount: Decimal.fromInt(700));
     AccountTransaction accountTransaction9 = AccountTransaction(
         sender: account5.accountID,
         receiver: account3.accountID,
         dateTime: DateTime(2022, 4, 3),
         id: "",
         description: "account 1 to account 2",
-        amount: 1700);
+        amount: Decimal.fromInt(1700));
     AccountTransaction accountTransaction10 = AccountTransaction(
         sender: account3.accountID,
         receiver: account2.accountID,
         dateTime: DateTime(2022, 4, 3),
         id: "",
         description: "account 1 to account 2",
-        amount: 1300);
+        amount: Decimal.fromInt(1300));
 
     //print(bankcardMap);
 
@@ -215,5 +215,15 @@ void main() {
     print(decimal);
     print(decimal3);
     print(decimal3.toString());
+
+    decimal = Decimal.parse("54.333");
+    decimal2 = Decimal.parse("300.67891");
+
+    print(decimal + decimal2);
+    decimal = decimal + decimal2;
+    print(decimal.round(scale: 2));
+    decimal = -decimal;
+    print(decimal);
+    print(Decimal.parse("0"));
   });
 }

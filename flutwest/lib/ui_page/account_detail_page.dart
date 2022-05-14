@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:decimal/decimal.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
@@ -202,7 +203,7 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
   }
 
   Widget _getTransactionButton(
-      AccountTransaction transaction, double balance, double actualAmount) {
+      AccountTransaction transaction, Decimal balance, Decimal actualAmount) {
     return CustButton(
       onTap: () {},
       borderOn: false,
@@ -218,10 +219,14 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              actualAmount > 0.0 ? "\$$actualAmount" : "-\$${-actualAmount}",
-              style: TextStyle(color: actualAmount > 0.0 ? Colors.green : null),
+              actualAmount > Decimal.fromInt(0)
+                  ? "\$${actualAmount.round(scale: 2)}"
+                  : "-\$${-actualAmount.round(scale: 2)}",
+              style: TextStyle(
+                  color:
+                      actualAmount > Decimal.fromInt(0) ? Colors.green : null),
             ),
-            Text("bal \$$balance")
+            Text("bal \$${balance.round(scale: 2)}")
           ],
         ),
       ),
@@ -330,7 +335,7 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
   }
 
   Widget _getTransactionSummary(Account account) {
-    double balance = account.getBalance;
+    Decimal balance = account.getBalance;
     DateTime dateTime = DateTime(1000);
 
     return Padding(
@@ -380,7 +385,7 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
                       return Column(
                         children: transactions.map(((transaction) {
                           Widget widget;
-                          double actualAmount = transaction
+                          Decimal actualAmount = transaction
                               .getAmountPerspReceiver(account.getNumber);
 
                           if (Vars.isSameDay(

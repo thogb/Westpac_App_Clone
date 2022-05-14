@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:decimal/decimal.dart';
 import 'package:flutwest/model/account_id.dart';
 
 class Account {
@@ -10,7 +11,7 @@ class Account {
 
   late String type;
   late AccountID accountID;
-  late double balance;
+  late Decimal balance;
   late String cardNumber;
 
   Account(
@@ -45,7 +46,7 @@ class Account {
     result.addAll({'type': type});
     result.addAll({'bsb': accountID.bsb});
     result.addAll({'number': accountID.number});
-    result.addAll({'balance': balance});
+    result.addAll({'balance': balance.toString()});
     result.addAll({'cardNumber': cardNumber});
 
     return result;
@@ -56,7 +57,7 @@ class Account {
         type: map['type'] ?? '',
         bsb: map['bsb'] ?? '',
         number: map['number'] ?? '',
-        balance: map['balance']?.toDouble() ?? 0.0,
+        balance: Decimal.parse(map['balance'] ?? "0"),
         cardNumber: map['cardNumber'] ?? '');
   }
 

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:decimal/decimal.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,19 +36,19 @@ void putData() async {
       type: Account.typeChocie,
       bsb: accountID.getBsb,
       number: accountID.getNumber,
-      balance: 15000,
+      balance: Decimal.parse("15000"),
       cardNumber: Vars.fakeCardNumber);
   Account account2 = Account(
       type: Account.typeBusiness,
       bsb: "111-111",
       number: "111112",
-      balance: 18000,
+      balance: Decimal.parse("18000"),
       cardNumber: "");
   Account account3 = Account(
       type: Account.typeeSaver,
       bsb: "111-111",
       number: "111113",
-      balance: 11000,
+      balance: Decimal.parse("11000"),
       cardNumber: "");
   Member member = Member(
       firstName: "Tao",
@@ -60,13 +61,13 @@ void putData() async {
       type: Account.typeChocie,
       bsb: "111-111",
       number: "111114",
-      balance: 18000,
+      balance: Decimal.parse("18000"),
       cardNumber: "");
   Account account5 = Account(
       type: Account.typeChocie,
       bsb: "111-111",
       number: "111115",
-      balance: 19000,
+      balance: Decimal.parse("19000"),
       cardNumber: "");
 
   BankCard bankCard = BankCard(
@@ -86,35 +87,35 @@ void putData() async {
       dateTime: DateTime(2021, 4, 1),
       id: "",
       description: "account 1 to account 2",
-      amount: 100);
+      amount: Decimal.fromInt(100));
   AccountTransaction accountTransaction2 = AccountTransaction(
       sender: account1.accountID,
       receiver: account4.accountID,
       dateTime: DateTime(2021, 4, 2),
       id: "",
       description: "account 1 to account 2",
-      amount: 200);
+      amount: Decimal.fromInt(200));
   AccountTransaction accountTransaction3 = AccountTransaction(
       sender: account1.accountID,
       receiver: account4.accountID,
       dateTime: DateTime(2021, 4, 3),
       id: "",
       description: "account 1 to account 2",
-      amount: 300);
+      amount: Decimal.fromInt(300));
   AccountTransaction accountTransaction4 = AccountTransaction(
       sender: account1.accountID,
       receiver: account4.accountID,
       dateTime: DateTime(2021, 4, 4),
       id: "",
       description: "account 1 to account 2",
-      amount: 400);
+      amount: Decimal.fromInt(400));
   AccountTransaction accountTransaction5 = AccountTransaction(
       sender: account1.accountID,
       receiver: account4.accountID,
       dateTime: DateTime(2021, 4, 5),
       id: "",
       description: "account 1 to account 2",
-      amount: 500);
+      amount: Decimal.fromInt(500));
 
   AccountTransaction accountTransaction6 = AccountTransaction(
       sender: account4.accountID,
@@ -122,35 +123,35 @@ void putData() async {
       dateTime: DateTime(2021, 4, 5),
       id: "",
       description: "account 1 to account 2",
-      amount: 333);
+      amount: Decimal.fromInt(333));
   AccountTransaction accountTransaction7 = AccountTransaction(
       sender: account3.accountID,
       receiver: account1.accountID,
       dateTime: DateTime(2021, 4, 6),
       id: "",
       description: "account 1 to account 2",
-      amount: 1000);
+      amount: Decimal.fromInt(1000));
   AccountTransaction accountTransaction8 = AccountTransaction(
       sender: account5.accountID,
       receiver: account1.accountID,
       dateTime: DateTime(2021, 4, 3),
       id: "",
       description: "account 1 to account 2",
-      amount: 700);
+      amount: Decimal.fromInt(700));
   AccountTransaction accountTransaction9 = AccountTransaction(
       sender: account5.accountID,
       receiver: account3.accountID,
       dateTime: DateTime(2021, 4, 3),
       id: "",
       description: "account 1 to account 2",
-      amount: 1700);
+      amount: Decimal.fromInt(1700));
   AccountTransaction accountTransaction10 = AccountTransaction(
       sender: account3.accountID,
       receiver: account2.accountID,
       dateTime: DateTime(2021, 4, 3),
       id: "",
       description: "account 1 to account 2",
-      amount: 1300);
+      amount: Decimal.fromInt(1300));
 
   FirestoreController.instance.addAccount(Vars.fakeMemberID, account1);
   FirestoreController.instance.addAccount(Vars.fakeMemberID, account2);
@@ -203,7 +204,8 @@ void putData() async {
     AccountID receiver;
 
     for (int j = 0; j < num; j++) {
-      double amount = (random.nextInt(50) + 1) * 1.0;
+      Decimal amount = Decimal.parse(((random.nextDouble() * 50)).toString())
+          .round(scale: 4);
       count++;
 
       if (random.nextInt(100) > 50) {

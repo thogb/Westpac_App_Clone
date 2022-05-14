@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/cust_widget/cust_radio.dart';
@@ -145,9 +146,9 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
 
                 AccountTransaction accountTransaction;
                 AccountTransactionPersp accountTransactionPersp;
-                double actualAmount;
+                Decimal actualAmount;
                 int _nOfProcessed = 0;
-                double _prevbalance = widget.account.getBalance;
+                Decimal _prevbalance = widget.account.getBalance;
                 DateTime _prevDateTime = Vars.invalidDateTime;
                 List<TransactionGroup> _transactionGroups = [];
                 // print(
@@ -467,8 +468,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
       AccountTransactionPersp accountTransactionPersp) {
     AccountTransaction accountTransaction =
         accountTransactionPersp.accountTransaction;
-    double actualAmount = accountTransactionPersp.actualAmount;
-    double balance = accountTransactionPersp.balance;
+    Decimal actualAmount = accountTransactionPersp.actualAmount;
+    Decimal balance = accountTransactionPersp.balance;
 
     return CustButton(
       onTap: () {},
@@ -487,10 +488,14 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              actualAmount >= 0.0 ? "\$$actualAmount" : "-\$${-actualAmount}",
-              style: TextStyle(color: actualAmount > 0.0 ? Colors.green : null),
+              actualAmount >= Decimal.fromInt(0)
+                  ? "\$${actualAmount.round(scale: 2)}"
+                  : "-\$${-actualAmount.round(scale: 2)}",
+              style: TextStyle(
+                  color:
+                      actualAmount > Decimal.fromInt(0) ? Colors.green : null),
             ),
-            Text("bal \$$balance")
+            Text("bal \$${balance.round(scale: 2)}")
           ],
         ),
       ),
@@ -499,8 +504,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
 }
 
 class AccountTransactionPersp {
-  final double actualAmount;
-  final double balance;
+  final Decimal actualAmount;
+  final Decimal balance;
   final AccountTransaction accountTransaction;
 
   AccountTransactionPersp({
