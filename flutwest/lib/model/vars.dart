@@ -41,6 +41,8 @@ class Vars {
       fontWeight: FontWeight.bold,
       color: Colors.black);
 
+  static const Color loadingDummyColor = Colors.black38;
+
   static const String fakeMemberID = "22222222";
   static const String fakeCardNumber = "5166623996788864";
 
