@@ -605,7 +605,7 @@ class _DraggableAccountButtonState extends State<DraggableAccountButton>
         );
       },
       onWillAccept: (Account? inAccount) {
-        if (widget.account.getBsb != inAccount!.getBsb) {
+        if (widget.account.getNumber != inAccount!.getNumber) {
           setState(() {
             _onBeingDragFocused = true;
             _scaleController.forward();
@@ -614,7 +614,7 @@ class _DraggableAccountButtonState extends State<DraggableAccountButton>
         return true;
       },
       onLeave: (Account? inAccount) {
-        if (widget.account.getBsb != inAccount!.getBsb) {
+        if (widget.account.getNumber != inAccount!.getNumber) {
           setState(() {
             _onBeingDragFocused = false;
             _scaleController.reverse();
@@ -623,7 +623,7 @@ class _DraggableAccountButtonState extends State<DraggableAccountButton>
       },
       onAccept: (Account inAccount) {
         //TODO: open transaction page
-        if (widget.account.getBsb != inAccount.getBsb) {
+        if (widget.account.getNumber != inAccount.getNumber) {
           setState(() {
             _onBeingDragFocused = false;
             _scaleController.reverse();
