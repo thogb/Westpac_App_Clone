@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class Utils {
+  Utils._();
   static void hideSysNavBarColour() {
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -27,5 +28,13 @@ class Utils {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge, overlays: [
       SystemUiOverlay.top,
     ]);
+  }
+
+  static String getDateIntTwoSig(int val) {
+    if (val < 10) {
+      return "0$val";
+    }
+
+    return val.toString();
   }
 }
