@@ -44,7 +44,8 @@ class FirestoreController {
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>> getBankCard(
-      String cardNumber) {
+      String cardNumber) async {
+    await Future.delayed(Duration(milliseconds: 3000));
     return _firebaseFirestore.collection(colCard).doc(cardNumber).get();
   }
 
@@ -123,5 +124,14 @@ class FirestoreController {
         .orderBy(AccountTransaction.fnDateTime, descending: true)
         .limit(limit)
         .snapshots();
+  }
+
+  Future<void> updateBankCardLockStatus(
+      String cardNumber, bool lockStatus) async {
+    await Future.delayed(Duration(seconds: 2));
+    await _firebaseFirestore
+        .collection(colCard)
+        .doc(cardNumber)
+        .update({BankCard.fnLocked: lockStatus});
   }
 }
