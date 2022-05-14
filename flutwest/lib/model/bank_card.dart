@@ -1,11 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutwest/model/account_id.dart';
+import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 
 class BankCard {
   static const String fnAccountNumber = "account_number";
   static const String fnAccountBSB = "account_bsb";
+  static const String fnLocked = "locked";
   late String _number;
   late String _name;
   late DateTime _expiry;
@@ -62,6 +64,17 @@ class BankCard {
 
   set linkedAccountID(value) => this._linkedAccountID = value;
 
+  get firstFourDigit => _number.substring(0, 4);
+
+  get secondFourDigit => _number.substring(4, 8);
+
+  get thirdFourDigit => _number.substring(8, 12);
+
+  get fourthFourDigit => _number.substring(12, 16);
+
+  get expiryString =>
+      "${Utils.getDateIntTwoSig(_expiry.month)}/${Utils.getDateIntTwoSig(_expiry.year)}";
+
   Map<String, dynamic> toMap() {
     final result = <String, dynamic>{};
 
@@ -72,7 +85,7 @@ class BankCard {
     result.addAll({'dynamicCVC': _dynamicCVC});
     result
         .addAll({"dynamicCVCExpiry": _dynamicCVCExpiry.millisecondsSinceEpoch});
-    result.addAll({'locked': _locked});
+    result.addAll({fnLocked: _locked});
     result.addAll({fnAccountNumber: _linkedAccountID.getNumber});
     result.addAll({fnAccountBSB: _linkedAccountID.getBsb});
 
@@ -90,7 +103,7 @@ class BankCard {
         dynamicCVC: map['dynamicCVC'] ?? "",
         dynamicCVCExpiry:
             DateTime.fromMillisecondsSinceEpoch(map['dynamicCVCExpiry'] as int),
-        locked: map['locked'] ?? "",
+        locked: map[fnLocked] ?? "",
         accountNumber: map[fnAccountNumber] ?? "",
         accountBSB: map[fnAccountBSB] ?? "");
   }
