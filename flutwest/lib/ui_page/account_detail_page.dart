@@ -207,7 +207,7 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
     return CustButton(
       onTap: () {},
       borderOn: false,
-      paragraphStype: const TextStyle(fontSize: 16.0),
+      paragraphStyle: const TextStyle(fontSize: 16.0),
       leftWidget: const Icon(
         Icons.monetization_on_sharp,
         size: 30,

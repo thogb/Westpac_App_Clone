@@ -476,7 +476,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
       padding: const EdgeInsets.fromLTRB(Vars.standardPaddingSize, 5.0,
           Vars.standardPaddingSize, Vars.topBotPaddingSize),
       borderOn: false,
-      paragraphStype: const TextStyle(fontSize: 16.0),
+      paragraphStyle: const TextStyle(fontSize: 16.0),
       leftWidget: const Icon(
         Icons.monetization_on_sharp,
         size: 30,

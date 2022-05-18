@@ -16,7 +16,8 @@ class CustButton extends StatelessWidget {
   final String? paragraph;
   final Widget? leftWidget;
   final Widget? rightWidget;
-  final TextStyle? paragraphStype;
+  final TextStyle? headingStyle;
+  final TextStyle? paragraphStyle;
   final VoidCallback? onTap;
   final bool? borderOn;
   final EdgeInsetsGeometry? padding;
@@ -28,7 +29,8 @@ class CustButton extends StatelessWidget {
       this.paragraph,
       this.leftWidget,
       this.rightWidget,
-      this.paragraphStype,
+      this.headingStyle,
+      this.paragraphStyle,
       this.onTap,
       this.borderOn = true,
       this.padding,
@@ -57,7 +59,7 @@ class CustButton extends StatelessWidget {
               children: [
                 leftWidget ?? const SizedBox(),
                 SizedBox(
-                  width: leftRightPadding,
+                  width: leftWidget != null ? leftRightPadding : null,
                 ),
                 Expanded(
                   child: Column(
@@ -67,13 +69,13 @@ class CustButton extends StatelessWidget {
                       heading != null
                           ? Text(
                               heading!,
-                              style: buttonHeadingStyle,
+                              style: headingStyle ?? buttonHeadingStyle,
                             )
                           : const SizedBox(),
                       SizedBox(height: heading != null ? 4.0 : 0.0),
                       paragraph != null
                           ? Text(paragraph!,
-                              style: paragraphStype ?? buttonParaStyle)
+                              style: paragraphStyle ?? buttonParaStyle)
                           : const SizedBox()
                     ],
                   ),

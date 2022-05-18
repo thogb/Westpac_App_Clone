@@ -12,6 +12,8 @@ import 'package:flutwest/ui_page/cards_page.dart';
 import 'package:flutwest/ui_page/home_content_page.dart';
 import 'package:flutwest/ui_page/products_page.dart';
 import 'package:flutwest/ui_page/profile_page.dart';
+import 'package:flutwest/ui_page/transfer_Page.dart';
+import 'package:flutwest/ui_page/transfer_from_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -316,9 +318,17 @@ class _HomePageState extends State<HomePage> {
                 )),
                 child: Wrap(
                   children: [
-                    const ListTile(
-                        leading: Icon(Icons.transfer_within_a_station),
-                        title: Text("Transfer between accounts")),
+                    ListTile(
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: ((context) =>
+                                      TransferFromPage(accounts: _accounts))));
+                        },
+                        leading: const Icon(Icons.transfer_within_a_station),
+                        title: const Text("Transfer between accounts")),
                     const ListTile(
                         leading: Icon(Icons.payment_outlined),
                         title: Text("Pay someone")),
