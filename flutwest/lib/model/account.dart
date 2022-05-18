@@ -36,6 +36,10 @@ class Account {
 
   set setCardNumber(cardNumber) => this.cardNumber = cardNumber;
 
+  String get getBalanceUSDToString => "\$${balance.round(scale: 2)}";
+
+  String get getAccountName => "Westpac $type";
+
   bool hasCard() {
     return cardNumber != "";
   }
