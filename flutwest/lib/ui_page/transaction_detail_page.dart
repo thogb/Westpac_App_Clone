@@ -6,6 +6,7 @@ import 'package:flutwest/cust_widget/cust_radio.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_transaction.dart';
+import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 
@@ -58,7 +59,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
 
   bool _noMoreDataToLoad = false;
 
-  double _amountSearch = double.infinity;
+  double? _amountSearch;
+  String? _descriptionSearch;
 
   // final List<TransactionGroup> _transactionGroups = [];
 
@@ -117,7 +119,9 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
               child: FutureBuilder(
             future: FirestoreController.instance.getTransactionLimitBy(
                 widget.account.getNumber, _readLimits,
-                transactionType: _transactionType, amount: _amountSearch),
+                transactionType: _transactionType,
+                amount: _amountSearch,
+                description: _descriptionSearch),
             builder: (context, snapshots) {
               if (snapshots.hasError) {
                 return const Center(child: Text("Error"));
@@ -347,17 +351,44 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
       },
       onSubmitted: (String value) {
         double? val = double.tryParse(value);
-        if (val != null) {
+
+        if (value.isNotEmpty) {
+          if (val != null) {
+            if (val != _amountSearch) {
+              _clearTransactions();
+              setState(() {
+                _amountSearch = val;
+
+                if (_descriptionSearch != null) {
+                  _descriptionSearch = null;
+                }
+              });
+            }
+          } else {
+            if (_amountSearch != null) {
+              setState(() {
+                _amountSearch = null;
+              });
+            }
+
+            if (value != _descriptionSearch && value.length > 2) {
+              _clearTransactions();
+              setState(() {
+                _descriptionSearch = value;
+              });
+            }
+          }
+        } else {
           _clearTransactions();
           setState(() {
-            _amountSearch = val;
+            if (_amountSearch != null) {
+              _amountSearch = null;
+            }
+
+            if (_descriptionSearch != null) {
+              _descriptionSearch = null;
+            }
           });
-        } else {
-          if (_amountSearch != double.infinity) {
-            setState(() {
-              _amountSearch = double.infinity;
-            });
-          }
         }
       },
       style: const TextStyle(fontSize: 18.0),
@@ -369,7 +400,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                     if (_textEditingController.text.isNotEmpty) {
                       setState(() {
                         _textEditingController.clear();
-                        _amountSearch = double.infinity;
+                        _amountSearch = null;
+                        _descriptionSearch = null;
                       });
                     }
                   },
@@ -390,7 +422,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                       _isInputting = false;
                       if (_textEditingController.text.isNotEmpty) {
                         _textEditingController.clear();
-                        _amountSearch = double.infinity;
+                        _amountSearch = null;
+                        _descriptionSearch = null;
                       }
                     });
                   },
@@ -489,13 +522,13 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
           children: [
             Text(
               actualAmount >= Decimal.fromInt(0)
-                  ? "\$${actualAmount.round(scale: 2)}"
-                  : "-\$${-actualAmount.round(scale: 2)}",
+                  ? "\$${Utils.formatDecimalMoneyUS(actualAmount)}"
+                  : "-\$${Utils.formatDecimalMoneyUS(-actualAmount)}",
               style: TextStyle(
                   color:
                       actualAmount > Decimal.fromInt(0) ? Colors.green : null),
             ),
-            Text("bal \$${balance.round(scale: 2)}")
+            Text("bal \$${Utils.formatDecimalMoneyUS(balance)}")
           ],
         ),
       ),
