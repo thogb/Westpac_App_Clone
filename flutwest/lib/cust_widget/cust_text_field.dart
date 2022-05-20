@@ -46,7 +46,8 @@ class CustTextField extends StatefulWidget {
   factory CustTextField.moneyInput(
       {TextEditingController? controller,
       String? errorText,
-      String? Function(String value)? getErrorMsg}) {
+      String? Function(String value)? getErrorMsg,
+      void Function(String)? onChanged}) {
     controller ??= TextEditingController();
 
     return CustTextField(
@@ -59,74 +60,79 @@ class CustTextField extends StatefulWidget {
           const TextStyle(fontSize: moneyInputFontSize, color: Colors.black),
       onChanged: (value) {
         if (controller != null) {
-          int offset = controller.selection.baseOffset;
-          String temp;
-          String newChar = offset != 0 ? value[offset - 1] : "";
+          if (value.isNotEmpty) {
+            int offset = controller.selection.baseOffset;
+            String temp;
+            String newChar = offset != 0 ? value[offset - 1] : "";
 
-          if (newChar == ",") {
-            value = value.replaceRange(offset - 1, offset, "");
-            offset--;
-            newChar = offset != 0 ? value[offset - 1] : "";
-          }
+            if (newChar == ",") {
+              value = value.replaceRange(offset - 1, offset, "");
+              offset--;
+              newChar = offset != 0 ? value[offset - 1] : "";
+            }
 
-          temp = value;
+            temp = value;
 
-          int dotLocation = temp.indexOf(".");
+            int dotLocation = temp.indexOf(".");
 
-          if (newChar == ".") {
-            if (temp.length == 1) {
+            if (newChar == ".") {
+              if (temp.length == 1) {
+                controller.text = temp;
+                controller.selection = const TextSelection.collapsed(offset: 1);
+                return;
+              }
+              // If the new char was dot and there is already a dot in old string
+              // Make sure input money is valid only one decimal dot
+              if ((temp.substring(offset, temp.length).contains(".") ||
+                  temp.substring(0, offset - 1).contains("."))) {
+                temp = temp.replaceFirst(RegExp(r'.'), '', offset - 1);
+              } else if (temp.substring(offset).length > 2) {
+                // If inserted dot but right sided has more than 2 chars
+                // Ensure only two decimal palces
+                temp = temp.replaceRange(offset - 1, offset, "");
+              }
+            } else if (dotLocation != -1 &&
+                dotLocation < (offset - 1) &&
+                (temp.length - 1 - dotLocation) > 2) {
+              // If new char is not dot and there is already a dot and new char is
+              // behind the dot position.
+              // Make sure to only input money no more than 2 decimal places
+              temp = temp.replaceRange(offset - 1, offset, "");
+            }
+
+            if (temp == ".") {
               controller.text = temp;
               controller.selection = const TextSelection.collapsed(offset: 1);
               return;
             }
-            // If the new char was dot and there is already a dot in old string
-            // Make sure input money is valid only one decimal dot
-            if ((temp.substring(offset, temp.length).contains(".") ||
-                temp.substring(0, offset - 1).contains("."))) {
-              temp = temp.replaceFirst(RegExp(r'.'), '', offset - 1);
-            } else if (temp.substring(offset).length > 2) {
-              // If inserted dot but right sided has more than 2 chars
-              // Ensure only two decimal palces
-              temp = temp.replaceRange(offset - 1, offset, "");
-            }
-          } else if (dotLocation != -1 &&
-              dotLocation < (offset - 1) &&
-              (temp.length - 1 - dotLocation) > 2) {
-            // If new char is not dot and there is already a dot and new char is
-            // behind the dot position.
-            // Make sure to only input money no more than 2 decimal places
-            temp = temp.replaceRange(offset - 1, offset, "");
+
+            dotLocation = temp.indexOf(".");
+
+            // Split integer part and decimal part into two
+            String leftSide =
+                dotLocation != -1 ? temp.substring(0, dotLocation) : temp;
+            String rightSide =
+                dotLocation != -1 ? temp.substring(dotLocation + 1) : "";
+
+            // Parse the integer part
+            int? leftAmount = int.tryParse(leftSide.replaceAll(r",", ""));
+            // case where temp = .xx,
+            leftAmount ??= 0;
+
+            // Reformat the new String
+            controller.text = dotLocation != -1
+                ? usMoneyFormatter.format(leftAmount) + "." + rightSide
+                : usMoneyFormatter.format(leftAmount);
+
+            // New cursor position
+            controller.selection = TextSelection.collapsed(
+                offset: min(
+                    max(offset + controller.text.length - value.length, 0),
+                    controller.text.length));
           }
-
-          if (temp == ".") {
-            controller.text = temp;
-            controller.selection = const TextSelection.collapsed(offset: 1);
-            return;
+          if (onChanged != null) {
+            onChanged(controller.text);
           }
-
-          dotLocation = temp.indexOf(".");
-
-          // Split integer part and decimal part into two
-          String leftSide =
-              dotLocation != -1 ? temp.substring(0, dotLocation) : temp;
-          String rightSide =
-              dotLocation != -1 ? temp.substring(dotLocation + 1) : "";
-
-          // Parse the integer part
-          int? leftAmount = int.tryParse(leftSide.replaceAll(r",", ""));
-          // case where temp = .xx,
-          leftAmount ??= 0;
-
-          // Reformat the new String
-          controller.text = dotLocation != -1
-              ? usMoneyFormatter.format(leftAmount) + "." + rightSide
-              : usMoneyFormatter.format(leftAmount);
-
-          // New cursor position
-          controller.selection = TextSelection.collapsed(
-              offset: min(
-                  max(offset + controller.text.length - value.length, 0),
-                  controller.text.length));
         }
       },
       decoration: InputDecoration(
@@ -218,6 +224,10 @@ class _CustTextFieldState extends State<CustTextField> {
               ? GestureDetector(
                   onTap: () {
                     _controller.clear();
+                    if (widget.onChanged != null) {
+                      widget.onChanged!(_controller.text);
+                    }
+
                     setState(() {
                       _errorMsg = null;
                       _showClearButton = false;
