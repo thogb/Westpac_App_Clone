@@ -6,11 +6,17 @@ import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/transfer_page.dart';
 
 class TransferFromPage extends StatelessWidget {
+  final String title;
   final bool pushReplacement;
+  final bool requestResult;
   final List<Account> accounts;
 
   const TransferFromPage(
-      {Key? key, required this.accounts, this.pushReplacement = false})
+      {Key? key,
+      required this.accounts,
+      this.requestResult = false,
+      this.pushReplacement = false,
+      this.title = "From"})
       : super(key: key);
 
   @override
@@ -33,9 +39,9 @@ class TransferFromPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: Vars.topBotPaddingSize),
-              const StandardPadding(
+              StandardPadding(
                 child: Text(
-                  "From",
+                  title,
                   style: Vars.headingStyle1,
                 ),
               ),
@@ -58,15 +64,19 @@ class TransferFromPage extends StatelessWidget {
           const EdgeInsets.symmetric(vertical: Vars.standardPaddingSize / 4),
       child: CustButton(
         onTap: () {
-          PageRouteBuilder pageRouteBuilder = PageRouteBuilder(
-              pageBuilder: ((context, animation, secondaryAnimation) =>
-                  TransferPage(accounts: accounts, currAccount: account)),
-              transitionDuration: Duration.zero,
-              reverseTransitionDuration: Duration.zero);
-          if (pushReplacement) {
-            Navigator.pushReplacement(context, pageRouteBuilder);
+          if (requestResult) {
+            Navigator.pop(context, account);
           } else {
-            Navigator.push(context, pageRouteBuilder);
+            PageRouteBuilder pageRouteBuilder = PageRouteBuilder(
+                pageBuilder: ((context, animation, secondaryAnimation) =>
+                    TransferPage(accounts: accounts, currAccount: account)),
+                transitionDuration: Duration.zero,
+                reverseTransitionDuration: Duration.zero);
+            if (pushReplacement) {
+              Navigator.pushReplacement(context, pageRouteBuilder);
+            } else {
+              Navigator.push(context, pageRouteBuilder);
+            }
           }
         },
         headingStyle: const TextStyle(fontSize: Vars.headingTextSize3),
