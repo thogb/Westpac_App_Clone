@@ -9,6 +9,7 @@ import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/navbar_state.dart';
+import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/account_ordering_page.dart';
 
@@ -675,7 +676,8 @@ class _DraggableAccountButtonState extends State<DraggableAccountButton>
                       "Westpac ${widget.account.type}",
                       style: const TextStyle(fontSize: 16.0),
                     ),
-                    Text("\$${widget.account.balance}",
+                    Text(
+                        "\$${Utils.formatDecimalMoneyUS(widget.account.balance)}",
                         style: const TextStyle(
                             fontSize: 16.0, fontWeight: FontWeight.bold))
                   ],
