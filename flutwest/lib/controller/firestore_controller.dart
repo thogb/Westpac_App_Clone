@@ -83,14 +83,28 @@ class FirestoreController {
   Future<QuerySnapshot<Map<String, dynamic>>> getTransactionLimitBy(
       String accountId, int limit,
       {String transactionType = AccountTransaction.allTypes,
-      double amount = double.infinity}) async {
+      String? description,
+      double? amount}) async {
     await Future.delayed(const Duration(milliseconds: 1000));
     Query<Map<String, dynamic>> query = _firebaseFirestore
         .collection(colTransaction)
         .where(AccountTransaction.fnAccountNumbers, arrayContains: accountId);
 
-    if (amount != double.infinity) {
-      query = query.where(AccountTransaction.fnAmount, isEqualTo: amount.abs());
+    if (amount != null) {
+      query = query.where(AccountTransaction.fnDoubleTypeAmount,
+          isGreaterThan: (amount));
+      query = query.where(AccountTransaction.fnDoubleTypeAmount,
+          isLessThan: (amount + 0.99));
+    }
+
+    if (description != null && description.length > 2) {
+      print("searching desciption in firecontroller");
+      query = query.where(
+        AccountTransaction.fnDescription,
+        isGreaterThan: description.toUpperCase(),
+      );
+      query = query.where(AccountTransaction.fnDescription,
+          isLessThan: description.toUpperCase() + 'z');
     }
 
     if (transactionType != AccountTransaction.allTypes) {
@@ -106,13 +120,13 @@ class FirestoreController {
 
   Stream<QuerySnapshot<Map<String, dynamic>>> getTransactionLimitByStream(
       String accountId, int limit,
-      {String transactionType = AccountTransaction.allTypes,
-      double amount = double.infinity}) {
+      {String transactionType = AccountTransaction.allTypes, String? amount}) {
     Query<Map<String, dynamic>> query = _firebaseFirestore
         .collection(colTransaction)
         .where(AccountTransaction.fnAccountNumbers, arrayContains: accountId);
-    if (amount != double.infinity) {
-      query = query.where(AccountTransaction.fnAmount, isEqualTo: amount.abs());
+    if (amount != null && amount.length >= 2) {
+      query = query.where(AccountTransaction.fnAmount,
+          isGreaterThanOrEqualTo: amount, isLessThan: amount + 'Z');
     }
 
     if (transactionType != AccountTransaction.allTypes) {
