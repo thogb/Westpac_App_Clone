@@ -24,7 +24,7 @@ class LoadingText extends StatelessWidget {
 
   Container _getContainer(double width) {
     return Container(
-      height: Vars.topBotPaddingSize * 2,
+      height: Vars.topBotPaddingSize * 1,
       width: width,
       decoration: BoxDecoration(
           color: Vars.loadingDummyColor,
