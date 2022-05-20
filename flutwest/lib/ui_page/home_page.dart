@@ -324,8 +324,9 @@ class _HomePageState extends State<HomePage> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: ((context) =>
-                                      TransferFromPage(accounts: _accounts))));
+                                  builder: ((context) => TransferFromPage(
+                                      accounts: _accounts,
+                                      pushReplacement: true))));
                         },
                         leading: const Icon(Icons.transfer_within_a_station),
                         title: const Text("Transfer between accounts")),
