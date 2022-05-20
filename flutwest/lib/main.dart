@@ -188,7 +188,7 @@ void putData() async {
     "TERRYWHITE ROSTRATA",
     "MCDONALDS APP RIVERTON",
     "IGA ROSTRATA",
-    "BIG WILLETTON",
+    "BIGW WILLETTON",
     "HUNGRY JACKS Myaree",
     "ebay xxxxxxx-xxxxx Sydney AUS",
     "EZI City Of Canning Welshpool Dc Aus",
