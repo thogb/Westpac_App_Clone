@@ -11,6 +11,7 @@ class AccountTransaction {
   static const String fnTransactionTtypes = "transactionTypes";
   static const String fnAmount = "amount";
   static const String fnDescription = "description";
+  static const String fnDoubleTypeAmount = "doubleTypeAmount";
   static const int senderIndex = 0;
   static const int receiverIndex = 1;
 
@@ -98,6 +99,8 @@ class AccountTransaction {
     //result.addAll({'id': id});
     result.addAll({fnDescription: description});
     result.addAll({fnAmount: amount.toString()});
+    result.addAll({fnDoubleTypeAmount: amount.toDouble()});
+    print("${amount.toString()} ${amount.toDouble}");
     if (transactionTypes.isNotEmpty) {
       result.addAll({fnTransactionTtypes: transactionTypes});
     }
