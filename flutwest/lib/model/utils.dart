@@ -1,5 +1,7 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutwest/model/vars.dart';
 
 class Utils {
   Utils._();
@@ -36,5 +38,19 @@ class Utils {
     }
 
     return val.toString();
+  }
+
+  static String getDateTimeWDDMY(DateTime dateTime) {
+    return "${Vars.days[dateTime.weekday]} ${dateTime.day} ${Vars.months[dateTime.month]} ${dateTime.year}";
+  }
+
+  static String getDateTimeWDDMYToday(DateTime dateTime) {
+    return Vars.isSameDay(dateTime, DateTime.now())
+        ? "Today"
+        : getDateTimeWDDMY(dateTime);
+  }
+
+  static String formatDecimalMoneyUS(Decimal decimal) {
+    return Vars.usFormatter.format(decimal.toDouble());
   }
 }
