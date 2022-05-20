@@ -8,6 +8,7 @@ import 'package:flutwest/cust_widget/outlined_container.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/account_transaction.dart';
+import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/transaction_detail_page.dart';
 
@@ -66,7 +67,8 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
                             fontSize: 16.0,
                             fontWeight: FontWeight.bold),
                       ),
-                      Text("\$${_currAccount.getAccount().balance}",
+                      Text(
+                          "\$${Utils.formatDecimalMoneyUS(_currAccount.getAccount().balance)}",
                           style: const TextStyle(
                               color: Colors.black54, fontSize: 12.0))
                     ],
@@ -304,7 +306,8 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
           Padding(
               padding: const EdgeInsets.symmetric(
                   vertical: Vars.topBotPaddingSize * 2),
-              child: Text("\$${account.balance}", style: headingStyle)),
+              child: Text("\$${Utils.formatDecimalMoneyUS(account.balance)}",
+                  style: headingStyle)),
         ],
       ),
     );
