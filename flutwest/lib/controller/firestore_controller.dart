@@ -1,10 +1,9 @@
 //import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 
-import 'dart:ffi';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutwest/model/account.dart';
+import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/account_transaction.dart';
 import 'package:flutwest/model/bank_card.dart';
 import 'package:flutwest/model/member.dart';
@@ -14,7 +13,9 @@ class FirestoreController {
   static const String colCard = "card";
   static const String colTransaction = "transaction";
 
-  static const String subColAccount = "account";
+  //static const String subColAccount = "account";
+
+  static const String colAccount = "account";
 
   late final FirebaseFirestore _firebaseFirestore;
 
@@ -51,21 +52,43 @@ class FirestoreController {
   }
 
   Future<void> addAccount(String memberId, Account account) async {
-    await _firebaseFirestore
+    /*await _firebaseFirestore
         .collection(colMember)
         .doc(memberId)
         .collection(subColAccount)
         .doc(account.accountID.number)
-        .set(account.toMap());
+        .set(account.toMap());*/
+    await _firebaseFirestore.collection(colAccount).add(account.toMap());
   }
+
+  // Function #Accounts
 
   Future<QuerySnapshot<Map<String, dynamic>>> getAccounts(
       String memberId) async {
-    return _firebaseFirestore
+    /*return _firebaseFirestore
         .collection(colMember)
         .doc(memberId)
         .collection(subColAccount)
+        .get();*/
+    return _firebaseFirestore
+        .collection(colAccount)
+        .where(Account.fnMemberID, isEqualTo: memberId)
         .get();
+  }
+
+  Future<QueryDocumentSnapshot<Map<String, dynamic>>> getAccountByNumber(
+      {required String accountNumber}) async {
+    return (await _firebaseFirestore
+            .collection(colAccount)
+            .where(Account.fnAccountNumber, isEqualTo: accountNumber)
+            .limit(1)
+            .get())
+        .docs[0];
+  }
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> getAccountByDocId(
+      {required String docID}) {
+    return _firebaseFirestore.collection(colAccount).doc(docID).get();
   }
 
   Future<void> addTransaction(AccountTransaction transaction) async {
@@ -75,21 +98,37 @@ class FirestoreController {
   }
 
   Future<void> addTransferTransaction(
-      {required Account sender,
-      required Account receiver,
+      {required AccountID sender,
+      required AccountID receiver,
       required String transferDescription,
-      required Decimal amount}) async {
+      required Decimal amount,
+      DateTime? dateTime}) async {
     AccountTransaction transaction = AccountTransaction.create(
-        sender: sender.accountID,
-        receiver: receiver.accountID,
-        dateTime: DateTime.now(),
+        sender: sender,
+        receiver: receiver,
+        dateTime: dateTime ?? DateTime.now(),
         id: "",
         amount: amount,
         senderDescription:
             "WITHDRAWL MOBILE ****** TFR ${receiver.getAccountName} $transferDescription",
-        receiverDescription:
-            "DEPOSIT ONLINE ****** TFR ${sender.getAccountName} $transferDescription");
-    await addTransaction(transaction);
+        receiverDescription: "DEPOSIT ONLINE ****** TFR ${sender.getAccountName} $transferDescription",
+        transactionTypes: [
+          AccountTransaction.paymentsAndTransfers,
+          AccountTransaction.credits
+        ]);
+    Decimal senderNewBal = sender.getBalance - amount;
+    Decimal receiverNewBal = receiver.getBalance + amount;
+    await Future.wait([
+      addTransaction(transaction),
+      updateAccountBalance(
+          accountNumber: sender.accountID.getNumber,
+          newBalance: senderNewBal,
+          docID: sender.docID),
+      updateAccountBalance(
+          accountNumber: receiver.accountID.getNumber,
+          newBalance: receiverNewBal,
+          docID: receiver.docID),
+    ]);
   }
 
   Future<void> addPaymentTransaction(
@@ -98,18 +137,35 @@ class FirestoreController {
       required String receiverName,
       required String senderDescription,
       required String receiverDescription,
-      required Decimal amount}) async {
+      required Decimal amount,
+      DateTime? dateTime}) async {
     AccountTransaction transaction = AccountTransaction.create(
         sender: sender.accountID,
         receiver: receiver.accountID,
-        dateTime: DateTime.now(),
+        dateTime: dateTime ?? DateTime.now(),
         id: "",
         amount: amount,
         senderDescription:
             "WITHDRAWL-OSKO PAYMENT ****** $receiverName $senderDescription",
         receiverDescription:
-            "DEPOSIT-OSKO PAYMENT ****** ${sender.getNumber} $receiverDescription");
+            "DEPOSIT-OSKO PAYMENT ****** ${sender.getNumber} $receiverDescription",
+        transactionTypes: [
+          AccountTransaction.paymentsAndTransfers,
+          AccountTransaction.credits
+        ]);
     await addTransaction(transaction);
+    Decimal senderNewBal = sender.getBalance - amount;
+    Decimal receiverNewBal = receiver.getBalance + amount;
+    await Future.wait([
+      addTransaction(transaction),
+      updateAccountBalance(
+          accountNumber: sender.accountID.getNumber,
+          newBalance: senderNewBal,
+          docID: sender.docID),
+      updateAccountBalance(
+          accountNumber: receiver.accountID.getNumber,
+          newBalance: receiverNewBal),
+    ]);
   }
 
   Future<QuerySnapshot<Map<String, dynamic>>> getAllTransactions(
@@ -189,4 +245,33 @@ class FirestoreController {
         .doc(cardNumber)
         .update({BankCard.fnLocked: lockStatus});
   }
+
+  /*
+  Future<void> updateAccountBalance(
+      {String? docID,
+      required String accountNumber,
+      required Decimal newBalance}) async {
+    try {
+      if (docID != null) {
+        await _firebaseFirestore
+            .collection(colAccount)
+            .doc(docID)
+            .update({Account.fnBalance: newBalance.toString()});
+      } else {
+        // Retrieved from https://stackoverflow.com/questions/70569124/flutter-firestore-update-where
+        // 21/04/2022
+        final accountRef = await _firebaseFirestore
+            .collection(colAccount)
+            .where(Account.fnAccountNumber, isEqualTo: accountNumber)
+            .limit(1)
+            .get()
+            .then((QuerySnapshot snapshot) => snapshot.docs[0].reference);
+        WriteBatch batch = _firebaseFirestore.batch();
+        batch.update(accountRef, {Account.fnBalance: newBalance.toString()});
+        await batch.commit();
+      }
+    } catch (e) {
+      print(e);
+    }
+  }*/
 }

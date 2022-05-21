@@ -4,22 +4,30 @@ import 'package:decimal/decimal.dart';
 import 'package:flutwest/model/account_id.dart';
 
 class Account {
+  static const String fnMemberID = "memberID";
+  static const String fnBalance = "balance";
+  static const String fnAccountNumber = "number";
+
   static const String typeLife = "Life";
   static const String typeChocie = "Choice";
   static const String typeeSaver = "eSaver";
   static const String typeBusiness = "Business";
 
-  late String type;
-  late AccountID accountID;
-  late Decimal balance;
-  late String cardNumber;
+  final String type;
+  final String? docID;
+  final AccountID accountID;
+  final Decimal balance;
+  final String cardNumber;
+  final String memberID;
 
   Account(
       {required this.type,
       required bsb,
       required number,
       required this.balance,
-      required this.cardNumber})
+      required this.cardNumber,
+      required this.memberID,
+      this.docID})
       : accountID = AccountID(number: number, bsb: bsb);
 
   get getType => this.type;
@@ -30,11 +38,7 @@ class Account {
 
   get getBalance => this.balance;
 
-  set setBalance(balance) => this.balance = balance;
-
   get getCardNumber => this.cardNumber;
-
-  set setCardNumber(cardNumber) => this.cardNumber = cardNumber;
 
   String get getBalanceUSDToString => "\$${balance.round(scale: 2)}";
 
@@ -49,26 +53,29 @@ class Account {
 
     result.addAll({'type': type});
     result.addAll({'bsb': accountID.bsb});
-    result.addAll({'number': accountID.number});
-    result.addAll({'balance': balance.toString()});
+    result.addAll({fnAccountNumber: accountID.number});
+    result.addAll({fnBalance: balance.toString()});
     result.addAll({'cardNumber': cardNumber});
+    result.addAll({fnMemberID: memberID});
 
     return result;
   }
 
-  factory Account.fromMap(Map<String, dynamic> map) {
+  factory Account.fromMap(Map<String, dynamic> map, String docID) {
     return Account(
         type: map['type'] ?? '',
         bsb: map['bsb'] ?? '',
-        number: map['number'] ?? '',
-        balance: Decimal.parse(map['balance'] ?? "0"),
-        cardNumber: map['cardNumber'] ?? '');
+        number: map[fnAccountNumber] ?? '',
+        balance: Decimal.parse(map[fnBalance] ?? "0"),
+        cardNumber: map['cardNumber'] ?? '',
+        memberID: map[fnMemberID] ?? "",
+        docID: docID);
   }
 
   String toJson() => json.encode(toMap());
 
-  factory Account.fromJson(String source) =>
-      Account.fromMap(json.decode(source));
+  factory Account.fromJson(String source, String docID) =>
+      Account.fromMap(json.decode(source), docID);
 }
 
 class AccountOrderInfo {

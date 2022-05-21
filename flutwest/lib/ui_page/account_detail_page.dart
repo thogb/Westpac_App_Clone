@@ -192,8 +192,7 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
           const SizedBox(
             height: Vars.heightGapBetweenWidgets / 2.0,
           ),
-          Text(
-              "${Vars.days[dateTime.weekday]} ${dateTime.day} ${Vars.months[dateTime.month]} ${dateTime.year}"),
+          Text(Utils.getDateTimeWDDMYToday(dateTime)),
           const SizedBox(height: 2.0),
           Container(
             height: 1,

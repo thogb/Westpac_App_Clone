@@ -97,8 +97,9 @@ class _HomePageState extends State<HomePage> {
                 "Could not load member data of member: ${Vars.fakeMemberID}");
           }
 
-          _accounts =
-              queryAccounts.docs.map((e) => Account.fromMap(e.data())).toList();
+          _accounts = queryAccounts.docs
+              .map((e) => Account.fromMap(e.data(), e.id))
+              .toList();
           _member = Member.fromMap(
               (queryMember.data() as Map<String, dynamic>), _accounts);
 

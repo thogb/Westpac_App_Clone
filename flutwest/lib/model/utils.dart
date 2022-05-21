@@ -69,19 +69,22 @@ class Utils {
         bsb: accountID.getBsb,
         number: accountID.getNumber,
         balance: Decimal.parse("15000"),
-        cardNumber: Vars.fakeCardNumber);
+        cardNumber: Vars.fakeCardNumber,
+        memberID: Vars.fakeMemberID);
     Account account2 = Account(
         type: Account.typeBusiness,
         bsb: "111-111",
         number: "111112",
         balance: Decimal.parse("18000"),
-        cardNumber: "");
+        cardNumber: "",
+        memberID: Vars.fakeMemberID);
     Account account3 = Account(
         type: Account.typeeSaver,
         bsb: "111-111",
         number: "111113",
         balance: Decimal.parse("11000"),
-        cardNumber: "");
+        cardNumber: "",
+        memberID: Vars.fakeMemberID);
     Member member = Member(
         firstName: "Tao",
         middleName: "",
@@ -94,13 +97,15 @@ class Utils {
         bsb: "111-111",
         number: "111114",
         balance: Decimal.parse("18000"),
-        cardNumber: "");
+        cardNumber: "",
+        memberID: "23123123");
     Account account5 = Account(
         type: Account.typeChocie,
         bsb: "111-111",
         number: "111115",
         balance: Decimal.parse("19000"),
-        cardNumber: "");
+        cardNumber: "",
+        memberID: "23123123");
 
     BankCard bankCard = BankCard(
         number: Vars.fakeCardNumber,

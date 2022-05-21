@@ -1,5 +1,6 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
+import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/cust_widget/clickable_text.dart';
 import 'package:flutwest/cust_widget/cust_text_field.dart';
 import 'package:flutwest/cust_widget/in_text_button.dart';
@@ -7,6 +8,7 @@ import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
+import 'package:flutwest/ui_page/loading_page.dart';
 import 'package:flutwest/ui_page/schedule_pay_page.dart';
 import 'package:flutwest/ui_page/transfer_from_page.dart';
 
@@ -29,6 +31,7 @@ class _TransferPageState extends State<TransferPage> {
   late Account _toAccount;
 
   final TextEditingController _tecMoney = TextEditingController();
+  final TextEditingController _tecDescription = TextEditingController();
 
   @override
   void initState() {
@@ -203,6 +206,7 @@ class _TransferPageState extends State<TransferPage> {
 
                 // Desription
                 CustTextField.standardSmall(
+                  controller: _tecDescription,
                   label: "Description (optional)",
                   maxLength: 18,
                 ),
@@ -247,7 +251,33 @@ class _TransferPageState extends State<TransferPage> {
                                   },
                                   child: const Text("Cancel")),
                               TextButton(
-                                  onPressed: () {},
+                                  onPressed: () async {
+                                    await Navigator.push(
+                                        context,
+                                        PageRouteBuilder(
+                                            pageBuilder: ((context, animation,
+                                                    secondaryAnimation) =>
+                                                LoadingPage(
+                                                    futureObject: FirestoreController
+                                                        .instance
+                                                        .addTransferTransaction(
+                                                            sender:
+                                                                _currAccount,
+                                                            receiver:
+                                                                _toAccount,
+                                                            transferDescription:
+                                                                _tecDescription
+                                                                    .text,
+                                                            amount: amount,
+                                                            dateTime:
+                                                                _dateTime))),
+                                            transitionDuration: Duration.zero,
+                                            reverseTransitionDuration:
+                                                Duration.zero));
+                                    Navigator.of(context)
+                                      ..pop()
+                                      ..pop();
+                                  },
                                   child: const Text("Transfer"))
                             ],
                           );
