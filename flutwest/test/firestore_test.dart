@@ -69,76 +69,86 @@ void main() {
         cardNumber: cardNumber,
         accounts: [account1, account2, account3]);
 
-    AccountTransaction accountTransaction1 = AccountTransaction(
+    AccountTransaction accountTransaction1 = AccountTransaction.create(
         sender: account1.accountID,
         receiver: account4.accountID,
         dateTime: DateTime(2022, 4, 1),
         id: "",
-        description: "account 1 to account 2",
+        senderDescription: "account 1 to account 2",
+        receiverDescription: "account 2 to account 1",
         amount: Decimal.fromInt(100));
-    AccountTransaction accountTransaction2 = AccountTransaction(
+    AccountTransaction accountTransaction2 = AccountTransaction.create(
         sender: account1.accountID,
         receiver: account4.accountID,
         dateTime: DateTime(2022, 4, 2),
         id: "",
-        description: "account 1 to account 2",
+        senderDescription: "account 1 to account 2",
+        receiverDescription: "account 2 to account 1",
         amount: Decimal.fromInt(200));
-    AccountTransaction accountTransaction3 = AccountTransaction(
+    AccountTransaction accountTransaction3 = AccountTransaction.create(
         sender: account1.accountID,
         receiver: account4.accountID,
         dateTime: DateTime(2022, 4, 3),
         id: "",
-        description: "account 1 to account 2",
+        senderDescription: "account 1 to account 2",
+        receiverDescription: "account 2 to account 1",
         amount: Decimal.fromInt(300));
-    AccountTransaction accountTransaction4 = AccountTransaction(
+    AccountTransaction accountTransaction4 = AccountTransaction.create(
         sender: account1.accountID,
         receiver: account4.accountID,
         dateTime: DateTime(2022, 4, 4),
         id: "",
-        description: "account 1 to account 2",
+        senderDescription: "account 1 to account 2",
+        receiverDescription: "account 2 to account 1",
         amount: Decimal.fromInt(400));
-    AccountTransaction accountTransaction5 = AccountTransaction(
+    AccountTransaction accountTransaction5 = AccountTransaction.create(
         sender: account1.accountID,
         receiver: account4.accountID,
         dateTime: DateTime(2022, 4, 5),
         id: "",
-        description: "account 1 to account 2",
+        senderDescription: "account 1 to account 2",
+        receiverDescription: "account 2 to account 1",
         amount: Decimal.fromInt(500));
 
-    AccountTransaction accountTransaction6 = AccountTransaction(
+    AccountTransaction accountTransaction6 = AccountTransaction.create(
         sender: account4.accountID,
         receiver: account1.accountID,
         dateTime: DateTime(2022, 4, 5),
         id: "",
-        description: "account 1 to account 2",
+        senderDescription: "account 1 to account 2",
+        receiverDescription: "account 2 to account 1",
         amount: Decimal.fromInt(333));
-    AccountTransaction accountTransaction7 = AccountTransaction(
+    AccountTransaction accountTransaction7 = AccountTransaction.create(
         sender: account3.accountID,
         receiver: account1.accountID,
         dateTime: DateTime(2022, 4, 6),
         id: "",
-        description: "account 1 to account 2",
+        senderDescription: "account 1 to account 2",
+        receiverDescription: "account 2 to account 1",
         amount: Decimal.fromInt(1000));
-    AccountTransaction accountTransaction8 = AccountTransaction(
+    AccountTransaction accountTransaction8 = AccountTransaction.create(
         sender: account5.accountID,
         receiver: account1.accountID,
         dateTime: DateTime(2022, 4, 3),
         id: "",
-        description: "account 1 to account 2",
+        senderDescription: "account 1 to account 2",
+        receiverDescription: "account 2 to account 1",
         amount: Decimal.fromInt(700));
-    AccountTransaction accountTransaction9 = AccountTransaction(
+    AccountTransaction accountTransaction9 = AccountTransaction.create(
         sender: account5.accountID,
         receiver: account3.accountID,
         dateTime: DateTime(2022, 4, 3),
         id: "",
-        description: "account 1 to account 2",
+        senderDescription: "account 1 to account 2",
+        receiverDescription: "account 2 to account 1",
         amount: Decimal.fromInt(1700));
-    AccountTransaction accountTransaction10 = AccountTransaction(
+    AccountTransaction accountTransaction10 = AccountTransaction.create(
         sender: account3.accountID,
         receiver: account2.accountID,
         dateTime: DateTime(2022, 4, 3),
         id: "",
-        description: "account 1 to account 2",
+        senderDescription: "account 1 to account 2",
+        receiverDescription: "account 2 to account 1",
         amount: Decimal.fromInt(1300));
 
     //print(bankcardMap);

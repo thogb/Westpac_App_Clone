@@ -37,46 +37,56 @@ class AccountTransaction {
     paymentsAndTransfers
   ];
 
-  late final AccountID sender;
-  late final AccountID receiver;
-  late final DateTime dateTime;
-  late final String id;
-  late final String description;
-  late final Decimal amount;
-  late final List<String> transactionTypes;
+  final AccountID sender;
+  final AccountID receiver;
+  final DateTime dateTime;
+  final String id;
+  final Map<String, String> description;
+  final Decimal amount;
+  final List<String> transactionTypes;
 
   AccountTransaction(
       {required this.sender,
       required this.receiver,
       required this.dateTime,
       required this.id,
-      required this.description,
       required this.amount,
+      required this.description,
       this.transactionTypes = const []});
+
+  factory AccountTransaction.create(
+      {required AccountID sender,
+      required AccountID receiver,
+      required DateTime dateTime,
+      required String id,
+      required Decimal amount,
+      required String senderDescription,
+      required receiverDescription,
+      List<String> transactionTypes = const []}) {
+    return AccountTransaction(
+        sender: sender,
+        receiver: receiver,
+        dateTime: dateTime,
+        id: id,
+        amount: amount,
+        description: {
+          sender.getNumber: senderDescription,
+          receiver.number: receiverDescription
+        },
+        transactionTypes: transactionTypes);
+  }
 
   AccountID get getSender => this.sender;
 
-  set setSender(sender) => this.sender = sender;
-
   AccountID get getReceiver => this.receiver;
-
-  set setReceiver(receiver) => this.receiver = receiver;
 
   get getDateTime => this.dateTime;
 
-  set setDateTime(dateTime) => this.dateTime = dateTime;
-
   get getId => this.id;
-
-  set setId(id) => this.id = id;
 
   get getDescription => this.description;
 
-  set setDescription(description) => this.description = description;
-
   get getAmount => this.amount;
-
-  set setAmount(amount) => this.amount = amount;
 
   Decimal getAmountPerspReceiver(String subjectNumber) {
     return receiver.number == subjectNumber ? amount : -amount;
@@ -100,7 +110,6 @@ class AccountTransaction {
     result.addAll({fnDescription: description});
     result.addAll({fnAmount: amount.toString()});
     result.addAll({fnDoubleTypeAmount: amount.toDouble()});
-    print("${amount.toString()} ${amount.toDouble}");
     if (transactionTypes.isNotEmpty) {
       result.addAll({fnTransactionTtypes: transactionTypes});
     }
@@ -136,7 +145,7 @@ class AccountTransaction {
             : Vars.invalidDateTime,
         //id: map['id'] ?? "",
         id: inId,
-        description: map[fnDescription] ?? "",
+        description: Map<String, String>.from(map[fnDescription] ?? {}),
         amount: Decimal.parse(map[fnAmount] ?? ""),
         transactionTypes: readTransactionTypes);
   }

@@ -204,8 +204,8 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
     );
   }
 
-  Widget _getTransactionButton(
-      AccountTransaction transaction, Decimal balance, Decimal actualAmount) {
+  Widget _getTransactionButton(AccountTransaction transaction, Decimal balance,
+      Decimal actualAmount, String? description) {
     return CustButton(
       onTap: () {},
       borderOn: false,
@@ -214,7 +214,7 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
         Icons.monetization_on_sharp,
         size: 30,
       ),
-      paragraph: transaction.getDescription,
+      paragraph: description,
       rightWidget: Padding(
         padding: const EdgeInsets.only(left: 45.0),
         child: Column(
@@ -387,28 +387,36 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
                           .toList();
                       return Column(
                         children: transactions.map(((transaction) {
-                          Widget widget;
+                          Widget retWidget;
                           Decimal actualAmount = transaction
                               .getAmountPerspReceiver(account.getNumber);
 
                           if (Vars.isSameDay(
                               dateTime, transaction.getDateTime)) {
-                            widget = _getTransactionButton(
-                                transaction, balance, actualAmount);
+                            retWidget = _getTransactionButton(
+                                transaction,
+                                balance,
+                                actualAmount,
+                                transaction.description[
+                                    widget.account.accountID.getNumber]);
                           } else {
                             dateTime = transaction.dateTime;
-                            widget = Column(
+                            retWidget = Column(
                               children: [
                                 _getTransactionLineBr(dateTime),
                                 _getTransactionButton(
-                                    transaction, balance, actualAmount)
+                                    transaction,
+                                    balance,
+                                    actualAmount,
+                                    transaction.description[
+                                        widget.account.accountID.getNumber])
                               ],
                             );
                           }
 
                           balance = balance - actualAmount;
 
-                          return widget;
+                          return retWidget;
                         })).toList(),
                       );
                     }

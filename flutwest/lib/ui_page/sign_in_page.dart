@@ -322,8 +322,13 @@ class _SignInPageState extends State<SignInPage> {
         borderRadius: BorderRadius.circular(3.0),
         child: InkWell(
           onTap: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const HomePage()));
+            Navigator.push(
+                context,
+                PageRouteBuilder(
+                    pageBuilder: ((context, animation, secondaryAnimation) =>
+                        const HomePage()),
+                    transitionDuration: Duration.zero,
+                    reverseTransitionDuration: Duration.zero));
           },
           child: const Padding(
             padding: EdgeInsets.symmetric(

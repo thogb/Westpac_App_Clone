@@ -514,7 +514,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
         Icons.monetization_on_sharp,
         size: 30,
       ),
-      paragraph: accountTransaction.getDescription,
+      paragraph:
+          accountTransaction.description[widget.account.accountID.getNumber],
       rightWidget: Padding(
         padding: const EdgeInsets.only(left: 45.0),
         child: Column(
