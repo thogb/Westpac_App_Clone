@@ -3,6 +3,7 @@
 import 'dart:ffi';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:decimal/decimal.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_transaction.dart';
 import 'package:flutwest/model/bank_card.dart';
@@ -68,7 +69,47 @@ class FirestoreController {
   }
 
   Future<void> addTransaction(AccountTransaction transaction) async {
-    _firebaseFirestore.collection(colTransaction).add(transaction.toMap());
+    await _firebaseFirestore
+        .collection(colTransaction)
+        .add(transaction.toMap());
+  }
+
+  Future<void> addTransferTransaction(
+      {required Account sender,
+      required Account receiver,
+      required String transferDescription,
+      required Decimal amount}) async {
+    AccountTransaction transaction = AccountTransaction.create(
+        sender: sender.accountID,
+        receiver: receiver.accountID,
+        dateTime: DateTime.now(),
+        id: "",
+        amount: amount,
+        senderDescription:
+            "WITHDRAWL MOBILE ****** TFR ${receiver.getAccountName} $transferDescription",
+        receiverDescription:
+            "DEPOSIT ONLINE ****** TFR ${sender.getAccountName} $transferDescription");
+    await addTransaction(transaction);
+  }
+
+  Future<void> addPaymentTransaction(
+      {required Account sender,
+      required Account receiver,
+      required String receiverName,
+      required String senderDescription,
+      required String receiverDescription,
+      required Decimal amount}) async {
+    AccountTransaction transaction = AccountTransaction.create(
+        sender: sender.accountID,
+        receiver: receiver.accountID,
+        dateTime: DateTime.now(),
+        id: "",
+        amount: amount,
+        senderDescription:
+            "WITHDRAWL-OSKO PAYMENT ****** $receiverName $senderDescription",
+        receiverDescription:
+            "DEPOSIT-OSKO PAYMENT ****** ${sender.getNumber} $receiverDescription");
+    await addTransaction(transaction);
   }
 
   Future<QuerySnapshot<Map<String, dynamic>>> getAllTransactions(
@@ -81,14 +122,15 @@ class FirestoreController {
   }
 
   Future<QuerySnapshot<Map<String, dynamic>>> getTransactionLimitBy(
-      String accountId, int limit,
+      String accountNumber, int limit,
       {String transactionType = AccountTransaction.allTypes,
       String? description,
       double? amount}) async {
     await Future.delayed(const Duration(milliseconds: 1000));
     Query<Map<String, dynamic>> query = _firebaseFirestore
         .collection(colTransaction)
-        .where(AccountTransaction.fnAccountNumbers, arrayContains: accountId);
+        .where(AccountTransaction.fnAccountNumbers,
+            arrayContains: accountNumber);
 
     if (amount != null) {
       query = query.where(AccountTransaction.fnDoubleTypeAmount,
@@ -98,13 +140,12 @@ class FirestoreController {
     }
 
     if (description != null && description.length > 2) {
-      print("searching desciption in firecontroller");
       query = query.where(
-        AccountTransaction.fnDescription,
-        isGreaterThan: description.toUpperCase(),
+        "${AccountTransaction.fnDescription}.$accountNumber",
+        isGreaterThan: description,
       );
-      query = query.where(AccountTransaction.fnDescription,
-          isLessThan: description.toUpperCase() + 'z');
+      query = query.where("${AccountTransaction.fnDescription}.$accountNumber",
+          isLessThan: description + 'z');
     }
 
     if (transactionType != AccountTransaction.allTypes) {
