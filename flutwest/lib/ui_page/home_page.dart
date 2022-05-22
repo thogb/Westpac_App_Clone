@@ -10,6 +10,7 @@ import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/cards_page.dart';
 import 'package:flutwest/ui_page/home_content_page.dart';
+import 'package:flutwest/ui_page/payment_page.dart';
 import 'package:flutwest/ui_page/products_page.dart';
 import 'package:flutwest/ui_page/profile_page.dart';
 import 'package:flutwest/ui_page/transfer_Page.dart';
@@ -40,10 +41,10 @@ class _HomePageState extends State<HomePage> {
   final Future<QuerySnapshot<Map<String, dynamic>>> _futureAccounts =
       FirestoreController.instance.getAccounts(Vars.fakeMemberID);
 
-  late final Future<List<Object>>? futures;
+  late final Future<List<Object>> futures;
 
   late Member _member;
-  late List<Account> _accounts;
+  List<Account> _accounts = [];
 
   final List<AccountOrderInfo> _accountOrderInfos = [];
 
@@ -97,11 +98,17 @@ class _HomePageState extends State<HomePage> {
                 "Could not load member data of member: ${Vars.fakeMemberID}");
           }
 
-          _accounts = queryAccounts.docs
-              .map((e) => Account.fromMap(e.data(), e.id))
-              .toList();
+          if (_accounts.isEmpty) {
+            _accounts = queryAccounts.docs
+                .map((e) => Account.fromMap(e.data(), e.id))
+                .toList();
+          }
           _member = Member.fromMap(
               (queryMember.data() as Map<String, dynamic>), _accounts);
+
+          for (Account account in _accounts) {
+            print("HomePage : ${account.hashCode}");
+          }
 
           _pages[0] = (HomeContentPage(
             navbarState: navbarState,
@@ -331,9 +338,23 @@ class _HomePageState extends State<HomePage> {
                         },
                         leading: const Icon(Icons.transfer_within_a_station),
                         title: const Text("Transfer between accounts")),
-                    const ListTile(
-                        leading: Icon(Icons.payment_outlined),
-                        title: Text("Pay someone")),
+                    ListTile(
+                      leading: Icon(Icons.payment_outlined),
+                      title: Text("Pay someone"),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                                pageBuilder:
+                                    ((context, animation, secondaryAnimation) =>
+                                        PaymentPage(
+                                            accounts: _accounts,
+                                            currAccount: _accounts[0])),
+                                transitionDuration: Duration.zero,
+                                reverseTransitionDuration: Duration.zero));
+                      },
+                    ),
                     const ListTile(
                         leading: Icon(Icons.payment),
                         title: Text("Pay by BPay")),
