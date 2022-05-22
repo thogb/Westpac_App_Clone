@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutwest/model/vars.dart';
 
 class InTextButton extends StatelessWidget {
-  static const defaultLeftLabelStyle = Vars.headingStyle2;
+  static const defaultLeftLabelStyle = Vars.headingStyle1;
   static const defaultLabelStyle = TextStyle(
-      fontSize: Vars.headingTextSize2,
+      fontSize: Vars.headingTextSize1,
       color: Vars.clickAbleColor,
       fontWeight: FontWeight.bold);
-  static const defaultRightLabelStyle = Vars.headingStyle2;
+  static const defaultRightLabelStyle = Vars.headingStyle1;
 
   final String leftLabel;
   final String label;
