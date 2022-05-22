@@ -42,6 +42,10 @@ class _TransferPageState extends State<TransferPage> {
       }
     }
 
+    widget.accounts.forEach((element) {
+      print(element.hashCode);
+    });
+
     super.initState();
   }
 
@@ -255,16 +259,22 @@ class _TransferPageState extends State<TransferPage> {
                                     await Navigator.push(
                                         context,
                                         PageRouteBuilder(
-                                            pageBuilder: ((context, animation,
-                                                    secondaryAnimation) =>
+                                            pageBuilder: ((context,
+                                                    animation, secondaryAnimation) =>
                                                 LoadingPage(
                                                     futureObject: FirestoreController
                                                         .instance
                                                         .addTransferTransaction(
-                                                            sender:
-                                                                _currAccount,
-                                                            receiver:
-                                                                _toAccount,
+                                                            sender: _currAccount
+                                                                .accountID,
+                                                            senderDocId:
+                                                                _currAccount
+                                                                    .docID!,
+                                                            receiver: _toAccount
+                                                                .accountID,
+                                                            receiverDocId:
+                                                                _currAccount
+                                                                    .docID!,
                                                             transferDescription:
                                                                 _tecDescription
                                                                     .text,
@@ -274,6 +284,18 @@ class _TransferPageState extends State<TransferPage> {
                                             transitionDuration: Duration.zero,
                                             reverseTransitionDuration:
                                                 Duration.zero));
+                                    _currAccount.balance =
+                                        _currAccount.balance - amount;
+                                    _toAccount.balance =
+                                        _toAccount.balance + amount;
+                                    for (Account account in widget.accounts) {
+                                      if (account.getNumber ==
+                                          _toAccount.getNumber) {
+                                        print(
+                                            "changed bal to ${_toAccount.balance}");
+                                        account.balance = _toAccount.balance;
+                                      }
+                                    }
                                     Navigator.of(context)
                                       ..pop()
                                       ..pop();
