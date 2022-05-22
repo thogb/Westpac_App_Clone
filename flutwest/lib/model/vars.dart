@@ -53,6 +53,9 @@ class Vars {
   static const TextStyle paragraphStyleSmall =
       TextStyle(fontSize: paragraphTextSizeSmall);
 
+  static const TextStyle paragraphStyleGrey =
+      TextStyle(fontSize: paragraphTextSize, color: Colors.black54);
+
   static const TextStyle clickableHeadingStyle1 = TextStyle(
       fontSize: headingTextSize1,
       fontWeight: FontWeight.bold,
