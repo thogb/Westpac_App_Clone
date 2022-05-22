@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
@@ -156,6 +157,9 @@ class _HomeContentPageState extends State<HomeContentPage>
     accounts = widget.member.accounts;
     _futureAccountOrders = _createOrderInfos(accounts);
 
+    FirestoreController.instance
+        .addOnTransactionMadeObserver(_recreateAccountDrags);
+
     super.initState();
   }
 
@@ -169,12 +173,19 @@ class _HomeContentPageState extends State<HomeContentPage>
     _welcomeController.dispose();
     _botAnimationController.dispose();
 
+    FirestoreController.instance
+        .removeTOnransactionMadeObserver(_recreateAccountDrags);
+
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
+      print("Resumed called");
+      setState(() {
+        _accountOrderInfos.length = _accountOrderInfos.length;
+      });
       _runWelcomeFadeAnimation(300);
     }
 
@@ -256,6 +267,12 @@ class _HomeContentPageState extends State<HomeContentPage>
     }
 
     return true;
+  }
+
+  void _recreateAccountDrags() {
+    setState(() {
+      _accountOrderInfos.length;
+    });
   }
 
   void _updateNOfHiddenAccount() {
@@ -429,6 +446,8 @@ class _HomeContentPageState extends State<HomeContentPage>
                   return Column(
                       children:
                           List.generate(_accountOrderInfos.length, (index) {
+                    print(
+                        "${_accountOrderInfos[index].account.hashCode} recreating and ${_accountOrderInfos[index].account.type}                               ${DateTime.now().toString()}");
                     return !_accountOrderInfos[index].isHidden
                         ? _getAccountDrag(_accountOrderInfos[index])
                         : const SizedBox();
