@@ -16,7 +16,7 @@ class Account {
   final String type;
   final String? docID;
   final AccountID accountID;
-  final Decimal balance;
+  Decimal balance;
   final String cardNumber;
   final String memberID;
 
@@ -37,6 +37,8 @@ class Account {
   get getNumber => this.accountID.number;
 
   get getBalance => this.balance;
+
+  set setBalance(balance) => this.balance = balance;
 
   get getCardNumber => this.cardNumber;
 
