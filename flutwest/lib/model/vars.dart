@@ -34,7 +34,7 @@ class Vars {
 
   static const double gapBetweenTextVertical = 5.0;
 
-  static const double gapAtTop = 40.0;
+  static const double gapAtTop = 35.0;
 
   static const FontWeight medBold = FontWeight.w500;
 
@@ -66,7 +66,7 @@ class Vars {
       fontWeight: FontWeight.bold,
       color: Colors.black);
 
-  static const Color loadingDummyColor = Colors.black38;
+  static const Color loadingDummyColor = Colors.black12;
 
   static const Color errorColor = Colors.red;
   static const Color clickAbleColor = Color.fromRGBO(198, 40, 40, 1);
