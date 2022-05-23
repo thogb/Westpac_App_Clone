@@ -6,6 +6,8 @@ import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/ui_page/guest_page.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   Utils.hideSysNavBarColour();
 
   SQLiteController.instance.loadDB();
