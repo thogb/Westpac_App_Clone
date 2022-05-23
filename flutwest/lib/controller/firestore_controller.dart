@@ -1,7 +1,5 @@
 //import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 
-import 'dart:ffi';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/cupertino.dart';
@@ -53,7 +51,6 @@ class FirestoreController {
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>> getMember(String id) async {
-    await Future.delayed(Duration(seconds: 3));
     return _firebaseFirestore.collection(colMember).doc(id).get();
   }
 
@@ -84,7 +81,6 @@ class FirestoreController {
 
   Future<QuerySnapshot<Map<String, dynamic>>> getAccounts(
       String memberId) async {
-    await Future.delayed(Duration(seconds: 2));
     /*return _firebaseFirestore
         .collection(colMember)
         .doc(memberId)
