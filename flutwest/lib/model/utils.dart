@@ -21,10 +21,8 @@ class Utils {
         /*systemNavigationBarDividerColor: Color.fromARGB(1, 0, 1, 51),*/
         systemNavigationBarColor: Color.fromARGB(1, 0, 1, 51)));
 
-    WidgetsFlutterBinding.ensureInitialized();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge, overlays: [
-      SystemUiOverlay.top,
-    ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge,
+        overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
   }
 
   static void showSysNavBarColour() {
@@ -34,10 +32,8 @@ class Utils {
         systemNavigationBarIconBrightness: Brightness.dark,
         systemNavigationBarColor: Colors.white));
 
-    WidgetsFlutterBinding.ensureInitialized();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge, overlays: [
-      SystemUiOverlay.top,
-    ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
   }
 
   static String getDateIntTwoSig(int val) {
