@@ -9,6 +9,7 @@ import 'package:flutwest/cust_widget/loading_text.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/bank_card.dart';
+import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/account_detail_page.dart';
 import 'package:flutwest/ui_page/loading_page.dart';
@@ -400,7 +401,8 @@ class _CardsPageState extends State<CardsPage> {
                   style: const TextStyle(fontSize: Vars.headingTextSize2),
                 ),
                 heading: "\n",
-                rightWidget: Text("\$${widget.cardAccount.getBalance}",
+                rightWidget: Text(
+                    "\$${Utils.formatDecimalMoneyUS(widget.cardAccount.getBalance)}",
                     style: CustButton.buttonHeadingStyle))),
         const SizedBox(height: 30.0)
       ],
