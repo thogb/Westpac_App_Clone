@@ -157,25 +157,33 @@ class CustTextField extends StatefulWidget {
   }
 
   factory CustTextField.standardSmall(
-      {TextEditingController? controller, String? label, int? maxLength}) {
+      {TextEditingController? controller,
+      String? label,
+      int? maxLength,
+      void Function(String)? onChanged,
+      TextInputType? keyboardType}) {
     controller ??= TextEditingController();
     return CustTextField(
+      keyboardType: keyboardType,
+      onChanged: onChanged,
       controller: controller,
       maxLength: maxLength,
-      buildCounter: (BuildContext context,
-          {required int currentLength,
-          required bool isFocused,
-          required int? maxLength}) {
-        return isFocused
-            ? Align(
-                alignment: Alignment.centerLeft,
-                child: Text("${maxLength! - currentLength} remaining",
-                    style: const TextStyle(
-                        fontSize: Vars.paragraphTextSize,
-                        color: Colors.black54)),
-              )
-            : null;
-      },
+      buildCounter: maxLength != null
+          ? (BuildContext context,
+              {required int currentLength,
+              required bool isFocused,
+              required int? maxLength}) {
+              return isFocused
+                  ? Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text("${maxLength! - currentLength} remaining",
+                          style: const TextStyle(
+                              fontSize: Vars.paragraphTextSize,
+                              color: Colors.black54)),
+                    )
+                  : null;
+            }
+          : null,
       decoration: InputDecoration(
           isDense: true,
           labelText: label,
