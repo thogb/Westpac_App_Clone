@@ -9,6 +9,7 @@ import 'package:flutwest/model/navbar_state.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/cards_page.dart';
+import 'package:flutwest/ui_page/choose_payee_page.dart';
 import 'package:flutwest/ui_page/home_content_page.dart';
 import 'package:flutwest/ui_page/payment_page.dart';
 import 'package:flutwest/ui_page/products_page.dart';
@@ -180,11 +181,13 @@ class _HomePageState extends State<HomePage> {
                   type: BottomNavigationBarType.fixed,
                   items: [
                     BottomNavigationBarItem(
+                        tooltip: "Home",
                         label: "",
                         icon: _getNavIcon(Icons.home_outlined, "Home"),
                         activeIcon:
                             _getNavIcon(Icons.home_sharp, "Home", true)),
                     BottomNavigationBarItem(
+                        tooltip: "Cards",
                         label: "",
                         icon: _getNavIcon(CupertinoIcons.creditcard, "Cards"),
                         activeIcon: _getNavIcon(
@@ -202,11 +205,13 @@ class _HomePageState extends State<HomePage> {
                         ),
                         label: ""),
                     BottomNavigationBarItem(
+                        tooltip: "Products",
                         label: "",
                         icon: _getNavIcon(CupertinoIcons.cube, "Products"),
                         activeIcon: _getNavIcon(
                             CupertinoIcons.cube_fill, "Products", true)),
                     BottomNavigationBarItem(
+                        tooltip: "Profile",
                         label: "",
                         icon: _getNavIcon(Icons.person_outline, "Profile"),
                         activeIcon:
@@ -339,8 +344,8 @@ class _HomePageState extends State<HomePage> {
                         leading: const Icon(Icons.transfer_within_a_station),
                         title: const Text("Transfer between accounts")),
                     ListTile(
-                      leading: Icon(Icons.payment_outlined),
-                      title: Text("Pay someone"),
+                      leading: const Icon(Icons.payment_outlined),
+                      title: const Text("Pay someone"),
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.push(
@@ -348,9 +353,7 @@ class _HomePageState extends State<HomePage> {
                             PageRouteBuilder(
                                 pageBuilder:
                                     ((context, animation, secondaryAnimation) =>
-                                        PaymentPage(
-                                            accounts: _accounts,
-                                            currAccount: _accounts[0])),
+                                        ChoosePayeePage(accounts: _accounts)),
                                 transitionDuration: Duration.zero,
                                 reverseTransitionDuration: Duration.zero));
                       },
