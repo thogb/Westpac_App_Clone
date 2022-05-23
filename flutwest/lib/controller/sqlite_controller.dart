@@ -15,6 +15,13 @@ class AccountOrder {
   AccountOrder._() {}
 }
 
+class TablePayee {
+  static const String accountName = "account_name";
+  static const String nickName = "nick_name";
+  static const String accountBbumber = "account_number";
+  static const String accountBsb = "account_bsb";
+}
+
 class SQLiteController {
   static const String dbName = "flutWest.db";
   static const String testID = Vars.fakeMemberID;
@@ -53,6 +60,9 @@ class SQLiteController {
     }), version: 1);
   }
 
+  // Payee
+
+  // AccountIDOrder
   Future<void> insertAccountID(AccountIDOrder accountIDOrder) async {
     await dataBase.insert(
         AccountOrder.tableName, getAccountIDOrderMap(accountIDOrder));
