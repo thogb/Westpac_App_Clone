@@ -1,3 +1,5 @@
+import 'dart:html';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -177,10 +179,11 @@ void main() {
     FirestoreController.instance.addTransaction(accountTransaction9);
     FirestoreController.instance.addTransaction(accountTransaction10);
 
+    DocumentSnapshot<Map<String, dynamic>> memberDoc =
+        await FirestoreController.instance.getMember(memberId);
+
     Member readMember = Member.fromMap(
-        (await FirestoreController.instance.getMember(memberId)).data()
-            as Map<String, dynamic>,
-        []);
+        memberDoc.data() as Map<String, dynamic>, [], memberDoc.id);
     print(readMember.toMap());
 
     expect(member.toMap(), readMember.toMap());

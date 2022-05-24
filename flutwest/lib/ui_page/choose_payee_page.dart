@@ -1,18 +1,33 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
+import 'package:flutwest/controller/firestore_controller.dart';
+import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/cust_widget/clickable_text.dart';
+import 'package:flutwest/cust_widget/cust_button.dart';
 import 'package:flutwest/cust_widget/cust_floating_button.dart';
 import 'package:flutwest/cust_widget/cust_radio.dart';
 import 'package:flutwest/cust_widget/cust_text_button.dart';
 import 'package:flutwest/cust_widget/cust_text_field_search.dart';
 import 'package:flutwest/cust_widget/editing_page_scaffold.dart';
+import 'package:flutwest/cust_widget/loading_text.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account.dart';
+import 'package:flutwest/model/payee.dart';
+import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/add_payee_page.dart';
 
 class ChoosePayeePage extends StatefulWidget {
+  final String meberId;
+  final DateTime? recentPayeeEdit;
   final List<Account> accounts;
-  const ChoosePayeePage({Key? key, required this.accounts}) : super(key: key);
+  const ChoosePayeePage(
+      {Key? key,
+      required this.accounts,
+      required this.meberId,
+      required this.recentPayeeEdit})
+      : super(key: key);
 
   @override
   _ChoosePayeePageState createState() => _ChoosePayeePageState();
@@ -41,12 +56,17 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _tecSearch = TextEditingController();
 
+  late final Future<List<Payee>?> _futurePayees;
+
   String _currFilter = payeeFilters[1];
   double _elevationLevel = 0;
+  final HashSet<int> _alphabetHeaderIndexs = HashSet();
+  final List<Payee> _recentPayees = [];
 
   @override
   void initState() {
     _scrollController.addListener(_onScroll);
+    _futurePayees = _getPayees(widget.meberId, widget.recentPayeeEdit);
 
     super.initState();
   }
@@ -219,6 +239,7 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
         });
   }
 
+  /*
   Widget _getPayeeList() {
     return ListView.builder(
         padding: EdgeInsets.zero,
@@ -229,5 +250,142 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
               margin: const EdgeInsets.all(Vars.standardPaddingSize),
               color: Colors.red,
             )));
+  }*/
+
+  Future<List<Payee>?> _getPayees(
+      String memberId, DateTime? memberRecentPayeeEdit) async {
+    List<Payee>? payees;
+
+    List<Payee> localPayees =
+        await SQLiteController.instance.getPayees(memberId);
+    DateTime? recentPayeeEdit =
+        await SQLiteController.instance.getRecentPayeeEditDate(memberId);
+
+    if (memberRecentPayeeEdit != null) {
+      if (recentPayeeEdit == null || recentPayeeEdit != memberRecentPayeeEdit) {
+        var remotePayees =
+            await FirestoreController.instance.getPayees(memberId);
+        SQLiteController.instance
+            .syncPayees(remotePayees: remotePayees, localPayees: localPayees);
+        payees = remotePayees;
+      } else {
+        payees = localPayees;
+      }
+    } else {
+      payees = [];
+    }
+
+    return payees;
+  }
+
+  Widget _getPayeeList() {
+    return FutureBuilder(
+        future: _futurePayees,
+        builder: ((context, AsyncSnapshot<List<Payee>?> snapshot) {
+          if (snapshot.hasError) {
+            return const Align(
+                alignment: Alignment.topCenter, child: Text("Unknow Error"));
+          }
+
+          if (snapshot.hasData &&
+              snapshot.connectionState == ConnectionState.done) {
+            List<Payee>? payees = snapshot.data;
+            if (payees != null && _alphabetHeaderIndexs.isEmpty) {
+              if (payees.isEmpty) {
+                return const Align(
+                    alignment: Alignment.topCenter, child: Text("No Payees"));
+              }
+
+              String currChar;
+              DateTime now = DateTime.now();
+              DateTime sevenDayAgo = DateTime(now.year, now.month, now.day - 7);
+
+              for (int i = 0; i < 5; i++) {
+                if (i < payees.length &&
+                    payees[i].lastPayDate != null &&
+                    payees[i].lastPayDate!.isAfter(sevenDayAgo)) {
+                  _recentPayees.add(payees[i]);
+                }
+              }
+
+              currChar = payees[0].getNickName[0].toUpperCase();
+              _alphabetHeaderIndexs.add(0);
+
+              for (int i = 0; i < payees.length; i++) {
+                if (currChar != payees[i].getNickName[i].toUpperCase()) {
+                  currChar = payees[i].getNickName[i].toUpperCase();
+                  _alphabetHeaderIndexs.add(i);
+                }
+              }
+
+              return ListView.builder(
+                  itemCount: _recentPayees.length + payees.length,
+                  itemBuilder: (context, index) {
+                    if (index < _recentPayees.length) {
+                      if (index == 0) {
+                        return Column(children: [
+                          _getPayeeHeader("Recently paid"),
+                          _getRecentPayeeButton(_recentPayees[index])
+                        ]);
+                      } else {
+                        return _getRecentPayeeButton(_recentPayees[index]);
+                      }
+                    } else {
+                      int actualIndex = index - _recentPayees.length;
+                      Payee payee = payees[actualIndex];
+
+                      if (_alphabetHeaderIndexs.contains(actualIndex)) {
+                        return Column(
+                          children: [
+                            _getPayeeHeader(payee.getNickName[0].toUpperCase()),
+                            _getPayeeButton(payee)
+                          ],
+                        );
+                      } else {
+                        return _getPayeeButton(payee);
+                      }
+                    }
+                  });
+            }
+          }
+
+          return const LoadingText(repeats: 2);
+        }));
+  }
+
+  Widget _getPayeeHeader(String title) {
+    return Padding(
+      padding:
+          const EdgeInsets.symmetric(vertical: Vars.gapBetweenTextVertical),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: Vars.buttonPragraphStyle),
+          const SizedBox(height: Vars.gapBetweenTextVertical),
+          const Divider(height: 0.5, color: Colors.black54)
+        ],
+      ),
+    );
+  }
+
+  Widget _getRecentPayeeButton(Payee payee) {
+    return CustButton(
+      heading: payee.getNickName,
+      paragraph: "${payee.getAccountID.getBsb} ${payee.getAccountID.getNumber}",
+      rightWidget: Text(
+        Utils.getDateTimeWDDNM(payee.lastPayDate!),
+        style: const TextStyle(
+          fontSize: Vars.headingTextSize3,
+        ),
+      ),
+    );
+  }
+
+  Widget _getPayeeButton(Payee payee) {
+    return CustButton(
+      heading: payee.getNickName,
+      paragraph: "${payee.getAccountID.getBsb} ${payee.getAccountID.getNumber}",
+      rightWidget: const Icon(Icons.info),
+    );
   }
 }

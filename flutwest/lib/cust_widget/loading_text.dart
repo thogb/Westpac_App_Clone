@@ -3,22 +3,27 @@ import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/vars.dart';
 
 class LoadingText extends StatelessWidget {
-  const LoadingText({Key? key}) : super(key: key);
+  final int repeats;
+  const LoadingText({Key? key, this.repeats = 1}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        StandardPadding(
-          child: _getContainer(300.0),
-          showVerticalPadding: true,
-        ),
-        StandardPadding(
-          child: _getContainer(double.infinity),
-          showVerticalPadding: true,
-        )
-      ],
+      children: List.generate(
+          repeats,
+          (index) => Column(
+                children: [
+                  StandardPadding(
+                    child: _getContainer(300.0),
+                    showVerticalPadding: true,
+                  ),
+                  StandardPadding(
+                    child: _getContainer(double.infinity),
+                    showVerticalPadding: true,
+                  )
+                ],
+              )),
     );
   }
 

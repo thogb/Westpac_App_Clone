@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutwest/model/account.dart';
 
 class Member {
+  static const String fnRecentPayeeChange = "recentPayeeChange";
+
   String firstName;
   String middleName;
   String surName;
@@ -11,6 +13,7 @@ class Member {
   List<Account> accounts;
   int nOfUnreadInbox;
   int nOfUnreadRewards;
+  DateTime? recentPayeeChange;
 
   Member({
     required this.firstName,
@@ -21,6 +24,7 @@ class Member {
     required this.accounts,
     this.nOfUnreadInbox = -1,
     this.nOfUnreadRewards = -1,
+    this.recentPayeeChange,
   });
 
   Map<String, dynamic> toMap() {
@@ -29,25 +33,31 @@ class Member {
     result.addAll({'firstName': firstName});
     result.addAll({'middleName': middleName});
     result.addAll({'surName': surName});
-    result.addAll({'id': id});
+    //result.addAll({'id': id});
     result.addAll({'cardNumber': cardNumber});
+    if (recentPayeeChange != null) {
+      result.addAll({fnRecentPayeeChange: recentPayeeChange});
+    }
 
     return result;
   }
 
-  factory Member.fromMap(Map<String, dynamic> map, List<Account> inAccounts) {
+  factory Member.fromMap(
+      Map<String, dynamic> map, List<Account> inAccounts, String docId) {
     return Member(
-      firstName: map['firstName'] ?? '',
-      middleName: map['middleName'] ?? '',
-      surName: map['surName'] ?? '',
-      id: map['id'] ?? '',
-      cardNumber: map['cardNumber'] ?? '',
-      accounts: inAccounts,
-    );
+        firstName: map['firstName'] ?? '',
+        middleName: map['middleName'] ?? '',
+        surName: map['surName'] ?? '',
+        id: docId,
+        //id: map['id'] ?? '',
+        cardNumber: map['cardNumber'] ?? '',
+        accounts: inAccounts,
+        recentPayeeChange: map[fnRecentPayeeChange]);
   }
 
   String toJson() => json.encode(toMap());
 
-  factory Member.fromJson(String source, List<Account> inAccounts) =>
-      Member.fromMap(json.decode(source), inAccounts);
+  factory Member.fromJson(
+          String source, List<Account> inAccounts, String docId) =>
+      Member.fromMap(json.decode(source), inAccounts, docId);
 }

@@ -104,8 +104,8 @@ class _HomePageState extends State<HomePage> {
                 .map((e) => Account.fromMap(e.data(), e.id))
                 .toList();
           }
-          _member = Member.fromMap(
-              (queryMember.data() as Map<String, dynamic>), _accounts);
+          _member = Member.fromMap((queryMember.data() as Map<String, dynamic>),
+              _accounts, queryMember.id);
 
           for (Account account in _accounts) {
             print("HomePage : ${account.hashCode}");
@@ -343,7 +343,12 @@ class _HomePageState extends State<HomePage> {
                             PageRouteBuilder(
                                 pageBuilder:
                                     ((context, animation, secondaryAnimation) =>
-                                        ChoosePayeePage(accounts: _accounts)),
+                                        ChoosePayeePage(
+                                          accounts: _accounts,
+                                          meberId: _member.id,
+                                          recentPayeeEdit:
+                                              _member.recentPayeeChange,
+                                        )),
                                 transitionDuration: Duration.zero,
                                 reverseTransitionDuration: Duration.zero));
                       },

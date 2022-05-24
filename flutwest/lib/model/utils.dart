@@ -9,6 +9,7 @@ import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/account_transaction.dart';
 import 'package:flutwest/model/bank_card.dart';
 import 'package:flutwest/model/member.dart';
+import 'package:flutwest/model/payee.dart';
 import 'package:flutwest/model/vars.dart';
 
 class Utils {
@@ -46,6 +47,10 @@ class Utils {
 
   static String getDateTimeWDDMY(DateTime dateTime) {
     return "${Vars.days[dateTime.weekday]} ${dateTime.day} ${Vars.months[dateTime.month]} ${dateTime.year}";
+  }
+
+  static String getDateTimeWDDNM(DateTime dateTime) {
+    return "${Vars.days[dateTime.weekday]} ${dateTime.day} ${Vars.months[dateTime.month]}";
   }
 
   static String getDateTimeWDDMYToday(DateTime dateTime) {
@@ -211,6 +216,69 @@ class Utils {
     FirestoreController.instance.addTransaction(accountTransaction8);
     FirestoreController.instance.addTransaction(accountTransaction9);
     FirestoreController.instance.addTransaction(accountTransaction10);
+    FirestoreController.instance.addPayee(
+        Vars.fakeMemberID,
+        Payee(
+            accountNumber: "6666666",
+            accountBSB: "777-777",
+            accountName: "Bob",
+            nickName: "Bobby"));
+    FirestoreController.instance.addPayee(
+        Vars.fakeMemberID,
+        Payee(
+            accountNumber: "6662366",
+            accountBSB: "777-747",
+            accountName: "David",
+            nickName: "Dave"));
+    FirestoreController.instance.addPayee(
+        Vars.fakeMemberID,
+        Payee(
+          accountNumber: "6611666",
+          accountBSB: "777-177",
+          accountName: "Bob",
+        ));
+    FirestoreController.instance.addPayee(
+        Vars.fakeMemberID,
+        Payee(
+          accountNumber: "66645666",
+          accountBSB: "777-377",
+          accountName: "Dylan",
+        ));
+    FirestoreController.instance.addPayee(
+        Vars.fakeMemberID,
+        Payee(
+          accountNumber: "6666966",
+          accountBSB: "777-787",
+          accountName: "Person 1",
+        ));
+    FirestoreController.instance.addPayee(
+        Vars.fakeMemberID,
+        Payee(
+          accountNumber: "6666699",
+          accountBSB: "777-117",
+          accountName: "Person 2",
+        ));
+    FirestoreController.instance.addPayee(
+        Vars.fakeMemberID,
+        Payee(
+          accountNumber: "666663346",
+          accountBSB: "777-667",
+          accountName: "Person 4",
+        ));
+    FirestoreController.instance.addPayee(
+        Vars.fakeMemberID,
+        Payee(
+          accountNumber: "66666236",
+          accountBSB: "727-777",
+          accountName: "Person 3",
+        ));
+    FirestoreController.instance.addPayee(
+        Vars.fakeMemberID,
+        Payee(
+          accountNumber: "61123666",
+          accountBSB: "777-999",
+          accountName: "Person 5",
+        ));
 
     Random random = Random();
 

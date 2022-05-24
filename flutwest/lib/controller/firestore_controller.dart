@@ -8,9 +8,11 @@ import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/account_transaction.dart';
 import 'package:flutwest/model/bank_card.dart';
 import 'package:flutwest/model/member.dart';
+import 'package:flutwest/model/payee.dart';
 
 class FirestoreController {
   static const String colMember = "member";
+  static const String colMemberColPayee = "payee";
   static const String colCard = "card";
   static const String colTransaction = "transaction";
 
@@ -50,10 +52,40 @@ class FirestoreController {
     await _firebaseFirestore.collection(colMember).doc(id).set(member.toMap());
   }
 
+  // Member
   Future<DocumentSnapshot<Map<String, dynamic>>> getMember(String id) async {
     return _firebaseFirestore.collection(colMember).doc(id).get();
   }
 
+  Future<void> updateMemberRecentPayee(String id, DateTime dateTime) async {
+    await _firebaseFirestore
+        .collection(colMember)
+        .doc(id)
+        .update({Member.fnRecentPayeeChange: dateTime.millisecondsSinceEpoch});
+  }
+
+  // Member payees
+  Future<void> addPayee(String memberId, Payee payee) async {
+    await _firebaseFirestore
+        .collection(colMember)
+        .doc(memberId)
+        .collection(colMemberColPayee)
+        .add(payee.toMap());
+  }
+
+  Future<List<Payee>> getPayees(String memberId) async {
+    var snapshot = await _firebaseFirestore
+        .collection(colMember)
+        .doc(memberId)
+        .collection(colMemberColPayee)
+        .get();
+    var docs = snapshot.docs;
+
+    return List.generate(
+        docs.length, (index) => Payee.fromMap(docs[index].data()));
+  }
+
+  // Bank Card
   Future<void> addBankCard(String cardNumber, BankCard bankCard) async {
     await _firebaseFirestore
         .collection(colCard)
