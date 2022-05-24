@@ -29,50 +29,44 @@ class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Theme(
-      data: ThemeData(
-        splashFactory: NoSplash.splashFactory,
-        highlightColor: const Color.fromARGB(80, 243, 123, 123),
-      ),
-      child: Stack(
-        children: [
-          const BackgroundImage(),
-          SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints:
-                  BoxConstraints(maxHeight: MediaQuery.of(context).size.height),
-              child: StandardPadding(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 30.0),
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                        child: const Icon(
-                          Icons.close,
-                          color: Colors.white,
-                        ),
+        body: Stack(
+      children: [
+        const BackgroundImage(),
+        SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints:
+                BoxConstraints(maxHeight: MediaQuery.of(context).size.height),
+            child: StandardPadding(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(top: 30.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
                       ),
                     ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 20.0),
-                        const StandardPadding(child: WestLogo(width: 50.0)),
-                        _getInputArea(),
-                      ],
-                    )
-                  ],
-                ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 20.0),
+                      const StandardPadding(child: WestLogo(width: 50.0)),
+                      _getInputArea(),
+                    ],
+                  )
+                ],
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     ));
   }
 
@@ -267,6 +261,7 @@ class _SignInPageState extends State<SignInPage> {
         color: Colors.red[700],
         borderRadius: BorderRadius.circular(3.0),
         child: InkWell(
+          highlightColor: const Color.fromARGB(80, 243, 123, 123),
           onTap: () {
             String errMsg = "";
 

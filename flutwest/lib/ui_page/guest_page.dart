@@ -55,60 +55,54 @@ class _GuestPageState extends State<GuestPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
-        body: Theme(
-          data: ThemeData(
-            splashFactory: NoSplash.splashFactory,
-            highlightColor: const Color.fromARGB(80, 243, 123, 123),
-          ),
-          child: Stack(
-            children: [
-              const BackgroundImage(),
-              StandardPadding(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      children: [
-                        const SizedBox(height: 50.0),
-                        _getFakeAppbar(),
-                        const SizedBox(height: 30.0),
-                        SizeTransition(
-                            sizeFactor: _welcomeFadeAnimation,
+        body: Stack(
+          children: [
+            const BackgroundImage(),
+            StandardPadding(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    children: [
+                      const SizedBox(height: 50.0),
+                      _getFakeAppbar(),
+                      const SizedBox(height: 30.0),
+                      SizeTransition(
+                          sizeFactor: _welcomeFadeAnimation,
+                          axis: Axis.vertical,
+                          axisAlignment: -1.0,
+                          child: SlideTransition(
+                              position: _weclomeSlideAnimation,
+                              child: _getWelcomeText())),
+                      Column(
+                        children: [
+                          SizeTransition(
+                            sizeFactor: _buttonSizeAnimation,
                             axis: Axis.vertical,
                             axisAlignment: -1.0,
-                            child: SlideTransition(
-                                position: _weclomeSlideAnimation,
-                                child: _getWelcomeText())),
-                        Column(
-                          children: [
-                            SizeTransition(
-                              sizeFactor: _buttonSizeAnimation,
-                              axis: Axis.vertical,
-                              axisAlignment: -1.0,
-                              child: Column(
-                                children: [
-                                  _getButton("Cardless Cash", _openSignInPage),
-                                  _getButton("Locate us", () {}),
-                                ],
-                              ),
+                            child: Column(
+                              children: [
+                                _getButton("Cardless Cash", _openSignInPage),
+                                _getButton("Locate us", () {}),
+                              ],
                             ),
-                            const SizedBox(height: 20.0),
-                            Align(
-                                alignment: Alignment.centerLeft,
-                                child: GestureDetector(
-                                    onTap: _openSignInPage,
-                                    child: const Icon(Icons.settings,
-                                        color: Colors.white)))
-                          ],
-                        ),
-                      ],
-                    ),
-                    _getSignInButton()
-                  ],
-                ),
-              )
-            ],
-          ),
+                          ),
+                          const SizedBox(height: 20.0),
+                          Align(
+                              alignment: Alignment.centerLeft,
+                              child: GestureDetector(
+                                  onTap: _openSignInPage,
+                                  child: const Icon(Icons.settings,
+                                      color: Colors.white)))
+                        ],
+                      ),
+                    ],
+                  ),
+                  _getSignInButton()
+                ],
+              ),
+            )
+          ],
         ));
   }
 
@@ -144,6 +138,7 @@ class _GuestPageState extends State<GuestPage> with TickerProviderStateMixin {
         color: Colors.white,
         borderRadius: BorderRadius.circular(3.0),
         child: InkWell(
+          highlightColor: const Color.fromARGB(80, 243, 123, 123),
           onTap: voidCallback,
           child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -171,6 +166,7 @@ class _GuestPageState extends State<GuestPage> with TickerProviderStateMixin {
         color: Colors.red[700],
         borderRadius: BorderRadius.circular(3.0),
         child: InkWell(
+          highlightColor: const Color.fromARGB(80, 243, 123, 123),
           onTap: _openSignInPage,
           child: const Padding(
             padding: EdgeInsets.symmetric(

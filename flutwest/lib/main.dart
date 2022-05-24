@@ -37,7 +37,11 @@ class MyApp extends StatelessWidget {
             // or simply save your changes to "hot reload" in a Flutter IDE).
             // Notice that the counter didn't reset back to zero; the application
             // is not restarted.
+            androidOverscrollIndicator: AndroidOverscrollIndicator.stretch,
+            scaffoldBackgroundColor: Colors.grey[50],
             appBarTheme: AppBarTheme(
+                //color: Colors.grey[50],
+                titleTextStyle: const TextStyle(color: Colors.black),
                 foregroundColor: Colors.black,
                 iconTheme: IconThemeData(color: Colors.red[900]),
                 backgroundColor: Colors.grey[50]),
