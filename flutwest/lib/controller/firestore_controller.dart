@@ -9,6 +9,7 @@ import 'package:flutwest/model/account_transaction.dart';
 import 'package:flutwest/model/bank_card.dart';
 import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/payee.dart';
+import 'package:flutwest/model/vars.dart';
 
 class FirestoreController {
   static const String colMember = "member";
@@ -48,6 +49,10 @@ class FirestoreController {
     _firebaseFirestore = firebaseFirestore;
   }
 
+  Future<void> enablePersistentData(bool enable) async {
+    _firebaseFirestore.settings = Settings(persistenceEnabled: enable);
+  }
+
   Future<void> addMember(String id, Member member) async {
     await _firebaseFirestore.collection(colMember).doc(id).set(member.toMap());
   }
@@ -65,12 +70,16 @@ class FirestoreController {
   }
 
   // Member payees
-  Future<void> addPayee(String memberId, Payee payee) async {
-    await _firebaseFirestore
+  Future<String> addPayee(
+      String memberId, Payee payee, DateTime addTime) async {
+    var ref = await _firebaseFirestore
         .collection(colMember)
         .doc(memberId)
         .collection(colMemberColPayee)
         .add(payee.toMap());
+    await updateMemberRecentPayee(memberId, addTime);
+
+    return ref.id;
   }
 
   Future<List<Payee>> getPayees(String memberId) async {
@@ -81,8 +90,19 @@ class FirestoreController {
         .get();
     var docs = snapshot.docs;
 
-    return List.generate(
-        docs.length, (index) => Payee.fromMap(docs[index].data()));
+    return List.generate(docs.length,
+        (index) => Payee.fromMap(docs[index].data(), docs[index].id));
+  }
+
+  Future<void> deletePayee(
+      String memberId, String docId, DateTime delDate) async {
+    await _firebaseFirestore
+        .collection(colMember)
+        .doc(memberId)
+        .collection(colMemberColPayee)
+        .doc(docId)
+        .delete();
+    await updateMemberRecentPayee(memberId, delDate);
   }
 
   // Bank Card
@@ -124,14 +144,32 @@ class FirestoreController {
         .get();
   }
 
-  Future<QueryDocumentSnapshot<Map<String, dynamic>>> getAccountByNumber(
+  /// Some random made up accounts, not updated to cloud firestore.
+  /// So not found return null is one random account for paying
+  /// Used by [addPaymentTransaction], because the person being paid is made up
+  Future<QueryDocumentSnapshot<Map<String, dynamic>>?> getAccountByNumber(
       {required String accountNumber}) async {
-    return (await _firebaseFirestore
+    var docs = (await _firebaseFirestore
             .collection(colAccount)
             .where(Account.fnAccountNumber, isEqualTo: accountNumber)
             .limit(1)
             .get())
-        .docs[0];
+        .docs;
+    return docs.isNotEmpty ? docs[0] : null;
+  }
+
+  /// Should never return null, this is used by [addTransferTransaction].
+  /// The payee and payer are both accounts of a user. Both account are read from
+  /// the cloud firestore.
+  Future<QueryDocumentSnapshot<Map<String, dynamic>>> getAccountByNumberNotNull(
+      {required String accountNumber}) async {
+    var docs = (await _firebaseFirestore
+            .collection(colAccount)
+            .where(Account.fnAccountNumber, isEqualTo: accountNumber)
+            .limit(1)
+            .get())
+        .docs;
+    return docs[0];
   }
 
   Future<DocumentSnapshot<Map<String, dynamic>>> getAccountByDocId(
@@ -147,7 +185,7 @@ class FirestoreController {
         .update({Account.fnBalance: newBalance.toString()});
   }
 
-  // Functiohn #Transactions
+  // Function #Transactions
 
   Future<void> addTransaction(AccountTransaction transaction) async {
     await _firebaseFirestore
@@ -166,7 +204,7 @@ class FirestoreController {
     Account senderAccount = Account.fromMap(
         (await getAccountByDocId(docID: senderDocId)).data()!, senderDocId);
     QueryDocumentSnapshot<Map<String, dynamic>> receiverDoc =
-        await getAccountByNumber(accountNumber: receiver.getNumber);
+        await getAccountByNumberNotNull(accountNumber: receiver.getNumber);
     Account receiverAccount =
         Account.fromMap(receiverDoc.data(), receiverDoc.id);
 
@@ -190,7 +228,7 @@ class FirestoreController {
       updateAccountBalance(
           newBalance: senderNewBal, docId: senderAccount.docID!),
       updateAccountBalance(
-          newBalance: receiverNewBal, docId: receiverAccount.docID!),
+          newBalance: receiverNewBal, docId: receiverAccount.docID!)
     ]);
 
     notifyOnTransactionMadebservers();
@@ -207,13 +245,16 @@ class FirestoreController {
       DateTime? dateTime}) async {
     Account senderAccount = Account.fromMap(
         (await getAccountByDocId(docID: senderDocId)).data()!, senderDocId);
-    QueryDocumentSnapshot<Map<String, dynamic>> receiverDoc =
+    QueryDocumentSnapshot<Map<String, dynamic>>? receiverDoc =
         await getAccountByNumber(accountNumber: receiver.getNumber);
-    Account receiverAccount =
-        Account.fromMap(receiverDoc.data(), receiverDoc.id);
+    Account? receiverAccount = receiverDoc != null
+        ? Account.fromMap(receiverDoc.data(), receiverDoc.id)
+        : null;
     AccountTransaction transaction = AccountTransaction.create(
         sender: senderAccount.accountID,
-        receiver: receiverAccount.accountID,
+        receiver: receiverAccount != null
+            ? receiverAccount.accountID
+            : Vars.invalidAccountID,
         dateTime: dateTime ?? DateTime.now(),
         id: "",
         amount: amount,
@@ -227,14 +268,17 @@ class FirestoreController {
         ]);
     await addTransaction(transaction);
     Decimal senderNewBal = senderAccount.getBalance - amount;
-    Decimal receiverNewBal = receiverAccount.getBalance + amount;
     await Future.wait([
       addTransaction(transaction),
       updateAccountBalance(
           newBalance: senderNewBal, docId: senderAccount.docID!),
-      updateAccountBalance(
-          newBalance: receiverNewBal, docId: receiverAccount.docID!),
     ]);
+
+    if (receiverAccount != null) {
+      Decimal receiverNewBal = receiverAccount.getBalance + amount;
+      await updateAccountBalance(
+          newBalance: receiverNewBal, docId: receiverAccount.docID!);
+    }
 
     notifyOnTransactionMadebservers();
   }
