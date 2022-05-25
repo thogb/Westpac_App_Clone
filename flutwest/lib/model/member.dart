@@ -52,7 +52,9 @@ class Member {
         //id: map['id'] ?? '',
         cardNumber: map['cardNumber'] ?? '',
         accounts: inAccounts,
-        recentPayeeChange: map[fnRecentPayeeChange]);
+        recentPayeeChange: map[fnRecentPayeeChange] != null
+            ? DateTime.fromMillisecondsSinceEpoch(map[fnRecentPayeeChange])
+            : null);
   }
 
   String toJson() => json.encode(toMap());
