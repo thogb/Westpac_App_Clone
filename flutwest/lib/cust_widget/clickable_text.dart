@@ -16,6 +16,14 @@ class ClickableText extends StatelessWidget {
       this.onTap})
       : super(key: key);
 
+  factory ClickableText.medium({required String text, VoidCallback? onTap}) {
+    return ClickableText(
+        text: text,
+        onTap: onTap,
+        textStyle: const TextStyle(
+            fontSize: Vars.headingTextSize2, color: Vars.clickAbleColor));
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
