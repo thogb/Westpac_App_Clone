@@ -345,7 +345,7 @@ class _HomePageState extends State<HomePage> {
                                     ((context, animation, secondaryAnimation) =>
                                         ChoosePayeePage(
                                           accounts: _accounts,
-                                          meberId: _member.id,
+                                          memberId: _member.id,
                                           recentPayeeEdit:
                                               _member.recentPayeeChange,
                                         )),
