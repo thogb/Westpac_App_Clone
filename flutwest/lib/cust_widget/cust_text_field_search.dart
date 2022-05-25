@@ -9,7 +9,7 @@ class CustTextFieldSearch extends StatefulWidget {
   final void Function(String)? onSubmitted;
   final VoidCallback? onClearButtonTap;
   final VoidCallback? onPrefixButtonTap;
-  final VoidCallback? onFocus;
+  final void Function(bool)? onFocus;
 
   const CustTextFieldSearch(
       {Key? key,
@@ -63,9 +63,6 @@ class _CustTextFieldSearchState extends State<CustTextFieldSearch> {
         setState(() {
           _isFocused = true;
         });
-        if (widget.onFocus != null) {
-          widget.onFocus!();
-        }
       }
     } else {
       if (_isFocused) {
@@ -73,6 +70,10 @@ class _CustTextFieldSearchState extends State<CustTextFieldSearch> {
           _isFocused = false;
         });
       }
+    }
+
+    if (widget.onFocus != null) {
+      widget.onFocus!(_focusNode.hasFocus);
     }
   }
 
@@ -100,6 +101,10 @@ class _CustTextFieldSearchState extends State<CustTextFieldSearch> {
                   ),
                   onTap: () {
                     _focusNode.unfocus();
+                    _controller.clear();
+                    setState(() {
+                      _showClearButton = false;
+                    });
 
                     if (widget.onPrefixButtonTap != null) {
                       widget.onPrefixButtonTap!();
