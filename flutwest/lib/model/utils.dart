@@ -4,6 +4,7 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
+import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/account_transaction.dart';
@@ -61,6 +62,10 @@ class Utils {
 
   static String formatDecimalMoneyUS(Decimal decimal) {
     return Vars.usFormatter.format(decimal.toDouble());
+  }
+
+  static String getCapitalizedString(String value) {
+    return "${value.substring(0, 1).toUpperCase()}${value.substring(1).toLowerCase()}";
   }
 
   static void putData() async {
@@ -218,67 +223,85 @@ class Utils {
     FirestoreController.instance.addTransaction(accountTransaction10);
     FirestoreController.instance.addPayee(
         Vars.fakeMemberID,
-        Payee(
+        Payee.noId(
             accountNumber: "6666666",
             accountBSB: "777-777",
             accountName: "Bob",
-            nickName: "Bobby"));
+            nickName: "Bobby"),
+        DateTime.now());
     FirestoreController.instance.addPayee(
         Vars.fakeMemberID,
-        Payee(
+        Payee.noId(
             accountNumber: "6662366",
             accountBSB: "777-747",
             accountName: "David",
-            nickName: "Dave"));
+            nickName: "Dave"),
+        DateTime.now());
     FirestoreController.instance.addPayee(
         Vars.fakeMemberID,
-        Payee(
+        Payee.noId(
           accountNumber: "6611666",
           accountBSB: "777-177",
           accountName: "Bob",
-        ));
+          nickName: "Bob",
+        ),
+        DateTime.now());
     FirestoreController.instance.addPayee(
         Vars.fakeMemberID,
-        Payee(
+        Payee.noId(
           accountNumber: "66645666",
           accountBSB: "777-377",
           accountName: "Dylan",
-        ));
+          nickName: "Dylan",
+        ),
+        DateTime.now());
     FirestoreController.instance.addPayee(
         Vars.fakeMemberID,
-        Payee(
+        Payee.noId(
           accountNumber: "6666966",
           accountBSB: "777-787",
           accountName: "Person 1",
-        ));
+          nickName: "Person 1",
+        ),
+        DateTime.now());
     FirestoreController.instance.addPayee(
         Vars.fakeMemberID,
-        Payee(
+        Payee.noId(
           accountNumber: "6666699",
           accountBSB: "777-117",
-          accountName: "Person 2",
-        ));
+          accountName: "TPerson 2",
+          nickName: "TPerson 2",
+        ),
+        DateTime.now());
     FirestoreController.instance.addPayee(
         Vars.fakeMemberID,
-        Payee(
+        Payee.noId(
           accountNumber: "666663346",
           accountBSB: "777-667",
-          accountName: "Person 4",
-        ));
+          accountName: "TPerson 4",
+          nickName: "TPerson 4",
+        ),
+        DateTime.now());
     FirestoreController.instance.addPayee(
         Vars.fakeMemberID,
-        Payee(
+        Payee.noId(
           accountNumber: "66666236",
           accountBSB: "727-777",
-          accountName: "Person 3",
-        ));
+          accountName: "ZPerson 3",
+          nickName: "ZPerson 3",
+        ),
+        DateTime.now());
     FirestoreController.instance.addPayee(
         Vars.fakeMemberID,
-        Payee(
+        Payee.noId(
           accountNumber: "61123666",
           accountBSB: "777-999",
           accountName: "Person 5",
-        ));
+          nickName: "Person 5",
+        ),
+        DateTime.now());
+    FirestoreController.instance
+        .updateMemberRecentPayee(Vars.fakeMemberID, DateTime.now());
 
     Random random = Random();
 
@@ -400,5 +423,14 @@ class Utils {
       }*/
       }
     }
+
+    // Remove later TODO:
+    SQLiteController.instance
+        .insertMemberIfNotExist(Vars.fakeMemberID, DateTime.now());
+    /*DateTime? lastDate = await SQLiteController.instance.getRecentPayeeEditDate(Vars.fakeMemberID);
+        SQLiteController.instance
+        .insertMemberIfNotExist(Vars.fakeMemberID, DateTime.now());
+
+    if (lastDate != null )*/
   }
 }
