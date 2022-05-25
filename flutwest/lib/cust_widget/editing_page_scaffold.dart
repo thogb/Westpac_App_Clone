@@ -84,6 +84,7 @@ class _EditingPageScaffoldState extends State<EditingPageScaffold> {
           padding: const EdgeInsets.symmetric(
               horizontal: Vars.standardPaddingSize * 2),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: widget.content,
           ),
         ),
