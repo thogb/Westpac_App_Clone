@@ -20,6 +20,7 @@ class CustTextField extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final void Function(String)? onChanged;
   final void Function(String)? onSubmitted;
+  final void Function(bool)? onFocusChange;
   final Widget? Function(BuildContext,
       {required int currentLength,
       required bool isFocused,
@@ -40,7 +41,8 @@ class CustTextField extends StatefulWidget {
       this.cursorWidth = 1.5,
       this.inputFormatters,
       this.buildCounter,
-      this.getErrorMsg})
+      this.getErrorMsg,
+      this.onFocusChange})
       : super(key: key);
 
   factory CustTextField.moneyInput(
@@ -161,9 +163,11 @@ class CustTextField extends StatefulWidget {
       String? label,
       int? maxLength,
       void Function(String)? onChanged,
-      TextInputType? keyboardType}) {
+      TextInputType? keyboardType,
+      void Function(bool)? onFocusChange}) {
     controller ??= TextEditingController();
     return CustTextField(
+      onFocusChange: onFocusChange,
       keyboardType: keyboardType,
       onChanged: onChanged,
       controller: controller,
@@ -199,6 +203,7 @@ class CustTextField extends StatefulWidget {
 }
 
 class _CustTextFieldState extends State<CustTextField> {
+  final FocusNode _focusNode = FocusNode();
   String? _errorMsg;
   bool _showClearButton = false;
 
@@ -207,13 +212,56 @@ class _CustTextFieldState extends State<CustTextField> {
   @override
   void initState() {
     _controller = widget.controller ?? TextEditingController();
+    _focusNode.addListener(onFocusChange);
 
     super.initState();
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.removeListener(onFocusChange);
+    _focusNode.dispose();
+
+    super.dispose();
+  }
+
+  void onFocusChange() {
+    if (_focusNode.hasFocus == false) {
+      _controller.text = _controller.text.trim();
+    }
+
+    checkClearButton(_controller.text);
+
+    if (widget.onFocusChange != null) {
+      widget.onFocusChange!(_focusNode.hasFocus);
+    }
+  }
+
+  void checkClearButton(String value) {
+    if (_focusNode.hasFocus) {
+      if (!_showClearButton && value.isNotEmpty) {
+        setState(() {
+          _showClearButton = true;
+        });
+      } else if (_showClearButton && value.isEmpty) {
+        setState(() {
+          _showClearButton = false;
+        });
+      }
+    } else {
+      if (_showClearButton) {
+        setState(() {
+          _showClearButton = false;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return TextField(
+      focusNode: _focusNode,
       inputFormatters: widget.inputFormatters,
       cursorColor: widget.cursorColor,
       cursorHeight: widget.cursorHeight,
@@ -259,15 +307,7 @@ class _CustTextFieldState extends State<CustTextField> {
           });
         }
 
-        if (!_showClearButton && value.isNotEmpty) {
-          setState(() {
-            _showClearButton = true;
-          });
-        } else if (_showClearButton && value.isEmpty) {
-          setState(() {
-            _showClearButton = false;
-          });
-        }
+        checkClearButton(value);
       },
       onSubmitted: widget.onSubmitted,
     );
