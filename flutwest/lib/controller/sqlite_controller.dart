@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutwest/model/payee.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:path/path.dart';
@@ -20,6 +21,7 @@ class TablePayee {
   TablePayee._();
 
   static const String tableName = "payee";
+  static const String docId = "doc_id";
   static const String memberId = "member_id";
   static const String accountName = "account_name";
   static const String nickName = "nick_name";
@@ -38,6 +40,8 @@ class TableMember {
 }
 
 class SQLiteController {
+  static const int invalidDateIntValue = -1;
+  static const String invalidString = "";
   static const String dbName = "flutWest.db";
   static const String testID = Vars.fakeMemberID;
 
@@ -65,41 +69,47 @@ class SQLiteController {
     return _controller!;
   }*/
 
-  void loadDB() async {
+  Future<void> loadDB() async {
     String databasesPath = await getDatabasesPath();
     String path = join(databasesPath, dbName);
 
     dataBase = await openDatabase(path, onCreate: ((db, version) {
       var batch = db.batch();
       batch.execute(
-          'CREATE TABLE ${AccountOrder.tableName}(${AccountOrder.memberID} TEXT NOT NULL, ${AccountOrder.order} INTEGER NOT NULL, ${AccountOrder.number} TEXT, ${AccountOrder.bsb} TEXT,  ${AccountOrder.hidden} INTEGER, PRIMARY KEY (${AccountOrder.memberID}, ${AccountOrder.order}))');
+          'CREATE TABLE ${AccountOrder.tableName}(${AccountOrder.memberID} TEXT NOT NULL, ${AccountOrder.order} INTEGER NOT NULL, ${AccountOrder.number} TEXT NOT NULL, ${AccountOrder.bsb} TEXT NOT NULL,  ${AccountOrder.hidden} INTEGER, PRIMARY KEY (${AccountOrder.memberID}, ${AccountOrder.order}))');
       batch.execute(
-          "CREATE TABLE ${TablePayee.tableName}(${TablePayee.memberId} TEXT NOT NULL, ${TablePayee.accountNumber} TEXT NOT NULL, ${TablePayee.accountBsb} TEXT NOT NULL, ${TablePayee.accountName} TEXT NO NULL, ${TablePayee.nickName} TEXT, ${TablePayee.lastPayDate} INTEGER, PRIMARY KEY(${TablePayee.memberId}, ${TablePayee.accountNumber}))");
+          "CREATE TABLE ${TablePayee.tableName}(${TablePayee.memberId} TEXT NOT NULL, ${TablePayee.docId} TEXT NOT NULL, ${TablePayee.accountNumber} TEXT NOT NULL, ${TablePayee.accountBsb} TEXT NOT NULL, ${TablePayee.accountName} TEXT NO NULL, ${TablePayee.nickName} TEXT NOT NULL, ${TablePayee.lastPayDate} INTEGER NOT NULL, PRIMARY KEY(${TablePayee.memberId}, ${TablePayee.docId}))");
       batch.execute(
           "CREATE TABLE ${TableMember.tableName}(${TableMember.memberId} TEXT NOT NULL PRIMARY KEY, ${TableMember.lastLogin} INTEGER NOT NULL, ${TableMember.recentPayee} INTEGER NOT NULL)");
       batch.commit();
     }), version: 1);
   }
 
-  // Payee
-  Future<List<Payee>> getPayees(String memberId) async {
-    final List<Map<String, dynamic>> readPayees = await dataBase.query(
-        TablePayee.tableName,
-        where: "${TablePayee.memberId} = ?",
-        whereArgs: [memberId],
-        orderBy: "${TablePayee.lastPayDate} DESC");
+  // Member info
+  Future<void> updateRecentPayeeEditDate(
+      String memberId, DateTime dateTime) async {
+    await dataBase.update(TableMember.tableName,
+        {TableMember.recentPayee: dateTime.millisecondsSinceEpoch},
+        where: "${TableMember.memberId} = ?", whereArgs: [memberId]);
+  }
 
-    return List.generate(
-        readPayees.length,
-        (index) => Payee(
-            accountNumber: readPayees[index][TablePayee.accountNumber],
-            accountBSB: readPayees[index][TablePayee.accountBsb],
-            accountName: readPayees[index][TablePayee.accountName],
-            nickName: readPayees[index][TablePayee.nickName],
-            lastPayDate: readPayees[index][TablePayee.lastPayDate] != null
-                ? DateTime.fromMillisecondsSinceEpoch(
-                    readPayees[index][TablePayee.lastPayDate] as int)
-                : null));
+  Future<void> insertMemberIfNotExist(
+      String memberId, DateTime lastLogin) async {
+    var member = await getMember(memberId);
+
+    if (member == null) {
+      await insertMember(getMemberMap(memberId, lastLogin, null));
+    }
+  }
+
+  Future<void> insertMember(Map<String, Object?> memberMap) async {
+    await dataBase.insert(TableMember.tableName, memberMap);
+  }
+
+  Future<Map<String, Object?>?> getMember(String memberId) async {
+    var query = await dataBase.query(TableMember.tableName,
+        where: "${TableMember.memberId} = ?", whereArgs: [memberId], limit: 1);
+    return query.isNotEmpty ? query[0] : null;
   }
 
   /// This will get the date time of member [memberId]'s recent payee add or
@@ -117,9 +127,10 @@ class SQLiteController {
 
     Map<String, dynamic> memberInfo = query[0];
 
-    return memberInfo[TableMember.recentPayee] != null
-        ? DateTime.fromMillisecondsSinceEpoch(
-            memberInfo[TableMember.recentPayee] as int)
+    int dateValue = memberInfo[TableMember.recentPayee] as int;
+
+    return dateValue != invalidDateIntValue
+        ? DateTime.fromMillisecondsSinceEpoch(dateValue)
         : null;
   }
 
@@ -141,9 +152,80 @@ class SQLiteController {
     return memberInfo[TableMember.memberId];
   }
 
+  Map<String, Object?> getMemberMap(
+      String memberId, DateTime lastLogin, DateTime? recentPayeeDate) {
+    return {
+      TableMember.memberId: memberId,
+      TableMember.lastLogin: lastLogin.millisecondsSinceEpoch,
+      TableMember.recentPayee: recentPayeeDate != null
+          ? recentPayeeDate.millisecondsSinceEpoch
+          : invalidDateIntValue
+    };
+  }
+
+  // Payee
+  Future<List<Payee>> getPayees(String memberId) async {
+    final List<Map<String, dynamic>> readPayees = await dataBase.query(
+        TablePayee.tableName,
+        where: "${TablePayee.memberId} = ?",
+        whereArgs: [memberId],
+        orderBy: "${TablePayee.lastPayDate} DESC");
+
+    return List.generate(readPayees.length, (index) {
+      int lastPayeeInt = readPayees[index][TablePayee.lastPayDate] as int;
+      String nickNameRaw = readPayees[index][TablePayee.nickName] as String;
+      return Payee(
+          docId: readPayees[index][TablePayee.docId],
+          accountNumber: readPayees[index][TablePayee.accountNumber],
+          accountBSB: readPayees[index][TablePayee.accountBsb],
+          accountName: readPayees[index][TablePayee.accountName],
+          nickName: nickNameRaw,
+          lastPayDate: lastPayeeInt != invalidDateIntValue
+              ? DateTime.fromMillisecondsSinceEpoch(lastPayeeInt)
+              : null);
+    });
+  }
+
+  Future<bool> doesPayeeExist(String memberId, Payee payee) async {
+    await Future.delayed(Duration(milliseconds: 1000));
+    var query = await dataBase.query(TablePayee.tableName,
+        where:
+            "${TablePayee.memberId} = ? AND ${TablePayee.accountNumber} = ? AND ${TablePayee.accountBsb} = ?",
+        whereArgs: [
+          memberId,
+          payee.accountID.getNumber,
+          payee.accountID.getBsb
+        ],
+        limit: 1);
+    return query.isEmpty ? false : true;
+  }
+
+  Future<void> addPayee(String memberId, Payee payee, DateTime addTime) async {
+    await dataBase.insert(TablePayee.tableName, getPayeeMap(memberId, payee));
+    await updateRecentPayeeEditDate(memberId, addTime);
+  }
+
+  Future<void> delPayee(
+      String memberId, String payeeId, DateTime delTime) async {
+    await dataBase.delete(TablePayee.tableName,
+        where: "${TablePayee.memberId} = ? AND ${TablePayee.docId} = ?",
+        whereArgs: [memberId, payeeId]);
+    await updateRecentPayeeEditDate(memberId, delTime);
+  }
+
+  Future<void> updatePayeeLastPayDate(
+      String memberId, String docId, DateTime payDate) async {
+    await dataBase.update(TablePayee.tableName,
+        {TablePayee.lastPayDate: payDate.millisecondsSinceEpoch},
+        where: "${TablePayee.memberId} = ? AND ${TablePayee.docId} = ?",
+        whereArgs: [memberId, docId]);
+  }
+
   Future<void> syncPayees(
-      {required List<Payee> remotePayees,
-      required List<Payee> localPayees}) async {
+      {required String memberId,
+      required List<Payee> remotePayees,
+      required List<Payee> localPayees,
+      required DateTime recentPayeeDate}) async {
     var batch = dataBase.batch();
 
     List<Payee?> remotePayeesClone = List.from(remotePayees);
@@ -163,36 +245,44 @@ class SQLiteController {
 
     for (Payee? payee in remotePayeesClone) {
       if (payee != null) {
-        batch.insert(TablePayee.tableName, getPayeeMap(payee));
+        batch.insert(TablePayee.tableName, getPayeeMap(memberId, payee));
       }
     }
 
     for (Payee? payee in localPayeesClone) {
       if (payee != null) {
         batch.delete(TablePayee.tableName,
+            where: "${TablePayee.memberId} = ? AND ${TablePayee.docId} = ?",
+            whereArgs: [memberId, payee.docId]
+            /*
             where:
-                "${TablePayee.accountNumber} = ? AND ${TablePayee.accountBsb} = ? AND ${TablePayee.accountName} = ? AND ${TablePayee.nickName} = ?",
+                "${TablePayee.memberId} = ? AND ${TablePayee.accountNumber} = ? AND ${TablePayee.accountBsb} = ? AND ${TablePayee.accountName} = ? AND ${TablePayee.nickName} = ?",
             whereArgs: [
+              memberId,
               payee.accountID.getNumber,
               payee.accountID.getBsb,
               payee.accountName,
               payee.nickName
-            ]);
+            ]*/
+            );
       }
     }
 
     await batch.commit();
+    await updateRecentPayeeEditDate(memberId, recentPayeeDate);
   }
 
-  Map<String, Object?> getPayeeMap(Payee payee) {
+  Map<String, Object?> getPayeeMap(String memberId, Payee payee) {
     return {
+      TablePayee.docId: payee.docId,
+      TablePayee.memberId: memberId,
       TablePayee.accountNumber: payee.accountID.getNumber,
       TablePayee.accountBsb: payee.accountID.getBsb,
       TablePayee.accountName: payee.accountName,
       TablePayee.nickName: payee.nickName,
       TablePayee.lastPayDate: payee.lastPayDate != null
           ? payee.lastPayDate!.millisecondsSinceEpoch
-          : null
+          : invalidDateIntValue
     };
   }
 
