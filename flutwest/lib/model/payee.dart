@@ -6,22 +6,41 @@ class Payee {
   static const String fnAccountNumber = "accountNumber";
   static const String fnAccountBsb = "accountBsb";
 
+  final String docId;
   final AccountID accountID;
-  final String? nickName;
+  final String nickName;
   final String accountName;
-  final DateTime? lastPayDate;
+  DateTime? lastPayDate;
 
   Payee(
-      {required String accountNumber,
+      {required this.docId,
+      required String accountNumber,
       required String accountBSB,
       required this.accountName,
-      this.nickName,
+      required this.nickName,
       this.lastPayDate})
-      : accountID = AccountID(number: accountName, bsb: accountBSB);
+      : accountID = AccountID(number: accountNumber, bsb: accountBSB);
+
+  /// Payee without an doc Id that should only exist temporarily locally after
+  /// creating a payee from add page page. Then immediately send to cloud and
+  /// with the returned Id to create the [Payee] object with the docId.
+  factory Payee.noId(
+      {required String accountNumber,
+      required String accountBSB,
+      required String accountName,
+      required String nickName,
+      DateTime? lastPayDate}) {
+    return Payee(
+        docId: "",
+        accountNumber: accountNumber,
+        accountBSB: accountBSB,
+        accountName: accountName,
+        nickName: nickName);
+  }
 
   AccountID get getAccountID => this.accountID;
 
-  String get getNickName => nickName ?? accountName;
+  String get getNickName => nickName;
 
   String get getAccountName => this.accountName;
 
@@ -37,23 +56,25 @@ class Payee {
 
     result.addAll({fnAccountNumber: accountID.getNumber});
     result.addAll({fnAccountBsb: accountID.getBsb});
-    if (nickName != null) {
-      result.addAll({'nickName': nickName});
-    }
+
+    result.addAll({'nickName': nickName});
+
     result.addAll({'accountName': accountName});
 
     return result;
   }
 
-  factory Payee.fromMap(Map<String, dynamic> map) {
+  factory Payee.fromMap(Map<String, dynamic> map, String docId) {
     return Payee(
+        docId: docId,
         accountNumber: map[fnAccountNumber] ?? "",
         accountBSB: map[fnAccountBsb] ?? "",
         accountName: map['accountName'] ?? "",
-        nickName: map['nickName']);
+        nickName: map['nickName'] ?? "");
   }
 
   String toJson() => json.encode(toMap());
 
-  factory Payee.fromJson(String source) => Payee.fromMap(json.decode(source));
+  factory Payee.fromJson(String source, String docId) =>
+      Payee.fromMap(json.decode(source), docId);
 }
