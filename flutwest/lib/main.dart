@@ -10,10 +10,11 @@ void main() async {
 
   Utils.hideSysNavBarColour();
 
-  SQLiteController.instance.loadDB();
+  await SQLiteController.instance.loadDB();
 
   // WidgetsFlutterBinding.ensureInitialized();
   FirestoreController.instance.setFirebaseFireStore(FakeFirebaseFirestore());
+  //FirestoreController.instance.enablePersistentData(true);
   Utils.putData();
 
   runApp(const MyApp());
