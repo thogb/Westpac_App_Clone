@@ -13,9 +13,11 @@ class LoadingText extends StatelessWidget {
       children: List.generate(
           repeats,
           (index) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   StandardPadding(
-                    child: _getContainer(300.0),
+                    child:
+                        _getContainer(MediaQuery.of(context).size.width * 0.3),
                     showVerticalPadding: true,
                   ),
                   StandardPadding(
