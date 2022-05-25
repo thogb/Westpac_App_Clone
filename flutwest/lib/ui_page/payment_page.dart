@@ -1,12 +1,14 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
+import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/cust_widget/clickable_text.dart';
 import 'package:flutwest/cust_widget/cust_text_field.dart';
 import 'package:flutwest/cust_widget/in_text_button.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_id.dart';
+import 'package:flutwest/model/payee.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/loading_page.dart';
@@ -16,8 +18,14 @@ import 'package:flutwest/ui_page/transfer_from_page.dart';
 class PaymentPage extends StatefulWidget {
   final List<Account> accounts;
   final Account currAccount;
+  final Payee payee;
+  final String memberId;
   const PaymentPage(
-      {Key? key, required this.accounts, required this.currAccount})
+      {Key? key,
+      required this.accounts,
+      required this.currAccount,
+      required this.payee,
+      required this.memberId})
       : super(key: key);
 
   @override
@@ -77,10 +85,16 @@ class _PaymentPageState extends State<PaymentPage> {
 
               // The receiver
               InTextButton.standard(
-                  leftLabel: "Pay ", label: "Test", rightLabel: ""),
+                  leftLabel: "Pay ",
+                  label: widget.payee.getNickName,
+                  rightLabel: "",
+                  onTap: () {
+                    Navigator.pop(context);
+                  }),
               const SizedBox(height: Vars.gapBetweenTextVertical),
-              Text("123123123123123123\n123123123123123123",
-                  style: TextStyle(
+              Text(
+                  "${widget.payee.getAccountID.getBsb} ${widget.payee.accountID.getNumber}",
+                  style: const TextStyle(
                       fontSize: Vars.paragraphTextSize, color: Colors.black54)),
               const SizedBox(height: Vars.heightGapBetweenWidgets),
 
@@ -232,12 +246,14 @@ class _PaymentPageState extends State<PaymentPage> {
           ),
           onPressed: !_enabledPayButton
               ? null
-              : () {
-                  showDialog(
+              : () async {
+                  bool finishedPayment = false;
+
+                  await showDialog(
                       context: context,
                       builder: (BuildContext context) {
-                        Decimal? amount = Decimal.tryParse(_tecMoney.text);
-
+                        Decimal? amount = Decimal.tryParse(
+                            _tecMoney.text.replaceAll(",", ""));
                         if (amount == null) {
                           return AlertDialog(
                               title: const Text("Error"),
@@ -262,7 +278,7 @@ class _PaymentPageState extends State<PaymentPage> {
                                   },
                                   child: const Text("Cancel")),
                               TextButton(
-                                  child: Text("Pay"),
+                                  child: const Text("Pay"),
                                   onPressed: () async {
                                     await Navigator.push(
                                         context,
@@ -270,38 +286,40 @@ class _PaymentPageState extends State<PaymentPage> {
                                             pageBuilder: ((context, animation,
                                                     secondaryAnimation) =>
                                                 LoadingPage(
-                                                    futureObject: FirestoreController
-                                                        .instance
-                                                        .addPaymentTransaction(
-                                                            sender: _currAccount
-                                                                .accountID,
-                                                            senderDocId:
-                                                                _currAccount
-                                                                    .docID!,
-                                                            receiver: AccountID(
-                                                                number:
-                                                                    "number",
-                                                                bsb: "bsb"),
-                                                            receiverName:
-                                                                "test",
-                                                            senderDescription:
-                                                                _tecDescSender
-                                                                    .text,
-                                                            receiverDescription:
-                                                                _tecDescReceiver
-                                                                    .text,
-                                                            amount: amount)))));
-
-                                    Navigator.of(context)..pop();
+                                                    futureObject: handlePayment(
+                                                        amount,
+                                                        widget.memberId,
+                                                        widget.payee)))));
+                                    finishedPayment = true;
+                                    Navigator.pop(context);
                                   })
                             ],
                           );
                         }
                       });
+                  if (finishedPayment) {
+                    Navigator.pop(context, true);
+                  }
                 },
         ),
       ),
     );
+  }
+
+  Future<void> handlePayment(
+      Decimal amount, String memberId, Payee payee) async {
+    DateTime payDate = DateTime.now();
+    await FirestoreController.instance.addPaymentTransaction(
+        sender: _currAccount.accountID,
+        senderDocId: _currAccount.docID!,
+        receiver: AccountID(number: "number", bsb: "bsb"),
+        receiverName: "test",
+        senderDescription: _tecDescSender.text,
+        receiverDescription: _tecDescReceiver.text,
+        amount: amount);
+    await SQLiteController.instance
+        .updatePayeeLastPayDate(memberId, payee.docId, payDate);
+    payee.lastPayDate = payDate;
   }
 
   void _onScroll() {
