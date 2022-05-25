@@ -331,7 +331,7 @@ class _CardsPageState extends State<CardsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const CustHeading(
+        CustHeading.big(
           heading: "Security",
         ),
         //lock cards
@@ -353,7 +353,7 @@ class _CardsPageState extends State<CardsPage> {
         ),
 
         //Wallets
-        const CustHeading(
+        CustHeading.big(
           heading: "Wallets",
         ),
         CustTextButton(
@@ -362,7 +362,7 @@ class _CardsPageState extends State<CardsPage> {
         ),
 
         //Controls
-        const CustHeading(
+        CustHeading.big(
           heading: "Controls",
         ),
         CustTextButton(
@@ -375,7 +375,7 @@ class _CardsPageState extends State<CardsPage> {
         ),
 
         //Linked Account
-        const CustHeading(
+        CustHeading.big(
           heading: "Linked accounts",
         ),
         StandardPadding(
