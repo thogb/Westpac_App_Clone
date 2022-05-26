@@ -17,30 +17,42 @@ class CustHeading extends StatelessWidget {
 
   factory CustHeading.big(
       {required String heading,
+      bool showHorPadding = false,
       TextStyle textStyle = const TextStyle(
           fontSize: Vars.headingTextSize1, fontWeight: FontWeight.w600),
-      EdgeInsetsGeometry padding =
-          const EdgeInsets.symmetric(vertical: Vars.topBotPaddingSize)}) {
+      EdgeInsetsGeometry? padding}) {
+    padding = padding ??
+        EdgeInsets.symmetric(
+            vertical: Vars.topBotPaddingSize,
+            horizontal: showHorPadding ? Vars.standardPaddingSize : 0.0);
     return CustHeading(
         heading: heading, textStyle: textStyle, padding: padding);
   }
 
   factory CustHeading.medium(
       {required String heading,
+      bool showHorPadding = false,
       TextStyle textStyle = const TextStyle(
           fontSize: Vars.headingTextSize2, fontWeight: FontWeight.w600),
-      EdgeInsetsGeometry padding =
-          const EdgeInsets.symmetric(vertical: Vars.topBotPaddingSize)}) {
+      EdgeInsetsGeometry? padding}) {
+    padding = padding ??
+        EdgeInsets.symmetric(
+            vertical: Vars.topBotPaddingSize,
+            horizontal: showHorPadding ? Vars.standardPaddingSize : 0.0);
     return CustHeading(
         heading: heading, textStyle: textStyle, padding: padding);
   }
 
   factory CustHeading.small(
       {required String heading,
+      bool showHorPadding = false,
       TextStyle textStyle = const TextStyle(
           fontSize: Vars.headingTextSize3, fontWeight: FontWeight.w600),
-      EdgeInsetsGeometry padding =
-          const EdgeInsets.symmetric(vertical: Vars.topBotPaddingSize)}) {
+      EdgeInsetsGeometry? padding}) {
+    padding = padding ??
+        EdgeInsets.symmetric(
+            vertical: Vars.topBotPaddingSize,
+            horizontal: showHorPadding ? Vars.standardPaddingSize : 0.0);
     return CustHeading(
         heading: heading, textStyle: textStyle, padding: padding);
   }
