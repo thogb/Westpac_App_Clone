@@ -34,7 +34,7 @@ class Utils {
         systemNavigationBarIconBrightness: Brightness.dark,
         systemNavigationBarColor: Colors.white));
 
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge,
         overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
   }
 
