@@ -112,6 +112,7 @@ class _HomePageState extends State<HomePage> {
           }
 
           _pages[0] = (HomeContentPage(
+            rawAccounts: _accounts,
             navbarState: navbarState,
             member: _member,
             accountOrderInfos: _accountOrderInfos,
@@ -288,6 +289,9 @@ class _HomePageState extends State<HomePage> {
           }
         }
         _pages[1] = CardsPage(
+            memberId: _member.id,
+            recentPayeeDate: _member.recentPayeeChange,
+            rawAccounts: _accounts,
             cardNumber: _member.cardNumber,
             cardAccount: cardAccount,
             accountOrderInfos: _accountOrderInfos);
@@ -361,7 +365,7 @@ class _HomePageState extends State<HomePage> {
                         title: Text("Cardles Cash")),
                     !_more
                         ? ListTile(
-                            leading: const Icon(Icons.expand),
+                            leading: const Icon(Icons.more_horiz),
                             title: const Text("More"),
                             onTap: () {
                               setModalState(() {
