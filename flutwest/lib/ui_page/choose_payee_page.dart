@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
@@ -25,11 +26,13 @@ class ChoosePayeePage extends StatefulWidget {
   final String memberId;
   final DateTime? recentPayeeEdit;
   final List<Account> accounts;
+  final Account? currAccount;
   const ChoosePayeePage(
       {Key? key,
       required this.accounts,
       required this.memberId,
-      required this.recentPayeeEdit})
+      required this.recentPayeeEdit,
+      this.currAccount})
       : super(key: key);
 
   @override
@@ -70,6 +73,7 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
   List<Payee> _payees = [];
   bool _requireReconstruct = false;
   String _filterKeyword = "";
+  bool _madeAnyPayment = false;
 
   @override
   void initState() {
@@ -89,8 +93,14 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [_getFakeAppBar(), Expanded(child: _getPayeeList())],
+      body: WillPopScope(
+        onWillPop: () async {
+          _onBackPressed();
+          return true;
+        },
+        child: Column(
+          children: [_getFakeAppBar(), Expanded(child: _getPayeeList())],
+        ),
       ),
     );
   }
@@ -117,6 +127,10 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
     }
   }
 
+  void _onBackPressed() {
+    Navigator.pop(context, _madeAnyPayment);
+  }
+
   Widget _getFakeAppBar() {
     return Container(
       padding: const EdgeInsets.only(top: Vars.gapAtTop - 5, bottom: 15),
@@ -137,7 +151,7 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
                         child:
                             const Icon(Icons.close, color: Vars.clickAbleColor),
                         onTap: () {
-                          Navigator.pop(context);
+                          _onBackPressed();
                         },
                       ),
                       const SizedBox(
@@ -280,7 +294,8 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
               CustTextButton(
                 headingTextStyle: headingButtonStyle,
                 heading: "Other PayID",
-              )
+              ),
+              const ListTile(title: Text(""))
             ],
           );
         });
@@ -318,11 +333,19 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
             localPayees: localPayees,
             recentPayeeDate: memberRecentPayeeEdit);
         //remotePayees.sort(((a, b) => a.getNickName.compareTo(b.getNickName)));
-        _sortPayeeList(remotePayees);
+        //_sortPayeeList(remotePayees);
+        _sortPayeeListByLastPay(localPayees);
+        for (int i = 0; i < min(localPayees.length, 5); i++) {
+          for (Payee payee in remotePayees) {
+            if (payee.isAllEqual(localPayees[i])) {
+              payee.lastPayDate = localPayees[i].lastPayDate;
+            }
+          }
+        }
         payees = remotePayees;
       } else {
         //localPayees.sort(((a, b) => a.getNickName.compareTo(b.getNickName)));
-        _sortPayeeList(localPayees);
+        //_sortPayeeList(localPayees);
         payees = localPayees;
       }
     } else {
@@ -359,17 +382,7 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
                 DateTime sevenDayAgo =
                     DateTime(now.year, now.month, now.day - 7);
 
-                _payees.sort(((a, b) {
-                  if (a.lastPayDate == null) {
-                    return 1;
-                  }
-
-                  if (b.lastPayDate == null) {
-                    return a.lastPayDate != null ? -1 : 1;
-                  }
-
-                  return a.lastPayDate!.compareTo(b.lastPayDate!) * -1;
-                }));
+                _sortPayeeListByLastPay(_payees);
 
                 for (int i = 0; i < 5; i++) {
                   if (i < _payees.length &&
@@ -500,6 +513,20 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
         a.getNickName.toUpperCase().compareTo(b.getNickName.toUpperCase())));
   }
 
+  void _sortPayeeListByLastPay(List<Payee> payees) {
+    payees.sort(((a, b) {
+      if (a.lastPayDate == null) {
+        return 1;
+      }
+
+      if (b.lastPayDate == null) {
+        return a.lastPayDate != null ? -1 : 1;
+      }
+
+      return a.lastPayDate!.compareTo(b.lastPayDate!) * -1;
+    }));
+  }
+
   Widget _getPayeeHeader(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -593,9 +620,10 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
                 PaymentPage(
                   memberId: widget.memberId,
                   accounts: widget.accounts,
-                  currAccount: widget.accounts[0],
+                  currAccount: widget.currAccount ?? widget.accounts[0],
                   payee: payee,
                 ))));
+    _madeAnyPayment = (result != null && (result as bool)) || _madeAnyPayment;
     return result;
   }
 }
