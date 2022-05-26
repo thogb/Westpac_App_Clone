@@ -194,23 +194,23 @@ class FirestoreController {
   }
 
   Future<void> addTransferTransaction(
-      {required AccountID sender,
-      required String senderDocId,
-      required AccountID receiver,
-      required String receiverDocId,
+      {required Account senderAccount,
+      required Account receiverAccount,
       required String transferDescription,
       required Decimal amount,
       DateTime? dateTime}) async {
-    Account senderAccount = Account.fromMap(
-        (await getAccountByDocId(docID: senderDocId)).data()!, senderDocId);
-    QueryDocumentSnapshot<Map<String, dynamic>> receiverDoc =
+    /*Account senderAccount = Account.fromMap(
+        (await getAccountByDocId(docID: senderDocId)).data()!, senderDocId);*/
+    /*QueryDocumentSnapshot<Map<String, dynamic>> receiverDoc =
         await getAccountByNumberNotNull(accountNumber: receiver.getNumber);
     Account receiverAccount =
-        Account.fromMap(receiverDoc.data(), receiverDoc.id);
+        Account.fromMap(receiverDoc.data(), receiverDoc.id);*/
+    /*Account receiverAccount = Account.fromMap(
+        (await getAccountByDocId(docID: receiverDocId)).data()!, receiverDocId);*/
 
     AccountTransaction transaction = AccountTransaction.create(
-        sender: sender,
-        receiver: receiver,
+        sender: senderAccount.accountID,
+        receiver: receiverAccount.accountID,
         dateTime: dateTime ?? DateTime.now(),
         id: "",
         amount: amount,
@@ -231,20 +231,22 @@ class FirestoreController {
           newBalance: receiverNewBal, docId: receiverAccount.docID!)
     ]);
 
+    senderAccount.setBalance = senderNewBal;
+    receiverAccount.setBalance = receiverNewBal;
+
     notifyOnTransactionMadebservers();
   }
 
   Future<void> addPaymentTransaction(
-      {required AccountID sender,
-      required String senderDocId,
+      {required Account senderAccount,
       required AccountID receiver,
       required String receiverName,
       required String senderDescription,
       required String receiverDescription,
       required Decimal amount,
       DateTime? dateTime}) async {
-    Account senderAccount = Account.fromMap(
-        (await getAccountByDocId(docID: senderDocId)).data()!, senderDocId);
+    /* Account senderAccount = Account.fromMap(
+        (await getAccountByDocId(docID: senderDocId)).data()!, senderDocId);*/
     QueryDocumentSnapshot<Map<String, dynamic>>? receiverDoc =
         await getAccountByNumber(accountNumber: receiver.getNumber);
     Account? receiverAccount = receiverDoc != null
@@ -261,18 +263,19 @@ class FirestoreController {
         senderDescription:
             "WITHDRAWL-OSKO PAYMENT ****** $receiverName $senderDescription",
         receiverDescription:
-            "DEPOSIT-OSKO PAYMENT ****** ${sender.getNumber} $receiverDescription",
+            "DEPOSIT-OSKO PAYMENT ****** ${senderAccount.accountID.getNumber} $receiverDescription",
         transactionTypes: [
           AccountTransaction.paymentsAndTransfers,
           AccountTransaction.credits
         ]);
-    await addTransaction(transaction);
     Decimal senderNewBal = senderAccount.getBalance - amount;
     await Future.wait([
       addTransaction(transaction),
       updateAccountBalance(
           newBalance: senderNewBal, docId: senderAccount.docID!),
     ]);
+
+    senderAccount.setBalance = senderNewBal;
 
     if (receiverAccount != null) {
       Decimal receiverNewBal = receiverAccount.getBalance + amount;
