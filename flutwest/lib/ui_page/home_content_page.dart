@@ -20,12 +20,14 @@ class HomeContentPage extends StatefulWidget {
   final NavbarState navbarState;
   final Member member;
   final List<AccountOrderInfo> accountOrderInfos;
+  final List<Account> rawAccounts;
 
   const HomeContentPage(
       {Key? key,
       required this.navbarState,
       required this.member,
-      required this.accountOrderInfos})
+      required this.accountOrderInfos,
+      required this.rawAccounts})
       : super(key: key);
 
   @override
@@ -560,6 +562,10 @@ class _HomeContentPageState extends State<HomeContentPage>
             context,
             MaterialPageRoute(
                 builder: (context) => AccountDetailPage(
+                    rawAccounts: widget.rawAccounts,
+                    currAccount: accountOrderInfo.getAccount(),
+                    memberId: widget.member.id,
+                    recentPayeeDate: widget.member.recentPayeeChange,
                     accounts: _accountOrderInfos,
                     currIndex: _accountOrderInfos.indexOf(accountOrderInfo))));
       },
