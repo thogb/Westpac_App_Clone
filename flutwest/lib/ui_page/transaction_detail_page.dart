@@ -90,7 +90,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
       body: Column(
         children: [
           Material(
-            elevation: _showElevation ? 4.0 : 0.0,
+            elevation: _showElevation ? 3.0 : 0.0,
             child: Container(
               padding: const EdgeInsets.only(top: 30.0),
               child: Column(
