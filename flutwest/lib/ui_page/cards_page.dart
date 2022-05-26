@@ -19,12 +19,18 @@ class CardsPage extends StatefulWidget {
   final String cardNumber;
   final Account cardAccount;
   final List<AccountOrderInfo> accountOrderInfos;
+  final String memberId;
+  final DateTime? recentPayeeDate;
+  final List<Account> rawAccounts;
 
   const CardsPage(
       {Key? key,
       required this.cardNumber,
       required this.cardAccount,
-      required this.accountOrderInfos})
+      required this.accountOrderInfos,
+      required this.memberId,
+      required this.recentPayeeDate,
+      required this.rawAccounts})
       : super(key: key);
 
   @override
@@ -332,6 +338,7 @@ class _CardsPageState extends State<CardsPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CustHeading.big(
+          showHorPadding: true,
           heading: "Security",
         ),
         //lock cards
@@ -354,6 +361,7 @@ class _CardsPageState extends State<CardsPage> {
 
         //Wallets
         CustHeading.big(
+          showHorPadding: true,
           heading: "Wallets",
         ),
         CustTextButton(
@@ -363,6 +371,7 @@ class _CardsPageState extends State<CardsPage> {
 
         //Controls
         CustHeading.big(
+          showHorPadding: true,
           heading: "Controls",
         ),
         CustTextButton(
@@ -376,6 +385,7 @@ class _CardsPageState extends State<CardsPage> {
 
         //Linked Account
         CustHeading.big(
+          showHorPadding: true,
           heading: "Linked accounts",
         ),
         StandardPadding(
@@ -393,6 +403,10 @@ class _CardsPageState extends State<CardsPage> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => AccountDetailPage(
+                              memberId: widget.memberId,
+                              recentPayeeDate: widget.recentPayeeDate,
+                              rawAccounts: widget.rawAccounts,
+                              currAccount: widget.cardAccount,
                               accounts: widget.accountOrderInfos,
                               currIndex: index)));
                 },
