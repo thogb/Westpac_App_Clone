@@ -4,22 +4,36 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
+import 'package:flutwest/cust_widget/loading_text.dart';
 import 'package:flutwest/cust_widget/outlined_container.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/account_transaction.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
+import 'package:flutwest/ui_page/choose_payee_page.dart';
+import 'package:flutwest/ui_page/payment_page.dart';
 import 'package:flutwest/ui_page/transaction_detail_page.dart';
+import 'package:flutwest/ui_page/transfer_page.dart';
 
 import '../model/account.dart';
 
 class AccountDetailPage extends StatefulWidget {
   final List<AccountOrderInfo> accounts;
   final int currIndex;
+  final List<Account> rawAccounts;
+  final Account currAccount;
+  final String memberId;
+  final DateTime? recentPayeeDate;
 
   const AccountDetailPage(
-      {Key? key, required this.accounts, required this.currIndex})
+      {Key? key,
+      required this.accounts,
+      required this.currIndex,
+      required this.rawAccounts,
+      required this.currAccount,
+      required this.memberId,
+      required this.recentPayeeDate})
       : super(key: key);
 
   @override
@@ -32,12 +46,24 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
   late AppbarTitleStatus appbarTitleStatus;
 
   late final PageController _pageController;
+  final List<AccountDetailSection> _accountDetailSections = [];
 
   @override
   void initState() {
     appbarTitleStatus = AppbarTitleStatus(show: _showTitle, hide: _hideTitle);
     _currAccount = widget.accounts[widget.currIndex];
     _pageController = PageController(initialPage: widget.currIndex);
+
+    for (int i = 0; i < widget.accounts.length; i++) {
+      _accountDetailSections.add(AccountDetailSection(
+        accounts: widget.rawAccounts,
+        memberId: widget.memberId,
+        recentPayeeDate: widget.recentPayeeDate,
+        account: widget.accounts[i].getAccount(),
+        appbarTitleStatus: appbarTitleStatus,
+      ));
+    }
+
     super.initState();
   }
 
@@ -90,19 +116,14 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
               )
             ]),
         body: PageView(
-          controller: _pageController,
-          onPageChanged: (int index) {
-            setState(() {
-              _currAccount = widget.accounts[index];
-              _showNavBarTitle = false;
-            });
-          },
-          children: widget.accounts
-              .map((AccountOrderInfo account) => AccountDetailSection(
-                  account: account.getAccount(),
-                  appbarTitleStatus: appbarTitleStatus))
-              .toList(),
-        ));
+            controller: _pageController,
+            onPageChanged: (int index) {
+              setState(() {
+                _currAccount = widget.accounts[index];
+                _showNavBarTitle = false;
+              });
+            },
+            children: _accountDetailSections));
   }
 
   void _showTitle() {
@@ -142,11 +163,19 @@ class AppbarTitleStatus {
 }
 
 class AccountDetailSection extends StatefulWidget {
+  final List<Account> accounts;
   final Account account;
   final AppbarTitleStatus appbarTitleStatus;
+  final DateTime? recentPayeeDate;
+  final String memberId;
 
   const AccountDetailSection(
-      {Key? key, required this.account, required this.appbarTitleStatus})
+      {Key? key,
+      required this.account,
+      required this.appbarTitleStatus,
+      required this.accounts,
+      required this.recentPayeeDate,
+      required this.memberId})
       : super(key: key);
 
   @override
@@ -166,7 +195,7 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
 
   final ScrollController _scrollController = ScrollController();
 
-  late final Future<QuerySnapshot<Map<String, dynamic>>> _recentTransactions;
+  late Future<QuerySnapshot<Map<String, dynamic>>> _recentTransactions;
 
   @override
   void initState() {
@@ -258,11 +287,47 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  _getSimpleButton(
-                      Icons.transfer_within_a_station, "Pay", () {}),
+                  _getSimpleButton(Icons.transfer_within_a_station, "Pay",
+                      () async {
+                    Object? result = await Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                            pageBuilder: ((context, animation,
+                                    secondaryAnimation) =>
+                                ChoosePayeePage(
+                                    currAccount: widget.account,
+                                    accounts: widget.accounts,
+                                    memberId: widget.memberId,
+                                    recentPayeeEdit: widget.recentPayeeDate)),
+                            transitionDuration: Duration.zero,
+                            reverseTransitionDuration: Duration.zero));
+                    if (result != null && (result as bool)) {
+                      setState(() {
+                        _recentTransactions = FirestoreController.instance
+                            .getTransactionLimitBy(widget.account.getNumber, 5);
+                      });
+                    }
+                  }),
                   const SizedBox(width: 10.0),
-                  _getSimpleButton(
-                      Icons.transfer_within_a_station, "Transfer", () {}),
+                  _getSimpleButton(Icons.transfer_within_a_station, "Transfer",
+                      () async {
+                    Object? result = await Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                            pageBuilder:
+                                ((context, animation, secondaryAnimation) =>
+                                    TransferPage(
+                                        currAccount: widget.account,
+                                        accounts: widget.accounts)),
+                            transitionDuration: Duration.zero,
+                            reverseTransitionDuration: Duration.zero));
+                    if (result != null && (result as bool)) {
+                      setState(() {
+                        _recentTransactions = FirestoreController.instance
+                            .getTransactionLimitBy(widget.account.getNumber, 5);
+                      });
+                    }
+                  }),
                   const SizedBox(width: 10.0),
                   _getSimpleButton(
                       Icons.transfer_within_a_station, "BPay", () {})
@@ -337,9 +402,6 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
   }
 
   Widget _getTransactionSummary(Account account) {
-    Decimal balance = account.getBalance;
-    DateTime dateTime = DateTime(1000);
-
     return Padding(
       padding: buttonMargin,
       child: Container(
@@ -384,6 +446,9 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
                           .map(
                               (e) => AccountTransaction.fromMap(e.data(), e.id))
                           .toList();
+                      Decimal balance = account.getBalance;
+                      DateTime dateTime = Vars.invalidDateTime;
+                      print("${DateTime.now()} Recreating details page");
                       return Column(
                         children: transactions.map(((transaction) {
                           Widget retWidget;
@@ -419,7 +484,7 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
                         })).toList(),
                       );
                     }
-                    return const Text("Loading");
+                    return const LoadingText(repeats: 1);
                   }),
               const SizedBox(height: 20.0),
               Container(
