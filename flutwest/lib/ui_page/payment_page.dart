@@ -249,11 +249,12 @@ class _PaymentPageState extends State<PaymentPage> {
               : () async {
                   bool finishedPayment = false;
 
+                  Decimal? amount =
+                      Decimal.tryParse(_tecMoney.text.replaceAll(",", ""));
+
                   await showDialog(
                       context: context,
                       builder: (BuildContext context) {
-                        Decimal? amount = Decimal.tryParse(
-                            _tecMoney.text.replaceAll(",", ""));
                         if (amount == null) {
                           return AlertDialog(
                               title: const Text("Error"),
@@ -280,7 +281,7 @@ class _PaymentPageState extends State<PaymentPage> {
                               TextButton(
                                   child: const Text("Pay"),
                                   onPressed: () async {
-                                    await Navigator.push(
+                                    /*await Navigator.push(
                                         context,
                                         PageRouteBuilder(
                                             pageBuilder: ((context, animation,
@@ -289,7 +290,7 @@ class _PaymentPageState extends State<PaymentPage> {
                                                     futureObject: handlePayment(
                                                         amount,
                                                         widget.memberId,
-                                                        widget.payee)))));
+                                                        widget.payee)))));*/
                                     finishedPayment = true;
                                     Navigator.pop(context);
                                   })
@@ -297,7 +298,15 @@ class _PaymentPageState extends State<PaymentPage> {
                           );
                         }
                       });
-                  if (finishedPayment) {
+                  if (amount != null && finishedPayment) {
+                    await Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                            pageBuilder:
+                                ((context, animation, secondaryAnimation) =>
+                                    LoadingPage(
+                                        futureObject: handlePayment(amount,
+                                            widget.memberId, widget.payee)))));
                     Navigator.pop(context, true);
                   }
                 },
@@ -310,8 +319,7 @@ class _PaymentPageState extends State<PaymentPage> {
       Decimal amount, String memberId, Payee payee) async {
     DateTime payDate = DateTime.now();
     await FirestoreController.instance.addPaymentTransaction(
-        sender: _currAccount.accountID,
-        senderDocId: _currAccount.docID!,
+        senderAccount: _currAccount,
         receiver: AccountID(number: "number", bsb: "bsb"),
         receiverName: "test",
         senderDescription: _tecDescSender.text,
