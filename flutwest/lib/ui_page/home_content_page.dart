@@ -176,7 +176,7 @@ class _HomeContentPageState extends State<HomeContentPage>
     _botAnimationController.dispose();
 
     FirestoreController.instance
-        .removeTOnransactionMadeObserver(_recreateAccountDrags);
+        .removeOnTransactionMadeObserver(_recreateAccountDrags);
 
     super.dispose();
   }

@@ -35,7 +35,7 @@ class FirestoreController {
     _onTransactionMadeObservers.add(callback);
   }
 
-  void removeTOnransactionMadeObserver(VoidCallback callback) {
+  void removeOnTransactionMadeObserver(VoidCallback callback) {
     _onTransactionMadeObservers.remove(callback);
   }
 
