@@ -255,10 +255,8 @@ void main() {
     print(
         "Before send 200.30 account 1 to acccount 2\nBalance: account 1: ${readAccounts[0].getBalance}, account 2: ${readAccounts[1].balance}");
     await FirestoreController.instance.addTransferTransaction(
-        sender: readAccounts[0].accountID,
-        senderDocId: readAccounts[0].docID!,
-        receiver: readAccounts[1].accountID,
-        receiverDocId: readAccounts[1].docID!,
+        senderAccount: readAccounts[0],
+        receiverAccount: readAccounts[1],
         transferDescription: "teasdasdasd",
         amount: Decimal.parse("200.30"));
     readAccounts = (await FirestoreController.instance.getAccounts(memberId))
@@ -268,8 +266,7 @@ void main() {
     print(
         "After send 200.30, Account 1: ${readAccounts[0].getBalance}, account 2: ${readAccounts[1].balance}");
     await FirestoreController.instance.addPaymentTransaction(
-        sender: readAccounts[0].accountID,
-        senderDocId: readAccounts[0].docID!,
+        senderAccount: readAccounts[0],
         receiver: readAccounts[1].accountID,
         receiverName: "Bob",
         senderDescription: "teasdasdaasdasdsadsd",
@@ -282,10 +279,8 @@ void main() {
     print(
         "After send another 1000.57 from accoutn 1 to acount 2 using addPaymentTransaction\nAccount 1: ${readAccounts[0].getBalance}, account 2: ${readAccounts[1].balance}");
     await FirestoreController.instance.addTransferTransaction(
-        sender: readAccounts[1].accountID,
-        senderDocId: readAccounts[1].docID!,
-        receiver: readAccounts[0].accountID,
-        receiverDocId: readAccounts[0].docID!,
+        senderAccount: readAccounts[1],
+        receiverAccount: readAccounts[0],
         transferDescription: "teasdasdasd",
         amount: Decimal.parse("500.20"));
     readAccounts = (await FirestoreController.instance.getAccounts(memberId))
@@ -295,8 +290,7 @@ void main() {
     print(
         "After send 500.20, Account 2: ${readAccounts[1].getBalance}, account 1: ${readAccounts[0].balance}");
     await FirestoreController.instance.addPaymentTransaction(
-        sender: readAccounts[1].accountID,
-        senderDocId: readAccounts[1].docID!,
+        senderAccount: readAccounts[1],
         receiver: readAccounts[0].accountID,
         receiverName: "Bob",
         senderDescription: "teasdasdaasdasdsadsd",
