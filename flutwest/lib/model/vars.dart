@@ -36,6 +36,8 @@ class Vars {
 
   static const double gapAtTop = 35.0;
 
+  static const double gapBetweenHorizontalRadio = 8.0;
+
   static const FontWeight medBold = FontWeight.w500;
 
   static const TextStyle headingStyle1 =
@@ -66,7 +68,7 @@ class Vars {
       fontWeight: FontWeight.bold,
       color: Colors.black);
 
-  static const Color loadingDummyColor = Colors.black12;
+  static const Color loadingDummyColor = Color.fromRGBO(238, 238, 238, 1);
 
   static const Color errorColor = Colors.red;
   static const Color clickAbleColor = Color.fromRGBO(198, 40, 40, 1);
