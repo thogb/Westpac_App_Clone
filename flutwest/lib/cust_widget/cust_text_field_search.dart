@@ -32,11 +32,12 @@ class _CustTextFieldSearchState extends State<CustTextFieldSearch> {
   static const Color iconColor = Colors.black87;
   static const InputBorder inputBorder = OutlineInputBorder(
       borderRadius: BorderRadius.all(Radius.circular(3.0)),
-      borderSide: BorderSide(width: 0.3, color: Colors.black54));
+      borderSide: BorderSide(width: 0.1, color: Colors.black54));
 
   final FocusNode _focusNode = FocusNode();
   late bool _isFocused;
   late final TextEditingController _controller;
+  bool _showBackIcon = false;
 
   bool _showClearButton = false;
 
@@ -45,6 +46,7 @@ class _CustTextFieldSearchState extends State<CustTextFieldSearch> {
     _focusNode.addListener(onFucusChange);
     _controller = widget.textEditingController;
     _isFocused = widget.autoFocus;
+    _showBackIcon = widget.autoFocus;
 
     super.initState();
   }
@@ -62,6 +64,9 @@ class _CustTextFieldSearchState extends State<CustTextFieldSearch> {
       if (!_isFocused) {
         setState(() {
           _isFocused = true;
+          if (!_showBackIcon) {
+            _showBackIcon = true;
+          }
         });
       }
     } else {
@@ -80,10 +85,11 @@ class _CustTextFieldSearchState extends State<CustTextFieldSearch> {
   @override
   Widget build(BuildContext context) {
     return TextField(
+      autofocus: widget.autoFocus,
       controller: widget.textEditingController,
       cursorColor: Vars.clickAbleColor,
       focusNode: _focusNode,
-      style: const TextStyle(fontSize: Vars.headingTextSize1),
+      style: const TextStyle(fontSize: Vars.headingTextSize2),
       decoration: InputDecoration(
           hintText: widget.hintText,
           isDense: true,
@@ -92,7 +98,7 @@ class _CustTextFieldSearchState extends State<CustTextFieldSearch> {
           border: inputBorder,
           enabledBorder: inputBorder,
           focusedBorder: inputBorder,
-          prefixIcon: _isFocused
+          prefixIcon: _showBackIcon
               ? GestureDetector(
                   child: const Icon(
                     Icons.arrow_back,
@@ -104,6 +110,7 @@ class _CustTextFieldSearchState extends State<CustTextFieldSearch> {
                     _controller.clear();
                     setState(() {
                       _showClearButton = false;
+                      _showBackIcon = false;
                     });
 
                     if (widget.onPrefixButtonTap != null) {
