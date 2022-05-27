@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 class BigCircularLoading extends StatefulWidget {
-  const BigCircularLoading({Key? key}) : super(key: key);
+  final double width;
+  final double height;
+  const BigCircularLoading({Key? key, this.width = 100, this.height = 100})
+      : super(key: key);
 
   @override
   _BigCircularLoadingState createState() => _BigCircularLoadingState();
@@ -23,8 +26,8 @@ class _BigCircularLoadingState extends State<BigCircularLoading>
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 100,
-      height: 100,
+      width: widget.width,
+      height: widget.height,
       child: CircularProgressIndicator(
         strokeWidth: 2.0,
         valueColor: ColorTween(begin: Colors.blue[900], end: Colors.grey)
