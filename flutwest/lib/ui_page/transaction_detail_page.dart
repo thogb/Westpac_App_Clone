@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
+import 'package:flutwest/cust_widget/cust_fake_appbar.dart';
 import 'package:flutwest/cust_widget/cust_radio.dart';
+import 'package:flutwest/cust_widget/cust_text_field_search.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_transaction.dart';
@@ -38,12 +40,12 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
       CurvedAnimation(parent: _fakeAppBarController, curve: Curves.linear);*/
 
   late final Animation<double> _fakeAppBarFade =
-      Tween<double>(begin: 1.0, end: 0.0).animate(CurvedAnimation(
-          parent: _fakeAppBarController, curve: Curves.decelerate));
+      Tween<double>(begin: 1.0, end: 0.0).animate(
+          CurvedAnimation(parent: _fakeAppBarController, curve: Curves.easeIn));
 
   late final Animation<double> _fakeAppBarSize =
-      Tween<double>(begin: 1.0, end: 0.0).animate(CurvedAnimation(
-          parent: _fakeAppBarController, curve: Curves.decelerate));
+      Tween<double>(begin: 1.0, end: 0.0).animate(
+          CurvedAnimation(parent: _fakeAppBarController, curve: Curves.easeIn));
 
   final TextEditingController _textEditingController = TextEditingController();
 
@@ -51,7 +53,6 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
   String _transactionType = AccountTransaction.allTypes;
 
   bool _isInputting = false;
-  bool _showElevation = false;
   // int _nOfProcessed = 0;
   int _readLimits = 20;
   // late double _prevbalance;
@@ -69,6 +70,9 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
 
   @override
   void initState() {
+    if (widget.isInputting) {
+      _fakeAppBarController.animateTo(1.0, duration: Duration.zero);
+    }
     _isInputting = widget.isInputting;
     _scrollController.addListener(_onScrollTransactions);
 
@@ -79,6 +83,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
 
   @override
   void dispose() {
+    _fakeAppBarController.dispose();
     _scrollController.dispose();
 
     super.dispose();
@@ -89,10 +94,11 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
     return Scaffold(
       body: Column(
         children: [
-          Material(
-            elevation: _showElevation ? 3.0 : 0.0,
-            child: Container(
-              padding: const EdgeInsets.only(top: 30.0),
+          CustFakeAppbar(
+            bottomspaceHeight: Vars.heightGapBetweenWidgets / 2,
+            scrollController: _scrollController,
+            content: Container(
+              padding: const EdgeInsets.only(top: 38.0),
               child: Column(
                 children: [
                   SizeTransition(
@@ -113,7 +119,6 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
               ),
             ),
           ),
-          const SizedBox(height: 5.0),
           //Expanded(child: _getTransactionList())
           Expanded(
               child: FutureBuilder(
@@ -199,7 +204,9 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                   },
                 );*/
 
+                print("${DateTime.now()} Rebuilding trasnact");
                 return ListView.builder(
+                    padding: EdgeInsets.zero,
                     controller: _scrollController,
                     itemCount: _transactionGroups.length + 1,
                     itemBuilder: (context, index) {
@@ -229,6 +236,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                           header: _getTransactionLineBr(
                               _transactionGroups[index].dateTime),
                           content: ListView.builder(
+                              padding: EdgeInsets.zero,
                               itemCount:
                                   _transactionGroups[index].transactions.length,
                               shrinkWrap: true,
@@ -265,20 +273,6 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
   }
 
   void _onScrollTransactions() {
-    if (_scrollController.offset > 5.0) {
-      if (_showElevation == false) {
-        setState(() {
-          _showElevation = true;
-        });
-      }
-    } else {
-      if (_showElevation == true) {
-        setState(() {
-          _showElevation = false;
-        });
-      }
-    }
-
     if (!_noMoreDataToLoad && _scrollController.position.extentAfter == 0.0) {
       setState(() {
         _readLimits += loadingIncrement;
@@ -340,103 +334,77 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
 
   Widget _getSearchBar() {
     return StandardPadding(
-        child: TextField(
-      controller: _textEditingController,
-      onTap: () {
-        _clearTransactions();
-        _fakeAppBarController.forward();
-        setState(() {
-          _isInputting = true;
-        });
-      },
-      onSubmitted: (String value) {
-        double? val = double.tryParse(value);
+      child: CustTextFieldSearch(
+        autoFocus: _isInputting,
+        hintText: "Search by name, date, amount",
+        textEditingController: _textEditingController,
+        onFocus: (bool hasFocus) {
+          if (hasFocus) {
+            _clearTransactions();
+            _fakeAppBarController.forward();
+          }
+        },
+        onSubmitted: (String value) {
+          double? val = double.tryParse(value);
 
-        if (value.isNotEmpty) {
-          if (val != null) {
-            if (val != _amountSearch) {
-              _clearTransactions();
-              setState(() {
-                _amountSearch = val;
+          if (value.isNotEmpty) {
+            if (val != null) {
+              if (val != _amountSearch) {
+                _clearTransactions();
+                setState(() {
+                  _amountSearch = val;
 
-                if (_descriptionSearch != null) {
-                  _descriptionSearch = null;
-                }
-              });
+                  if (_descriptionSearch != null) {
+                    _descriptionSearch = null;
+                  }
+                });
+              }
+            } else {
+              if (_amountSearch != null) {
+                setState(() {
+                  _amountSearch = null;
+                });
+              }
+
+              if (value != _descriptionSearch && value.length > 2) {
+                _clearTransactions();
+                setState(() {
+                  _descriptionSearch = value;
+                });
+              }
             }
           } else {
-            if (_amountSearch != null) {
-              setState(() {
+            _clearTransactions();
+            setState(() {
+              if (_amountSearch != null) {
                 _amountSearch = null;
-              });
-            }
+              }
 
-            if (value != _descriptionSearch && value.length > 2) {
-              _clearTransactions();
-              setState(() {
-                _descriptionSearch = value;
-              });
-            }
+              if (_descriptionSearch != null) {
+                _descriptionSearch = null;
+              }
+            });
           }
-        } else {
+        },
+        onClearButtonTap: () {
           _clearTransactions();
           setState(() {
-            if (_amountSearch != null) {
-              _amountSearch = null;
-            }
-
-            if (_descriptionSearch != null) {
-              _descriptionSearch = null;
-            }
+            //_textEditingController.clear();
+            _amountSearch = null;
+            _descriptionSearch = null;
           });
-        }
-      },
-      style: const TextStyle(fontSize: 18.0),
-      decoration: InputDecoration(
-          suffixIcon: _textEditingController.text.isNotEmpty
-              ? GestureDetector(
-                  onTap: () {
-                    _clearTransactions();
-                    if (_textEditingController.text.isNotEmpty) {
-                      setState(() {
-                        _textEditingController.clear();
-                        _amountSearch = null;
-                        _descriptionSearch = null;
-                      });
-                    }
-                  },
-                  child: const Icon(Icons.close),
-                )
-              : null,
-          prefixIcon: !_isInputting
-              ? const Icon(Icons.search, color: Colors.black54)
-              : GestureDetector(
-                  onTap: () {
-                    _fakeAppBarController.reverse();
-                    FocusScopeNode currentFocus = FocusScope.of(context);
-                    if (!currentFocus.hasPrimaryFocus) {
-                      currentFocus.unfocus();
-                    }
-                    _clearTransactions();
-                    setState(() {
-                      _isInputting = false;
-                      if (_textEditingController.text.isNotEmpty) {
-                        _textEditingController.clear();
-                        _amountSearch = null;
-                        _descriptionSearch = null;
-                      }
-                    });
-                  },
-                  child: const Icon(Icons.arrow_back, color: Colors.black54)),
-          contentPadding: EdgeInsets.zero,
-          hintText: "Search by name, date, amount",
-          focusedBorder: OutlineInputBorder(
-              borderSide: const BorderSide(color: Colors.grey),
-              borderRadius: BorderRadius.circular(5.0)),
-          border: OutlineInputBorder(
-              borderSide: const BorderSide(color: Colors.grey),
-              borderRadius: BorderRadius.circular(5.0))),
-    ));
+        },
+        onPrefixButtonTap: () {
+          _fakeAppBarController.reverse();
+          _clearTransactions();
+          setState(() {
+            //_textEditingController.clear();
+            _amountSearch = null;
+            _descriptionSearch = null;
+          });
+        },
+      ),
+    );
   }
 
   Widget _getFilters() {
@@ -448,17 +416,23 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
           return Padding(
             padding: const EdgeInsets.only(
                 left: Vars.standardPaddingSize,
-                right: Vars.heightGapBetweenWidgets / 2),
+                right: Vars.gapBetweenHorizontalRadio / 2),
             child: GestureDetector(
               onTap: () {},
-              child: CustRadio.getTypeOne("Filter", CustRadio.unselectColor,
-                  Colors.black, const Icon(Icons.arrow_drop_down)),
+              child: CustRadio.getTypeOne(
+                  "Filter",
+                  CustRadio.unselectColor,
+                  Colors.black,
+                  const Icon(
+                    Icons.arrow_drop_down,
+                    size: 15,
+                  )),
             ),
           );
         }
         return Padding(
           padding: const EdgeInsets.symmetric(
-              horizontal: Vars.heightGapBetweenWidgets / 2),
+              horizontal: Vars.gapBetweenHorizontalRadio / 2),
           child: CustRadio.typeOne(
               value: AccountTransaction.types[index - 1],
               groupValue: _transactionType,

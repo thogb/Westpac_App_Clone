@@ -6,6 +6,7 @@ import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/cust_widget/clickable_text.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
+import 'package:flutwest/cust_widget/cust_fake_appbar.dart';
 import 'package:flutwest/cust_widget/cust_floating_button.dart';
 import 'package:flutwest/cust_widget/cust_radio.dart';
 import 'package:flutwest/cust_widget/cust_text_button.dart';
@@ -66,7 +67,6 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
   late final Future<List<Payee>?> _futurePayees;
 
   String _currFilter = payeeFilters[1];
-  double _elevationLevel = 0;
   //final Map<String, bool> _alphabetHeaderIndexs = {};
   final List<Payee> _recentPayees = [];
   final List<List<Payee>> _payeeGroups = [];
@@ -77,7 +77,6 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
 
   @override
   void initState() {
-    _scrollController.addListener(_onScroll);
     _futurePayees = _getPayees(widget.memberId, widget.recentPayeeEdit);
 
     super.initState();
@@ -85,7 +84,7 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
 
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
 
     super.dispose();
   }
@@ -99,7 +98,11 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
           return true;
         },
         child: Column(
-          children: [_getFakeAppBar(), Expanded(child: _getPayeeList())],
+          children: [
+            const SizedBox(height: Vars.gapAtTop),
+            _getFakeAppBar(),
+            Expanded(child: _getPayeeList())
+          ],
         ),
       ),
     );
@@ -111,119 +114,108 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
     _recentPayees.clear();
   }
 
-  void _onScroll() {
-    if (_scrollController.offset > 10) {
-      setState(() {
-        if (_elevationLevel == 0) {
-          _elevationLevel = 3;
-        }
-      });
-    } else {
-      setState(() {
-        if (_elevationLevel != 0) {
-          _elevationLevel = 0;
-        }
-      });
-    }
-  }
-
   void _onBackPressed() {
     Navigator.pop(context, _madeAnyPayment);
   }
 
   Widget _getFakeAppBar() {
-    return Container(
-      padding: const EdgeInsets.only(top: Vars.gapAtTop - 5, bottom: 15),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Fake app bar heading part
-          SizeTransition(
-            axisAlignment: -1,
-            sizeFactor: _fakeAppBarSize,
-            child: FadeTransition(
-              opacity: _fakeAppBarFade,
-              child: StandardPadding(
-                  showVerticalPadding: true,
-                  child: Row(
-                    children: [
-                      GestureDetector(
-                        child:
-                            const Icon(Icons.close, color: Vars.clickAbleColor),
-                        onTap: () {
-                          _onBackPressed();
-                        },
-                      ),
-                      const SizedBox(
-                        width: 20,
-                      ),
-                      const Expanded(
-                          child: Text("Choose who to pay",
-                              style: Vars.headingStyle1)),
-                      ClickableText(
-                        text: "Add",
-                        textStyle: const TextStyle(
-                            fontSize: Vars.headingTextSize2,
-                            color: Vars.clickAbleColor),
-                        onTap: _showBottomSheet,
-                      )
-                    ],
-                  )),
+    return CustFakeAppbar(
+      scrollController: _scrollController,
+      content: Container(
+        padding: const EdgeInsets.only(top: 0, bottom: 15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Fake app bar heading part
+            SizeTransition(
+              axisAlignment: -1,
+              sizeFactor: _fakeAppBarSize,
+              child: FadeTransition(
+                opacity: _fakeAppBarFade,
+                child: StandardPadding(
+                    showVerticalPadding: true,
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          child: const Icon(Icons.close,
+                              color: Vars.clickAbleColor),
+                          onTap: () {
+                            _onBackPressed();
+                          },
+                        ),
+                        const SizedBox(
+                          width: 20,
+                        ),
+                        const Expanded(
+                            child: Text("Choose who to pay",
+                                style: Vars.headingStyle1)),
+                        ClickableText(
+                          text: "Add",
+                          textStyle: const TextStyle(
+                              fontSize: Vars.headingTextSize2,
+                              color: Vars.clickAbleColor),
+                          onTap: _showBottomSheet,
+                        )
+                      ],
+                    )),
+              ),
             ),
-          ),
 
-          // Search text field
-          StandardPadding(
-              child: CustTextFieldSearch(
-            hintText: "Search",
-            textEditingController: _tecSearch,
-            onFocus: (bool isFocused) {
-              if (isFocused) {
-                _fakeAppBarController.forward();
-              }
+            // Search text field
+            StandardPadding(
+                child: CustTextFieldSearch(
+              hintText: "Search",
+              textEditingController: _tecSearch,
+              onFocus: (bool isFocused) {
+                if (isFocused) {
+                  _fakeAppBarController.forward();
+                }
 
-              _applyFilter();
-            },
-            onPrefixButtonTap: () {
-              _fakeAppBarController.reverse();
-            },
-            onChanged: (String value) {
-              _applyFilter();
-            },
-          )),
-          const SizedBox(height: Vars.heightGapBetweenWidgets),
+                _applyFilter();
+              },
+              onPrefixButtonTap: () {
+                _fakeAppBarController.reverse();
+              },
+              onChanged: (String value) {
+                _applyFilter();
+              },
+            )),
+            const SizedBox(height: Vars.heightGapBetweenWidgets),
 
-          // Payee filters
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: List.generate(
-                  payeeFilters.length,
-                  (index) => Padding(
-                        padding: EdgeInsets.only(
-                            left: index == 0
-                                ? Vars.standardPaddingSize
-                                : Vars.standardPaddingSize / 2,
-                            right: Vars.standardPaddingSize / 2),
-                        child: CustRadio.typeOne(
-                            value: payeeFilters[index],
-                            groupValue: _currFilter,
-                            onChanged: (value) {
-                              setState(() {
-                                _currFilter = value;
-                              });
-                            },
-                            name: payeeFilters[index]),
-                      )),
+            // Payee filters
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: List.generate(
+                    payeeFilters.length,
+                    (index) => Padding(
+                          padding: EdgeInsets.only(
+                              left: index == 0
+                                  ? Vars.standardPaddingSize
+                                  : Vars.gapBetweenHorizontalRadio / 2,
+                              right: Vars.gapBetweenHorizontalRadio / 2),
+                          child: CustRadio.typeOne(
+                              value: payeeFilters[index],
+                              groupValue: _currFilter,
+                              onChanged: (value) {
+                                setState(() {
+                                  _currFilter = value;
+                                });
+                              },
+                              name: payeeFilters[index]),
+                        )),
+              ),
             ),
-          ),
-          Material(
-            elevation: _elevationLevel,
-            child: Container(
-              height: Vars.heightGapBetweenWidgets,
-            ),
-          ),
-        ],
+            /*
+            Material(
+              borderOnForeground: false,
+              elevation: 3,
+              child: Container(
+                height: 20,
+              ),
+            ),*/
+          ],
+        ),
       ),
     );
   }
@@ -243,60 +235,61 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
     showModalBottomSheet(
         context: context,
         builder: (context) {
-          return Wrap(
-            children: [
-              const CustTextButton(
-                heading: "Add new",
-                headingTextStyle: TextStyle(
-                    fontSize: Vars.headingTextSize3, color: Colors.black54),
-              ),
-              CustTextButton(
-                headingTextStyle: headingButtonStyle,
-                heading: "BSB & Account",
-                onTap: () async {
-                  Navigator.pop(context);
-                  Object? result = await Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                          pageBuilder:
-                              ((context, animation, secondaryAnimation) =>
-                                  AddPayeePage(
-                                    memberId: widget.memberId,
-                                    accounts: widget.accounts,
-                                    currAccount: widget.accounts[0],
-                                  ))));
-                  if (result != null) {
-                    Payee newPayee = result as Payee;
+          return SafeArea(
+            child: Wrap(
+              children: [
+                const CustTextButton(
+                  heading: "Add new",
+                  headingTextStyle: TextStyle(
+                      fontSize: Vars.headingTextSize3, color: Colors.black54),
+                ),
+                CustTextButton(
+                  headingTextStyle: headingButtonStyle,
+                  heading: "BSB & Account",
+                  onTap: () async {
+                    Navigator.pop(context);
+                    Object? result = await Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                            pageBuilder:
+                                ((context, animation, secondaryAnimation) =>
+                                    AddPayeePage(
+                                      memberId: widget.memberId,
+                                      accounts: widget.accounts,
+                                      currAccount: widget.accounts[0],
+                                    ))));
+                    if (result != null) {
+                      Payee newPayee = result as Payee;
 
-                    _payees.add(newPayee);
-                    // _payees.sort(
-                    // ((a, b) => a.getNickName.compareTo(b.getNickName)));
-                    //_sortPayeeList(_payees);
-                    setState(() {
-                      _requireReconstruct = true;
-                      //_payees.length;
-                    });
-                  }
-                },
-              ),
-              CustTextButton(
-                headingTextStyle: headingButtonStyle,
-                heading: "BPAY Biller",
-              ),
-              CustTextButton(
-                headingTextStyle: headingButtonStyle,
-                heading: "BSB & Account",
-              ),
-              CustTextButton(
-                headingTextStyle: headingButtonStyle,
-                heading: "International",
-              ),
-              CustTextButton(
-                headingTextStyle: headingButtonStyle,
-                heading: "Other PayID",
-              ),
-              const ListTile(title: Text(""))
-            ],
+                      _payees.add(newPayee);
+                      // _payees.sort(
+                      // ((a, b) => a.getNickName.compareTo(b.getNickName)));
+                      //_sortPayeeList(_payees);
+                      setState(() {
+                        _requireReconstruct = true;
+                        //_payees.length;
+                      });
+                    }
+                  },
+                ),
+                CustTextButton(
+                  headingTextStyle: headingButtonStyle,
+                  heading: "BPAY Biller",
+                ),
+                CustTextButton(
+                  headingTextStyle: headingButtonStyle,
+                  heading: "BSB & Account",
+                ),
+                CustTextButton(
+                  headingTextStyle: headingButtonStyle,
+                  heading: "International",
+                ),
+                CustTextButton(
+                  headingTextStyle: headingButtonStyle,
+                  heading: "Other PayID",
+                ),
+              ],
+            ),
           );
         });
   }
@@ -414,6 +407,7 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
                 _requireReconstruct = false;
               }
 
+              print("${DateTime.now()} Rebuild choose");
               return ListView.builder(
                   padding: EdgeInsets.zero,
                   controller: _scrollController,
