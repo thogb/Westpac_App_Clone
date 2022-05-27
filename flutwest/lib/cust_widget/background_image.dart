@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 class BackgroundImage extends StatelessWidget {
@@ -5,6 +7,9 @@ class BackgroundImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double height = MediaQuery.of(context).size.height;
+    double width = MediaQuery.of(context).size.width;
+
     return Stack(
       children: [
         Container(
@@ -20,12 +25,16 @@ class BackgroundImage extends StatelessWidget {
           )),
         ),
         Positioned(
-            top: MediaQuery.of(context).size.height *
+            /*top: MediaQuery.of(context).size.height *
                 MediaQuery.of(context).size.aspectRatio *
                 -0.65,
             left: MediaQuery.of(context).size.width *
                 MediaQuery.of(context).size.aspectRatio *
-                -1.0,
+                -1.0,*/
+            top: -(height / 2) +
+                (((cos(pi / 4) * height * 0.43) - (width / 2)) / cos(pi / 4)),
+            left: -(width / 2) +
+                (((cos(pi / 4) * height * 0.43) - (width / 2)) / cos(pi / 4)),
             child: RotationTransition(
                 turns: const AlwaysStoppedAnimation(45.0 / 360.0),
                 child: Column(
@@ -33,20 +42,25 @@ class BackgroundImage extends StatelessWidget {
                     Container(
                         color: const Color(0xFF000133),
                         width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height * 0.2),
+                        height: MediaQuery.of(context).size.height * 0.33),
                     Container(
                         color: Colors.red[900],
                         width: MediaQuery.of(context).size.width,
-                        height: MediaQuery.of(context).size.height * 0.8),
+                        height: MediaQuery.of(context).size.height * 0.67),
                   ],
                 ))),
         Positioned(
-            bottom: MediaQuery.of(context).size.height *
+            /*bottom: MediaQuery.of(context).size.height *
                 MediaQuery.of(context).size.aspectRatio *
                 -1.55,
             left: MediaQuery.of(context).size.width *
                 MediaQuery.of(context).size.aspectRatio *
-                -0.55,
+                -0.55,*/
+
+            bottom: -(height / 2) -
+                (((width / 2) - (cos(pi / 4) * height * 0.31)) / cos(pi / 4)),
+            left: -(width / 2) -
+                (((width / 2) - (cos(pi / 4) * height * 0.31)) / cos(pi / 4)),
             child: RotationTransition(
               turns: const AlwaysStoppedAnimation(-45 / 360),
               child: Container(
