@@ -8,9 +8,14 @@ class LoadingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     awaitFutureObject(context);
-    return const Scaffold(
-      body: Center(
-        child: BigCircularLoading(),
+    return Scaffold(
+      body: WillPopScope(
+        onWillPop: () async {
+          return false;
+        },
+        child: const Center(
+          child: BigCircularLoading(),
+        ),
       ),
     );
   }
