@@ -51,7 +51,7 @@ class _EditingPageScaffoldState extends State<EditingPageScaffold> {
       if (_scrollController.offset > 20) {
         if (title == null) {
           setState(() {
-            title = Text(widget.title!);
+            title = Text(widget.title!, style: Vars.headingStyle1);
           });
         }
       } else {
