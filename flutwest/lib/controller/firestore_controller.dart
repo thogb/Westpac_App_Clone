@@ -59,6 +59,7 @@ class FirestoreController {
 
   // Member
   Future<DocumentSnapshot<Map<String, dynamic>>> getMember(String id) async {
+    await Future.delayed(Duration(seconds: 2));
     return _firebaseFirestore.collection(colMember).doc(id).get();
   }
 
@@ -308,9 +309,9 @@ class FirestoreController {
 
     if (amount != null) {
       query = query.where(AccountTransaction.fnDoubleTypeAmount,
-          isGreaterThan: (amount));
+          isGreaterThan: (amount - 0.050));
       query = query.where(AccountTransaction.fnDoubleTypeAmount,
-          isLessThan: (amount + 0.99));
+          isLessThan: (amount + 0.050));
     }
 
     if (description != null && description.length > 2) {
