@@ -206,22 +206,36 @@ class Utils {
         receiverDescription: "account 2 received money from account 1",
         amount: Decimal.fromInt(1300));
 
-    FirestoreController.instance.addAccount(Vars.fakeMemberID, account1);
-    FirestoreController.instance.addAccount(Vars.fakeMemberID, account2);
-    FirestoreController.instance.addAccount(Vars.fakeMemberID, account3);
-    FirestoreController.instance.addMember(Vars.fakeMemberID, member);
-    FirestoreController.instance.addBankCard(Vars.fakeCardNumber, bankCard);
-    FirestoreController.instance.addTransaction(accountTransaction1);
-    FirestoreController.instance.addTransaction(accountTransaction2);
-    FirestoreController.instance.addTransaction(accountTransaction3);
-    FirestoreController.instance.addTransaction(accountTransaction4);
-    FirestoreController.instance.addTransaction(accountTransaction5);
-    FirestoreController.instance.addTransaction(accountTransaction6);
-    FirestoreController.instance.addTransaction(accountTransaction7);
-    FirestoreController.instance.addTransaction(accountTransaction8);
-    FirestoreController.instance.addTransaction(accountTransaction9);
-    FirestoreController.instance.addTransaction(accountTransaction10);
-    FirestoreController.instance.addPayee(
+    FirestoreController.instance.colAccount
+        .addAccount(Vars.fakeMemberID, account1);
+    FirestoreController.instance.colAccount
+        .addAccount(Vars.fakeMemberID, account2);
+    FirestoreController.instance.colAccount
+        .addAccount(Vars.fakeMemberID, account3);
+    FirestoreController.instance.colMember.addMember(Vars.fakeMemberID, member);
+    FirestoreController.instance.colBankCard
+        .addBankCard(Vars.fakeCardNumber, bankCard);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction1);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction2);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction3);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction4);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction5);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction6);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction7);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction8);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction9);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction10);
+    FirestoreController.instance.colMember.colPayee.addPayee(
         Vars.fakeMemberID,
         Payee.noId(
             accountNumber: "6666666",
@@ -229,7 +243,7 @@ class Utils {
             accountName: "Bob",
             nickName: "Bobby"),
         DateTime.now());
-    FirestoreController.instance.addPayee(
+    FirestoreController.instance.colMember.colPayee.addPayee(
         Vars.fakeMemberID,
         Payee.noId(
             accountNumber: "6662366",
@@ -237,7 +251,7 @@ class Utils {
             accountName: "David",
             nickName: "Dave"),
         DateTime.now());
-    FirestoreController.instance.addPayee(
+    FirestoreController.instance.colMember.colPayee.addPayee(
         Vars.fakeMemberID,
         Payee.noId(
           accountNumber: "6611666",
@@ -246,7 +260,7 @@ class Utils {
           nickName: "Bob",
         ),
         DateTime.now());
-    FirestoreController.instance.addPayee(
+    FirestoreController.instance.colMember.colPayee.addPayee(
         Vars.fakeMemberID,
         Payee.noId(
           accountNumber: "66645666",
@@ -255,7 +269,7 @@ class Utils {
           nickName: "Dylan",
         ),
         DateTime.now());
-    FirestoreController.instance.addPayee(
+    FirestoreController.instance.colMember.colPayee.addPayee(
         Vars.fakeMemberID,
         Payee.noId(
           accountNumber: "6666966",
@@ -264,7 +278,7 @@ class Utils {
           nickName: "Person 1",
         ),
         DateTime.now());
-    FirestoreController.instance.addPayee(
+    FirestoreController.instance.colMember.colPayee.addPayee(
         Vars.fakeMemberID,
         Payee.noId(
           accountNumber: "6666699",
@@ -273,7 +287,7 @@ class Utils {
           nickName: "TPerson 2",
         ),
         DateTime.now());
-    FirestoreController.instance.addPayee(
+    FirestoreController.instance.colMember.colPayee.addPayee(
         Vars.fakeMemberID,
         Payee.noId(
           accountNumber: "666663346",
@@ -282,7 +296,7 @@ class Utils {
           nickName: "TPerson 4",
         ),
         DateTime.now());
-    FirestoreController.instance.addPayee(
+    FirestoreController.instance.colMember.colPayee.addPayee(
         Vars.fakeMemberID,
         Payee.noId(
           accountNumber: "66666236",
@@ -291,7 +305,7 @@ class Utils {
           nickName: "ZPerson 3",
         ),
         DateTime.now());
-    FirestoreController.instance.addPayee(
+    FirestoreController.instance.colMember.colPayee.addPayee(
         Vars.fakeMemberID,
         Payee.noId(
           accountNumber: "61123666",
@@ -300,8 +314,8 @@ class Utils {
           nickName: "Person 5",
         ),
         DateTime.now());
-    FirestoreController.instance
-        .updateMemberRecentPayee(Vars.fakeMemberID, DateTime.now());
+    FirestoreController.instance.colMember
+        .updateRecentPayee(Vars.fakeMemberID, DateTime.now());
 
     Random random = Random();
 
@@ -395,7 +409,7 @@ class Utils {
           ];
         }
 
-        await FirestoreController.instance
+        await FirestoreController.instance.colTransaction
             .addTransaction(AccountTransaction.create(
                 sender: sender.accountID,
                 receiver: receiver.accountID,

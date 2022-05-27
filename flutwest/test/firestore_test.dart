@@ -162,25 +162,35 @@ void main() {
     //print(bankcardMap);
 
     FirestoreController.instance.setFirebaseFireStore(FakeFirebaseFirestore());
-    FirestoreController.instance.addMember(memberId, member);
+    FirestoreController.instance.colMember.addMember(memberId, member);
     //FakeFirebaseFirestore fakeFirebaseFirestore = FakeFirebaseFirestore();
-    FirestoreController.instance.addAccount(memberId, account1);
-    FirestoreController.instance.addAccount(memberId, account2);
-    FirestoreController.instance.addAccount(memberId, account3);
-    FirestoreController.instance.addBankCard(cardNumber, bankCard);
-    FirestoreController.instance.addTransaction(accountTransaction1);
-    FirestoreController.instance.addTransaction(accountTransaction2);
-    FirestoreController.instance.addTransaction(accountTransaction3);
-    FirestoreController.instance.addTransaction(accountTransaction4);
-    FirestoreController.instance.addTransaction(accountTransaction5);
-    FirestoreController.instance.addTransaction(accountTransaction6);
-    FirestoreController.instance.addTransaction(accountTransaction7);
-    FirestoreController.instance.addTransaction(accountTransaction8);
-    FirestoreController.instance.addTransaction(accountTransaction9);
-    FirestoreController.instance.addTransaction(accountTransaction10);
+    FirestoreController.instance.colAccount.addAccount(memberId, account1);
+    FirestoreController.instance.colAccount.addAccount(memberId, account2);
+    FirestoreController.instance.colAccount.addAccount(memberId, account3);
+    FirestoreController.instance.colBankCard.addBankCard(cardNumber, bankCard);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction1);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction2);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction3);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction4);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction5);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction6);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction7);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction8);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction9);
+    FirestoreController.instance.colTransaction
+        .addTransaction(accountTransaction10);
 
     DocumentSnapshot<Map<String, dynamic>> memberDoc =
-        await FirestoreController.instance.getMember(memberId);
+        await FirestoreController.instance.colMember.getByDocId(memberId);
 
     Member readMember = Member.fromMap(
         memberDoc.data() as Map<String, dynamic>, [], memberDoc.id);
@@ -189,24 +199,25 @@ void main() {
     expect(member.toMap(), readMember.toMap());
     //FirestoreController.instance.getMember("123");
 
-    BankCard readCard = BankCard.fromMap(
-        (await FirestoreController.instance.getBankCard(cardNumber)).data()
-            as Map<String, dynamic>);
+    BankCard readCard = BankCard.fromMap((await FirestoreController
+            .instance.colBankCard
+            .getByCardNumber(cardNumber))
+        .data() as Map<String, dynamic>);
     print(readCard.toMap());
 
-    List<Account> readAccounts =
-        (await FirestoreController.instance.getAccounts(memberId))
-            .docs
-            .map((e) => Account.fromMap(e.data(), e.id))
-            .toList();
+    List<Account> readAccounts = (await FirestoreController.instance.colAccount
+            .getAllByMemberId(memberId))
+        .docs
+        .map((e) => Account.fromMap(e.data(), e.id))
+        .toList();
     for (var element in readAccounts) {
       print(element.toMap());
     }
 
     print("-----------------------all trasnactions------------------");
     List<AccountTransaction> readTransactions = (await FirestoreController
-            .instance
-            .getAllTransactions(account1.getNumber))
+            .instance.colTransaction
+            .getAll(account1.getNumber))
         .docs
         .map((e) => AccountTransaction.fromMap(e.data(), e.id))
         .toList();
@@ -216,8 +227,8 @@ void main() {
 
     print("-----------------------5 trasnactions------------------");
     List<AccountTransaction> readTransactions2 = (await FirestoreController
-            .instance
-            .getTransactionLimitBy(account1.getNumber, 3))
+            .instance.colTransaction
+            .getAllLimitBy(account1.getNumber, 3))
         .docs
         .map((e) => AccountTransaction.fromMap(e.data(), e.id))
         .toList();
@@ -245,7 +256,8 @@ void main() {
     print(decimal);
     print(Decimal.parse("0"));
 
-    readAccounts = (await FirestoreController.instance.getAccounts(memberId))
+    readAccounts = (await FirestoreController.instance.colAccount
+            .getAllByMemberId(memberId))
         .docs
         .map((e) => Account.fromMap(e.data(), e.id))
         .toList();
@@ -254,49 +266,53 @@ void main() {
         "+++++++++++++++++++++++ Transaction test ++++++++++++++++++++++++++");
     print(
         "Before send 200.30 account 1 to acccount 2\nBalance: account 1: ${readAccounts[0].getBalance}, account 2: ${readAccounts[1].balance}");
-    await FirestoreController.instance.addTransferTransaction(
+    await FirestoreController.instance.colTransaction.addTransferTransaction(
         senderAccount: readAccounts[0],
         receiverAccount: readAccounts[1],
         transferDescription: "teasdasdasd",
         amount: Decimal.parse("200.30"));
-    readAccounts = (await FirestoreController.instance.getAccounts(memberId))
+    readAccounts = (await FirestoreController.instance.colAccount
+            .getAllByMemberId(memberId))
         .docs
         .map((e) => Account.fromMap(e.data(), e.id))
         .toList();
     print(
         "After send 200.30, Account 1: ${readAccounts[0].getBalance}, account 2: ${readAccounts[1].balance}");
-    await FirestoreController.instance.addPaymentTransaction(
+    await FirestoreController.instance.colTransaction.addPaymentTransaction(
         senderAccount: readAccounts[0],
         receiver: readAccounts[1].accountID,
         receiverName: "Bob",
         senderDescription: "teasdasdaasdasdsadsd",
         receiverDescription: "asdasdashdasdas",
         amount: Decimal.parse("1000.57"));
-    readAccounts = (await FirestoreController.instance.getAccounts(memberId))
+    readAccounts = (await FirestoreController.instance.colAccount
+            .getAllByMemberId(memberId))
         .docs
         .map((e) => Account.fromMap(e.data(), e.id))
         .toList();
     print(
         "After send another 1000.57 from accoutn 1 to acount 2 using addPaymentTransaction\nAccount 1: ${readAccounts[0].getBalance}, account 2: ${readAccounts[1].balance}");
-    await FirestoreController.instance.addTransferTransaction(
+    await FirestoreController.instance.colTransaction.addTransferTransaction(
         senderAccount: readAccounts[1],
         receiverAccount: readAccounts[0],
         transferDescription: "teasdasdasd",
         amount: Decimal.parse("500.20"));
-    readAccounts = (await FirestoreController.instance.getAccounts(memberId))
+    readAccounts = (await FirestoreController.instance.colAccount
+            .getAllByMemberId(memberId))
         .docs
         .map((e) => Account.fromMap(e.data(), e.id))
         .toList();
     print(
         "After send 500.20, Account 2: ${readAccounts[1].getBalance}, account 1: ${readAccounts[0].balance}");
-    await FirestoreController.instance.addPaymentTransaction(
+    await FirestoreController.instance.colTransaction.addPaymentTransaction(
         senderAccount: readAccounts[1],
         receiver: readAccounts[0].accountID,
         receiverName: "Bob",
         senderDescription: "teasdasdaasdasdsadsd",
         receiverDescription: "asdasdashdasdas",
         amount: Decimal.parse("1400.11"));
-    readAccounts = (await FirestoreController.instance.getAccounts(memberId))
+    readAccounts = (await FirestoreController.instance.colAccount
+            .getAllByMemberId(memberId))
         .docs
         .map((e) => Account.fromMap(e.data(), e.id))
         .toList();

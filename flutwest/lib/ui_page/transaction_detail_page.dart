@@ -122,7 +122,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
           //Expanded(child: _getTransactionList())
           Expanded(
               child: FutureBuilder(
-            future: FirestoreController.instance.getTransactionLimitBy(
+            future: FirestoreController.instance.colTransaction.getAllLimitBy(
                 widget.account.getNumber, _readLimits,
                 transactionType: _transactionType,
                 amount: _amountSearch,

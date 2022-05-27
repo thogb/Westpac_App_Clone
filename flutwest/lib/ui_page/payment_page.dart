@@ -275,7 +275,7 @@ class _PaymentPageState extends State<PaymentPage> {
   Future<void> handlePayment(
       Decimal amount, String memberId, Payee payee) async {
     DateTime payDate = DateTime.now();
-    await FirestoreController.instance.addPaymentTransaction(
+    await FirestoreController.instance.colTransaction.addPaymentTransaction(
         senderAccount: _currAccount,
         receiver: AccountID(number: "number", bsb: "bsb"),
         receiverName: widget.payee.getNickName,

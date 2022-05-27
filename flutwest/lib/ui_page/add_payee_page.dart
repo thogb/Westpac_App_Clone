@@ -156,7 +156,8 @@ class _AddPayeePageState extends State<AddPayeePage> {
                           pageBuilder: ((context, animation,
                                   secondaryAnimation) =>
                               LoadingPage(
-                                  futureObject: FirestoreController.instance
+                                  futureObject: FirestoreController
+                                      .instance.colMember.colPayee
                                       .addPayee(
                                           widget.memberId, payee, addTime))),
                           transitionDuration: Duration.zero,

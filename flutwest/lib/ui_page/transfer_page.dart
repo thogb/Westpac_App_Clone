@@ -270,17 +270,18 @@ class _TransferPageState extends State<TransferPage> {
                       await Navigator.push(
                           context,
                           PageRouteBuilder(
-                              pageBuilder: ((context, animation,
-                                      secondaryAnimation) =>
-                                  LoadingPage(
-                                      futureObject: FirestoreController.instance
-                                          .addTransferTransaction(
-                                              senderAccount: _currAccount,
-                                              receiverAccount: _toAccount,
-                                              transferDescription:
-                                                  _tecDescription.text,
-                                              amount: amount,
-                                              dateTime: _dateTime))),
+                              pageBuilder:
+                                  ((context, animation, secondaryAnimation) =>
+                                      LoadingPage(
+                                          futureObject: FirestoreController
+                                              .instance.colTransaction
+                                              .addTransferTransaction(
+                                                  senderAccount: _currAccount,
+                                                  receiverAccount: _toAccount,
+                                                  transferDescription:
+                                                      _tecDescription.text,
+                                                  amount: amount,
+                                                  dateTime: _dateTime))),
                               transitionDuration: Duration.zero,
                               reverseTransitionDuration: Duration.zero));
                       _onBackPress();

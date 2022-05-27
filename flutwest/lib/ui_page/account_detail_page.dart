@@ -199,8 +199,8 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
 
   @override
   void initState() {
-    _recentTransactions = FirestoreController.instance
-        .getTransactionLimitBy(widget.account.getNumber, 5);
+    _recentTransactions = FirestoreController.instance.colTransaction
+        .getAllLimitBy(widget.account.getNumber, 5);
     super.initState();
   }
 
@@ -303,8 +303,9 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
                             reverseTransitionDuration: Duration.zero));
                     if (result != null && (result as bool)) {
                       setState(() {
-                        _recentTransactions = FirestoreController.instance
-                            .getTransactionLimitBy(widget.account.getNumber, 5);
+                        _recentTransactions = FirestoreController
+                            .instance.colTransaction
+                            .getAllLimitBy(widget.account.getNumber, 5);
                       });
                     }
                   }),
@@ -323,8 +324,9 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
                             reverseTransitionDuration: Duration.zero));
                     if (result != null && (result as bool)) {
                       setState(() {
-                        _recentTransactions = FirestoreController.instance
-                            .getTransactionLimitBy(widget.account.getNumber, 5);
+                        _recentTransactions = FirestoreController
+                            .instance.colTransaction
+                            .getAllLimitBy(widget.account.getNumber, 5);
                       });
                     }
                   }),

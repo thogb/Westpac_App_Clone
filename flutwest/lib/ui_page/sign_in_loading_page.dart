@@ -18,9 +18,10 @@ class SignInLoadingPage extends StatefulWidget {
 
 class _SignInLoadingPageState extends State<SignInLoadingPage> {
   final Future<DocumentSnapshot<Map<String, dynamic>>> _futureMember =
-      FirestoreController.instance.getMember(Vars.fakeMemberID);
+      FirestoreController.instance.colMember.getByDocId(Vars.fakeMemberID);
   final Future<QuerySnapshot<Map<String, dynamic>>> _futureAccounts =
-      FirestoreController.instance.getAccounts(Vars.fakeMemberID);
+      FirestoreController.instance.colAccount
+          .getAllByMemberId(Vars.fakeMemberID);
   late final Future<List<Object>> _futures;
 
   List<Account> _accounts = [];

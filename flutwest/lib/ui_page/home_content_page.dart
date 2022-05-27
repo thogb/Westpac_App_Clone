@@ -159,7 +159,7 @@ class _HomeContentPageState extends State<HomeContentPage>
     accounts = widget.member.accounts;
     _futureAccountOrders = _createOrderInfos(accounts);
 
-    FirestoreController.instance
+    FirestoreController.instance.colTransaction
         .addOnTransactionMadeObserver(_recreateAccountDrags);
 
     super.initState();
@@ -175,7 +175,7 @@ class _HomeContentPageState extends State<HomeContentPage>
     _welcomeController.dispose();
     _botAnimationController.dispose();
 
-    FirestoreController.instance
+    FirestoreController.instance.colTransaction
         .removeOnTransactionMadeObserver(_recreateAccountDrags);
 
     super.dispose();

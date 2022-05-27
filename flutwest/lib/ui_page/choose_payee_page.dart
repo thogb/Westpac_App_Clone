@@ -318,8 +318,8 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
 
     if (memberRecentPayeeEdit != null) {
       if (recentPayeeEdit == null || recentPayeeEdit != memberRecentPayeeEdit) {
-        var remotePayees =
-            await FirestoreController.instance.getPayees(memberId);
+        var remotePayees = await FirestoreController.instance.colMember.colPayee
+            .getAllByMemberId(memberId);
         SQLiteController.instance.syncPayees(
             memberId: memberId,
             remotePayees: remotePayees,

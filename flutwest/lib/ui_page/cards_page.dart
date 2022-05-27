@@ -53,7 +53,8 @@ class _CardsPageState extends State<CardsPage> {
 
   @override
   void initState() {
-    _futureCard = FirestoreController.instance.getBankCard(widget.cardNumber);
+    _futureCard = FirestoreController.instance.colBankCard
+        .getByCardNumber(widget.cardNumber);
 
     super.initState();
   }
@@ -299,9 +300,8 @@ class _CardsPageState extends State<CardsPage> {
               PageRouteBuilder(
                   pageBuilder: ((context, animation, secondaryAnimation) =>
                       LoadingPage(
-                          futureObject: FirestoreController.instance
-                              .updateBankCardLockStatus(
-                                  widget.cardNumber, value))),
+                          futureObject: FirestoreController.instance.colBankCard
+                              .updateLockStatus(widget.cardNumber, value))),
                   transitionDuration: const Duration(seconds: 0),
                   reverseTransitionDuration: const Duration(seconds: 0)));
           if (value == false) {
