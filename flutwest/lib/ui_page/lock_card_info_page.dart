@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutwest/cust_widget/cust_floating_button.dart';
 import 'package:flutwest/cust_widget/outlined_container.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/vars.dart';
@@ -95,16 +96,10 @@ class LockCardInfoPage extends StatelessWidget {
   }
 
   Widget _getDoneButton(BuildContext context) {
-    return StandardPadding(
-      child: TextButton(
-          style: TextButton.styleFrom(
-              backgroundColor: Colors.red[800],
-              splashFactory: NoSplash.splashFactory),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Center(
-              child: Text("Done", style: TextStyle(color: Colors.white)))),
-    );
+    return CustFloatingButton.enabled(
+        onPressed: () {
+          Navigator.pop(context);
+        },
+        title: "Done");
   }
 }
