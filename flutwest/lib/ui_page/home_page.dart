@@ -18,7 +18,11 @@ import 'package:flutwest/ui_page/transfer_Page.dart';
 import 'package:flutwest/ui_page/transfer_from_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  final Member member;
+  final List<Account> accounts;
+
+  const HomePage({Key? key, required this.member, required this.accounts})
+      : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -27,7 +31,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   static const Color unselectedNavItemColor = Colors.black54;
   static const Color selectedNavItemColor = Colors.black;
-  static const double navItemIconSize = 30.0;
+  static const double navItemIconSize = 25.0;
 
   late NavbarState navbarState;
 
@@ -37,10 +41,10 @@ class _HomePageState extends State<HomePage> {
 
   final List<Widget> _pages = List.filled(5, const SizedBox());
 
-  final Future<DocumentSnapshot<Map<String, dynamic>>> _futureMember =
-      FirestoreController.instance.getMember(Vars.fakeMemberID);
-  final Future<QuerySnapshot<Map<String, dynamic>>> _futureAccounts =
-      FirestoreController.instance.getAccounts(Vars.fakeMemberID);
+  // final Future<DocumentSnapshot<Map<String, dynamic>>> _futureMember =
+  //     FirestoreController.instance.getMember(Vars.fakeMemberID);
+  // final Future<QuerySnapshot<Map<String, dynamic>>> _futureAccounts =
+  //     FirestoreController.instance.getAccounts(Vars.fakeMemberID);
 
   late final Future<List<Object>> futures;
 
@@ -57,13 +61,22 @@ class _HomePageState extends State<HomePage> {
         hideNavBar: hideNavBar,
         changeToPage: _onNavbarTap);
 
+    _accounts = widget.accounts;
+    _member = widget.member;
+    _pages[0] = (HomeContentPage(
+      rawAccounts: _accounts,
+      navbarState: navbarState,
+      member: _member,
+      accountOrderInfos: _accountOrderInfos,
+    ));
+
     // _pages.add(HomeContentPage(navbarState: navbarState));
     // _pages.add(const CardsPage());
     // _pages.add(const SizedBox());
     // _pages.add(const ProductsPage());
     // _pages.add(const ProfilePage());
 
-    futures = Future.wait([_futureMember, _futureAccounts]);
+    //futures = Future.wait([_futureMember, _futureAccounts]);
 
     super.initState();
   }
@@ -77,7 +90,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
+    return _getHomePage();
+    /*return FutureBuilder(
       future: futures,
       builder: (BuildContext context, AsyncSnapshot<List<Object>> snapshots) {
         if (snapshots.hasError) {
@@ -128,7 +142,7 @@ class _HomePageState extends State<HomePage> {
 
         return const BackgroundImage();
       },
-    );
+    );*/
   }
 
   Widget _getErrorPage(String errorMsg) {
@@ -162,6 +176,7 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: !_showNavBar
           ? const SizedBox()
           : BottomNavigationBar(
+              backgroundColor: Colors.white,
               onTap: _onNavbarTap,
               currentIndex: _currPage,
               unselectedItemColor: unselectedNavItemColor,
@@ -269,6 +284,7 @@ class _HomePageState extends State<HomePage> {
         Text(
           label,
           style: TextStyle(
+              fontSize: 12.0,
               color: active ? selectedNavItemColor : unselectedNavItemColor),
         )
       ],
@@ -314,77 +330,78 @@ class _HomePageState extends State<HomePage> {
     showModalBottomSheet(
         context: context,
         builder: (BuildContext buildContext) {
-          return StatefulBuilder(
-              builder: (BuildContext bc, StateSetter setModalState) {
-            return Theme(
-                data: ThemeData(
-                    listTileTheme: const ListTileThemeData(
-                  tileColor: Colors.black,
-                  iconColor: Colors.white,
-                  textColor: Colors.white,
-                )),
-                child: Wrap(
-                  children: [
-                    ListTile(
+          return SafeArea(
+            child: StatefulBuilder(
+                builder: (BuildContext bc, StateSetter setModalState) {
+              return Theme(
+                  data: ThemeData(
+                      listTileTheme: const ListTileThemeData(
+                    tileColor: Colors.black,
+                    iconColor: Colors.white,
+                    textColor: Colors.white,
+                  )),
+                  child: Wrap(
+                    children: [
+                      ListTile(
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: ((context) => TransferFromPage(
+                                        accounts: _accounts,
+                                        pushReplacement: true))));
+                          },
+                          leading: const Icon(Icons.transfer_within_a_station),
+                          title: const Text("Transfer between accounts")),
+                      ListTile(
+                        leading: const Icon(Icons.payment_outlined),
+                        title: const Text("Pay someone"),
                         onTap: () {
                           Navigator.pop(context);
                           Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                  builder: ((context) => TransferFromPage(
-                                      accounts: _accounts,
-                                      pushReplacement: true))));
+                              PageRouteBuilder(
+                                  pageBuilder: ((context, animation,
+                                          secondaryAnimation) =>
+                                      ChoosePayeePage(
+                                        accounts: _accounts,
+                                        memberId: _member.id,
+                                        recentPayeeEdit:
+                                            _member.recentPayeeChange,
+                                      )),
+                                  transitionDuration: Duration.zero,
+                                  reverseTransitionDuration: Duration.zero));
                         },
-                        leading: const Icon(Icons.transfer_within_a_station),
-                        title: const Text("Transfer between accounts")),
-                    ListTile(
-                      leading: const Icon(Icons.payment_outlined),
-                      title: const Text("Pay someone"),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                            context,
-                            PageRouteBuilder(
-                                pageBuilder:
-                                    ((context, animation, secondaryAnimation) =>
-                                        ChoosePayeePage(
-                                          accounts: _accounts,
-                                          memberId: _member.id,
-                                          recentPayeeEdit:
-                                              _member.recentPayeeChange,
-                                        )),
-                                transitionDuration: Duration.zero,
-                                reverseTransitionDuration: Duration.zero));
-                      },
-                    ),
-                    const ListTile(
-                        leading: Icon(Icons.payment),
-                        title: Text("Pay by BPay")),
-                    const ListTile(
-                        leading: Icon(Icons.phone),
-                        title: Text("Cardles Cash")),
-                    !_more
-                        ? ListTile(
-                            leading: const Icon(Icons.more_horiz),
-                            title: const Text("More"),
-                            onTap: () {
-                              setModalState(() {
-                                _more = true;
-                              });
-                            },
-                          )
-                        : Column(children: const [
-                            ListTile(
-                                leading: Icon(Icons.card_giftcard),
-                                title: Text("Cheque deposit")),
-                            ListTile(
-                                leading: Icon(Icons.heart_broken),
-                                title: Text("Make a donation"))
-                          ]),
-                    const ListTile(title: Text("")),
-                  ],
-                ));
-          });
+                      ),
+                      const ListTile(
+                          leading: Icon(Icons.payment),
+                          title: Text("Pay by BPay")),
+                      const ListTile(
+                          leading: Icon(Icons.phone),
+                          title: Text("Cardles Cash")),
+                      !_more
+                          ? ListTile(
+                              leading: const Icon(Icons.more_horiz),
+                              title: const Text("More"),
+                              onTap: () {
+                                setModalState(() {
+                                  _more = true;
+                                });
+                              },
+                            )
+                          : Column(children: const [
+                              ListTile(
+                                  leading: Icon(Icons.card_giftcard),
+                                  title: Text("Cheque deposit")),
+                              ListTile(
+                                  leading: Icon(Icons.heart_broken),
+                                  title: Text("Make a donation"))
+                            ])
+                    ],
+                  ));
+            }),
+          );
         });
   }
 }
