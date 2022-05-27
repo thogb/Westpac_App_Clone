@@ -15,14 +15,22 @@ class LoadingText extends StatelessWidget {
           (index) => Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  StandardPadding(
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        left: Vars.standardPaddingSize,
+                        right: Vars.standardPaddingSize,
+                        top: Vars.heightGapBetweenWidgets,
+                        bottom: Vars.heightGapBetweenWidgets / 2),
                     child:
                         _getContainer(MediaQuery.of(context).size.width * 0.3),
-                    showVerticalPadding: true,
                   ),
-                  StandardPadding(
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        left: Vars.standardPaddingSize,
+                        right: Vars.standardPaddingSize,
+                        top: Vars.heightGapBetweenWidgets / 2,
+                        bottom: Vars.heightGapBetweenWidgets),
                     child: _getContainer(double.infinity),
-                    showVerticalPadding: true,
                   )
                 ],
               )),
