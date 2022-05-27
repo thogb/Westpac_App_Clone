@@ -35,7 +35,7 @@ class Utils {
         systemNavigationBarColor: Colors.white));
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge,
-        overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
+        overlays: [SystemUiOverlay.top]);
   }
 
   static String getDateIntTwoSig(int val) {
