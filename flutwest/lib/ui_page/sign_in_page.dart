@@ -3,6 +3,7 @@ import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/cust_widget/west_logo.dart';
 import 'package:flutwest/ui_page/home_page.dart';
+import 'package:flutwest/ui_page/sign_in_loading_page.dart';
 
 import '../model/vars.dart';
 
@@ -316,14 +317,22 @@ class _SignInPageState extends State<SignInPage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(3.0),
         child: InkWell(
-          onTap: () {
-            Navigator.push(
+          onTap: () async {
+            Object? result = await Navigator.push(
                 context,
                 PageRouteBuilder(
                     pageBuilder: ((context, animation, secondaryAnimation) =>
-                        const HomePage()),
+                        const SignInLoadingPage()),
                     transitionDuration: Duration.zero,
                     reverseTransitionDuration: Duration.zero));
+            if (result != null) {
+              String message = result as String;
+
+              if (message.isNotEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Center(child: Text(message))));
+              }
+            }
           },
           child: const Padding(
             padding: EdgeInsets.symmetric(
