@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CustRadio<T> extends StatelessWidget {
-  static final Color? typeOneSelectColor = Colors.blue[900];
+  static const Color? typeOneSelectColor = Color.fromARGB(255, 2, 32, 73);
   static const Color unselectColor = Colors.white;
 
   final T value;
@@ -51,14 +51,14 @@ class CustRadio<T> extends StatelessWidget {
   static Widget getTypeOne(String name, Color backGroundColor, Color fontColor,
       [Widget? trailing]) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 10.0),
+      padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 10.0),
       decoration: BoxDecoration(
           color: backGroundColor,
           borderRadius: BorderRadius.circular(15.0),
           border: Border.all(color: typeOneSelectColor!)),
       child: Row(
         children: [
-          Text(name, style: TextStyle(fontSize: 18.0, color: fontColor)),
+          Text(name, style: TextStyle(fontSize: 15.0, color: fontColor)),
           trailing ?? const SizedBox()
         ],
       ),
