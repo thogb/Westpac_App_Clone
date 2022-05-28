@@ -58,7 +58,8 @@ class _CustAppbarState extends State<CustAppbar> {
   }
 
   void _onScroll() {
-    if (widget.scrollController.offset > widget.showTitleOffset) {
+    if (widget.scrollController.hasClients &&
+        widget.scrollController.offset > widget.showTitleOffset) {
       if (_elevationLevel == 0) {
         setState(() {
           _showTitle = true;
@@ -77,6 +78,7 @@ class _CustAppbarState extends State<CustAppbar> {
 
   @override
   Widget build(BuildContext context) {
+    _onScroll();
     return AppBar(
       elevation: _elevationLevel,
       backgroundColor: Colors.grey[50],
