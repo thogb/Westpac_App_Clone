@@ -50,6 +50,8 @@ class MyApp extends StatelessWidget {
                         fontWeight: FontWeight.w400))),
             appBarTheme: AppBarTheme(
                 //color: Colors.grey[50],
+                actionsIconTheme:
+                    const IconThemeData(color: Vars.clickAbleColor),
                 titleTextStyle: const TextStyle(
                     color: Colors.black,
                     fontSize: Vars.headingTextSize1,

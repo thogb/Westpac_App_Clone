@@ -93,15 +93,9 @@ class _AccountDetailPageState extends State<AccountDetailPage> {
               child: Tooltip(
                 message: "Additional Details",
                 child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _currAccount = widget.accounts[2];
-                      });
-                    },
-                    child: Icon(
+                    onTap: () {},
+                    child: const Icon(
                       Icons.info_outline,
-                      color: Colors.red[900],
-                      size: 30,
                     )),
               ),
             )
@@ -187,8 +181,7 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      _getSimpleButton(Icons.transfer_within_a_station, "Pay",
-                          () async {
+                      _getSimpleButton(Icons.payments, "Pay", () async {
                         Object? result = await Navigator.push(
                             context,
                             PageRouteBuilder(
@@ -235,8 +228,7 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
                         }
                       }),
                       const SizedBox(width: 10.0),
-                      _getSimpleButton(
-                          Icons.transfer_within_a_station, "BPay", () {})
+                      _getSimpleButton(Icons.paypal, "BPay", () {})
                     ],
                   ),
                   const SizedBox(height: Vars.heightGapBetweenWidgets),
@@ -458,7 +450,8 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
                                   builder: ((context) => TransactionDetailPage(
                                       account: account, isInputting: true))));
                         },
-                        child: Icon(Icons.search, color: Colors.red[900]))
+                        child: const Icon(Icons.search,
+                            color: Vars.clickAbleColor))
                   ],
                 ),
               ),
