@@ -394,7 +394,6 @@ class _CardsPageState extends State<CardsPage> {
                               memberId: widget.memberId,
                               recentPayeeDate: widget.recentPayeeDate,
                               rawAccounts: widget.rawAccounts,
-                              currAccount: widget.cardAccount,
                               accounts: widget.accountOrderInfos,
                               currIndex: index)));
                 },

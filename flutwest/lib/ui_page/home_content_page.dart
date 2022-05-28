@@ -501,7 +501,6 @@ class _HomeContentPageState extends State<HomeContentPage>
             MaterialPageRoute(
                 builder: (context) => AccountDetailPage(
                     rawAccounts: widget.rawAccounts,
-                    currAccount: accountOrderInfo.getAccount(),
                     memberId: widget.member.id,
                     recentPayeeDate: widget.member.recentPayeeChange,
                     accounts: _accountOrderInfos,

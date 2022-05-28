@@ -23,7 +23,7 @@ class AccountDetailPage extends StatefulWidget {
   final List<AccountOrderInfo> accounts;
   final int currIndex;
   final List<Account> rawAccounts;
-  final Account currAccount;
+
   final String memberId;
   final DateTime? recentPayeeDate;
 
@@ -32,7 +32,6 @@ class AccountDetailPage extends StatefulWidget {
       required this.accounts,
       required this.currIndex,
       required this.rawAccounts,
-      required this.currAccount,
       required this.memberId,
       required this.recentPayeeDate})
       : super(key: key);
