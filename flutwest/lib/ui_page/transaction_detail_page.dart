@@ -205,50 +205,54 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                 );*/
 
                 print("${DateTime.now()} Rebuilding trasnact");
-                return ListView.builder(
-                    padding: EdgeInsets.zero,
-                    controller: _scrollController,
-                    itemCount: _transactionGroups.length + 1,
-                    itemBuilder: (context, index) {
-                      //return _transactionGroups[index];
-                      if (index == _transactionGroups.length) {
-                        if (snapshots.connectionState ==
-                            ConnectionState.waiting) {
-                          return Container(
-                              padding: const EdgeInsets.only(
-                                  bottom: Vars.topBotPaddingSize),
-                              child: _getLoading("Loading more"));
+                return SafeArea(
+                  top: false,
+                  child: ListView.builder(
+                      padding: EdgeInsets.zero,
+                      controller: _scrollController,
+                      itemCount: _transactionGroups.length + 1,
+                      itemBuilder: (context, index) {
+                        //return _transactionGroups[index];
+                        if (index == _transactionGroups.length) {
+                          if (snapshots.connectionState ==
+                              ConnectionState.waiting) {
+                            return Container(
+                                padding: const EdgeInsets.only(
+                                    bottom: Vars.topBotPaddingSize),
+                                child: _getLoading("Loading more"));
+                          }
+
+                          if (_noMoreDataToLoad) {
+                            return const Padding(
+                                padding: EdgeInsets.only(
+                                    bottom: Vars.topBotPaddingSize),
+                                child: Center(
+                                    child: Text("No More Transactions")));
+                          }
+
+                          return const SizedBox(
+                              height: Vars.topBotPaddingSize * 3);
                         }
 
-                        if (_noMoreDataToLoad) {
-                          return const Padding(
-                              padding: EdgeInsets.only(
-                                  bottom: Vars.topBotPaddingSize),
-                              child:
-                                  Center(child: Text("No More Transactions")));
-                        }
-
-                        return const SizedBox(
-                            height: Vars.topBotPaddingSize * 3);
-                      }
-
-                      return StickyHeader(
-                          header: _getTransactionLineBr(
-                              _transactionGroups[index].dateTime),
-                          content: ListView.builder(
-                              padding: EdgeInsets.zero,
-                              itemCount:
-                                  _transactionGroups[index].transactions.length,
-                              shrinkWrap: true,
-                              physics: const ClampingScrollPhysics(),
-                              itemBuilder: (context, indexTwo) {
-                                // print(
-                                // "$index + types = ${_transactionGroups[index].transactions[indexTwo].accountTransaction.transactionTypes} ++ = $_transactionType");
-                                return _getTransactionButton(
-                                    _transactionGroups[index]
-                                        .transactions[indexTwo]);
-                              }));
-                    });
+                        return StickyHeader(
+                            header: _getTransactionLineBr(
+                                _transactionGroups[index].dateTime),
+                            content: ListView.builder(
+                                padding: EdgeInsets.zero,
+                                itemCount: _transactionGroups[index]
+                                    .transactions
+                                    .length,
+                                shrinkWrap: true,
+                                physics: const ClampingScrollPhysics(),
+                                itemBuilder: (context, indexTwo) {
+                                  // print(
+                                  // "$index + types = ${_transactionGroups[index].transactions[indexTwo].accountTransaction.transactionTypes} ++ = $_transactionType");
+                                  return _getTransactionButton(
+                                      _transactionGroups[index]
+                                          .transactions[indexTwo]);
+                                }));
+                      }),
+                );
               }
 
               return Align(
@@ -285,14 +289,14 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(msg,
-            style: const TextStyle(fontSize: 15.0, color: Colors.black54)),
+            style: const TextStyle(fontSize: 15.0, color: Vars.loadingColor)),
         const SizedBox(width: Vars.heightGapBetweenWidgets / 2),
         const SizedBox(
             height: 15.0,
             width: 15.0,
             child: CircularProgressIndicator(
-              strokeWidth: 3,
-              color: Colors.black54,
+              strokeWidth: 1.5,
+              color: Vars.loadingColor,
             )),
       ],
     );

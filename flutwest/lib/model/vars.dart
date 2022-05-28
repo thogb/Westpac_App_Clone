@@ -74,6 +74,9 @@ class Vars {
   static const Color clickAbleColor = Color.fromRGBO(198, 40, 40, 1);
   static const Color disabledClickableColor = Color.fromRGBO(189, 189, 189, 1);
 
+  static const Color radioFilterColor = Color.fromARGB(255, 2, 32, 73);
+  static const Color loadingColor = Color.fromARGB(255, 2, 32, 73);
+
   static const String fakeMemberID = "22222222";
   static const String fakeCardNumber = "5166623996788864";
 
