@@ -61,77 +61,65 @@ class _CardsPageState extends State<CardsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        const CustSilverAppbar(title: "Cards"),
-        SliverList(
-            delegate: SliverChildListDelegate([
-          FutureBuilder(
-              future: _futureCard,
-              builder: ((context,
-                  AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>>
-                      snapshot) {
-                if (snapshot.hasError) {
-                  return const Align(
-                      alignment: Alignment.center,
-                      child: Text("Error loading card"));
-                }
+    return FutureBuilder(
+        future: _futureCard,
+        builder: ((context,
+            AsyncSnapshot<DocumentSnapshot<Map<String, dynamic>>> snapshot) {
+          if (snapshot.hasError) {
+            return const Align(
+                alignment: Alignment.center, child: Text("Error loading card"));
+          }
 
-                bool loading =
-                    snapshot.connectionState == ConnectionState.waiting;
+          bool loading = snapshot.connectionState == ConnectionState.waiting;
 
-                if (snapshot.hasData) {
-                  if (snapshot.connectionState == ConnectionState.done &&
-                      !snapshot.data!.exists) {
-                    return const Align(
-                        alignment: Alignment.center,
-                        child: Text("Card not found"));
-                  }
+          if (snapshot.hasData) {
+            if (snapshot.connectionState == ConnectionState.done &&
+                !snapshot.data!.exists) {
+              return const Align(
+                  alignment: Alignment.center, child: Text("Card not found"));
+            }
 
-                  _bankCard = BankCard.fromMap(snapshot.data!.data()!);
-                  _lockCard ??= _bankCard.locked;
-                }
+            _bankCard = BankCard.fromMap(snapshot.data!.data()!);
+            _lockCard ??= _bankCard.locked;
+          }
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    loading
-                        ? _getCard(
-                            Vars.loadingDummyColor, Vars.loadingDummyColor)
-                        : _getCard(Colors.red[600], Colors.red[900]),
-                    Text(
-                      "Westpac Debit\nMastercard\u00AE",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 24.0,
-                          fontWeight: FontWeight.bold,
-                          color: loading ? Colors.transparent : Colors.black),
-                    ),
-                    !loading
-                        ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              //card info
-                              const SizedBox(height: 10.0),
+          print("${DateTime.now()} recreating futurebuilder");
+          return CustomScrollView(slivers: [
+            const CustSilverAppbar(title: "Cards"),
+            SliverList(
+                delegate: SliverChildListDelegate([
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  loading
+                      ? _getCard(Vars.loadingDummyColor, Vars.loadingDummyColor)
+                      : _getCard(Colors.red[600], Colors.red[900]),
+                  Text(
+                    "Westpac Debit\nMastercard\u00AE",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 24.0,
+                        fontWeight: FontWeight.bold,
+                        color: loading ? Colors.transparent : Colors.black),
+                  ),
+                  !loading
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            //card info
+                            const SizedBox(height: 10.0),
 
-                              _getShowCardInfo(),
-                              _getLockButton(),
-                              _getBottomButtons()
-                            ],
-                          )
-                        : Column(
-                            children: const [
-                              LoadingText(),
-                              LoadingText(),
-                              LoadingText()
-                            ],
-                          ),
-                  ],
-                );
-              }))
-        ]))
-      ],
-    );
+                            _getShowCardInfo(),
+                            _getLockButton(),
+                            _getBottomButtons()
+                          ],
+                        )
+                      : const LoadingText(repeats: 3)
+                ],
+              )
+            ]))
+          ]);
+        }));
   }
 
   Widget _getCard(Color? unlocked, Color? locked) {
