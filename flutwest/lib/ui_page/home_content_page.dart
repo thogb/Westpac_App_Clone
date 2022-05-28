@@ -15,6 +15,7 @@ import 'package:flutwest/model/navbar_state.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/account_ordering_page.dart';
+import 'package:flutwest/ui_page/hidden_accounts_page.dart';
 
 import 'account_detail_page.dart';
 
@@ -138,9 +139,9 @@ class _HomeContentPageState extends State<HomeContentPage>
   late List<Account> accounts;
 
   late final List<AccountOrderInfo> _accountOrderInfos;
+  late final List<AccountOrderInfo> _hiddenAccountOrderInfos = [];
 
   bool _dragging = false;
-  int _numOfAccountsHidden = 0;
 
   @override
   void initState() {
@@ -245,17 +246,12 @@ class _HomeContentPageState extends State<HomeContentPage>
   }
 
   void _updateNOfHiddenAccount() {
-    int count = 0;
+    _hiddenAccountOrderInfos.clear();
     for (AccountOrderInfo accountOrderInfo in _accountOrderInfos) {
-      count = accountOrderInfo.isHidden ? count + 1 : count;
+      if (accountOrderInfo.isHidden) {
+        _hiddenAccountOrderInfos.add(accountOrderInfo);
+      }
     }
-
-    _numOfAccountsHidden = count;
-
-    /*
-    setState(() {
-      _numOfAccountHidden = count;
-    });*/
   }
 
   /// check if home content page is opened from another page
@@ -398,7 +394,7 @@ class _HomeContentPageState extends State<HomeContentPage>
           const SizedBox(height: 3.0),
           Container(height: 0.25, color: Colors.black45),
           const SizedBox(height: 4.0),
-          _numOfAccountsHidden == _accountOrderInfos.length
+          _hiddenAccountOrderInfos.length == _accountOrderInfos.length
               ? const Padding(
                   padding: EdgeInsets.only(top: Vars.topBotPaddingSize),
                   child: Text(
@@ -418,11 +414,28 @@ class _HomeContentPageState extends State<HomeContentPage>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _numOfAccountsHidden > 0
+                _hiddenAccountOrderInfos.isNotEmpty
                     ? ClickableText(
-                        text: _numOfAccountsHidden > 1
-                            ? "$_numOfAccountsHidden hidden accounts"
-                            : "$_numOfAccountsHidden hidden account")
+                        text: _hiddenAccountOrderInfos.length > 1
+                            ? "${_hiddenAccountOrderInfos.length} hidden accounts"
+                            : "${_hiddenAccountOrderInfos.length} hidden account",
+                        onTap: () async {
+                          await Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                  pageBuilder: ((context, animation,
+                                          secondaryAnimation) =>
+                                      HiddenAccountsPage(
+                                          hiddenAccountOrderInfos:
+                                              _hiddenAccountOrderInfos,
+                                          accountOrderInfos: _accountOrderInfos,
+                                          accounts: accounts,
+                                          memberId: widget.member.id,
+                                          recentPayeeDate: widget
+                                              .member.recentPayeeChange))));
+                          _updateNOfHiddenAccount();
+                          _recreateAccountDrags();
+                        })
                     : const SizedBox(),
                 GestureDetector(
                   onTap: () async {
