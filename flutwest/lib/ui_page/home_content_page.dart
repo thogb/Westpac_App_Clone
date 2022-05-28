@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/controller/sqlite_controller.dart';
+import 'package:flutwest/cust_widget/account_button.dart';
 import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/cust_widget/clickable_text.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
@@ -147,6 +148,8 @@ class _HomeContentPageState extends State<HomeContentPage>
     widget.navbarState.addObserver(_checkWelcomeAnimation);
 
     _accountOrderInfos = widget.accountOrderInfos;
+
+    _updateNOfHiddenAccount();
 
     _welcomeController = AnimationController(
         duration: const Duration(milliseconds: 500), vsync: this);
@@ -589,49 +592,16 @@ class _DraggableAccountButtonState extends State<DraggableAccountButton>
 
   Widget _getAccountButton() {
     return ScaleTransition(
-      scale: _scaleAnimation,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 4.0),
-        decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(4.0),
-            boxShadow: [
-              BoxShadow(
-                  color: Colors.grey.shade400,
-                  blurRadius: 3,
-                  offset: const Offset(0, 3))
-            ],
+        scale: _scaleAnimation,
+        child: AccountButton(
+            leftTitle: "Westpac ${widget.account.type}",
+            rightTitle:
+                "\$${Utils.formatDecimalMoneyUS(widget.account.balance)}",
+            ontap: widget.onTap,
             border: _inDrag
                 ? Border.all(width: 2.0, color: Colors.black)
                 : !_onBeingDragFocused
                     ? Border.all(width: 0.5, color: Colors.black12)
-                    : Border.all(width: 2.0, color: Colors.red)),
-        child: Material(
-          borderRadius: BorderRadius.circular(4.0),
-          child: InkWell(
-            onTap: widget.onTap,
-            child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                    Vars.standardPaddingSize,
-                    Vars.topBotPaddingSize,
-                    Vars.standardPaddingSize,
-                    Vars.topBotPaddingSize * 2.5),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Westpac ${widget.account.type}",
-                      style: const TextStyle(fontSize: 16.0),
-                    ),
-                    Text(
-                        "\$${Utils.formatDecimalMoneyUS(widget.account.balance)}",
-                        style: const TextStyle(
-                            fontSize: 16.0, fontWeight: FontWeight.bold))
-                  ],
-                )),
-          ),
-        ),
-      ),
-    );
+                    : Border.all(width: 2.0, color: Colors.red)));
   }
 }
