@@ -37,12 +37,9 @@ class _HiddenAccountsPageState extends State<HiddenAccountsPage> {
             onTap: () {
               Navigator.pop(context);
             },
-            child: const Icon(Icons.close, color: Vars.clickAbleColor),
+            child: const Icon(Icons.close),
           ),
-          title: const Text(
-            "Hidden accounts",
-            style: Vars.headingStyle1,
-          ),
+          title: const Text("Hidden accounts"),
           actions: [
             TextButton(
                 onPressed: () async {
@@ -56,10 +53,9 @@ class _HiddenAccountsPageState extends State<HiddenAccountsPage> {
                                           widget.hiddenAccountOrderInfos))));
                   Navigator.pop(context);
                 },
-                child: const Text("Edit",
-                    style: TextStyle(
-                        fontSize: Vars.headingTextSize2,
-                        color: Vars.clickAbleColor)))
+                child: const Text(
+                  "Edit",
+                ))
           ],
         ),
         body: ListView.builder(

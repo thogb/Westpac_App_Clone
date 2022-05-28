@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/model/utils.dart';
+import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/guest_page.dart';
 
 void main() async {
@@ -40,11 +41,22 @@ class MyApp extends StatelessWidget {
             // is not restarted.
             androidOverscrollIndicator: AndroidOverscrollIndicator.stretch,
             scaffoldBackgroundColor: Colors.grey[50],
+            textButtonTheme: TextButtonThemeData(
+                style: TextButton.styleFrom(
+                    splashFactory: NoSplash.splashFactory,
+                    primary: Vars.clickAbleColor,
+                    textStyle: const TextStyle(
+                        fontSize: Vars.headingTextSize2,
+                        fontWeight: FontWeight.w400))),
             appBarTheme: AppBarTheme(
                 //color: Colors.grey[50],
-                titleTextStyle: const TextStyle(color: Colors.black),
+                titleTextStyle: const TextStyle(
+                    color: Colors.black,
+                    fontSize: Vars.headingTextSize1,
+                    fontWeight: Vars.medBold),
                 foregroundColor: Colors.black,
-                iconTheme: IconThemeData(color: Colors.red[900]),
+                iconTheme:
+                    const IconThemeData(color: Vars.clickAbleColor, size: 25),
                 backgroundColor: Colors.grey[50]),
             primarySwatch: Colors.blue,
             highlightColor: Colors.grey[200],
