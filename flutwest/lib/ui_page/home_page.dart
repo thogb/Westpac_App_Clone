@@ -296,25 +296,31 @@ class _HomePageState extends State<HomePage> {
       _showBottomSheet();
     } else {
       if (index == 1) {
-        Account cardAccount = _accounts[0];
+        if (_pages[1] is! CardsPage) {
+          Account cardAccount = _accounts[0];
 
-        for (Account account in _accounts) {
-          if (account.cardNumber == _member.cardNumber) {
-            cardAccount = account;
-            break;
+          for (Account account in _accounts) {
+            if (account.cardNumber == _member.cardNumber) {
+              cardAccount = account;
+              break;
+            }
           }
+          _pages[1] = CardsPage(
+              memberId: _member.id,
+              recentPayeeDate: _member.recentPayeeChange,
+              rawAccounts: _accounts,
+              cardNumber: _member.cardNumber,
+              cardAccount: cardAccount,
+              accountOrderInfos: _accountOrderInfos);
         }
-        _pages[1] = CardsPage(
-            memberId: _member.id,
-            recentPayeeDate: _member.recentPayeeChange,
-            rawAccounts: _accounts,
-            cardNumber: _member.cardNumber,
-            cardAccount: cardAccount,
-            accountOrderInfos: _accountOrderInfos);
       } else if (index == 3) {
-        _pages[3] = const ProductsPage();
+        if (_pages[3] is! ProductsPage) {
+          _pages[3] = const ProductsPage();
+        }
       } else if (index == 4) {
-        _pages[4] = const ProfilePage();
+        if (_pages[4] is! ProfilePage) {
+          _pages[4] = const ProfilePage();
+        }
       }
       setState(() {
         _currPage = index;
