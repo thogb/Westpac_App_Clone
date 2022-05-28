@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
+import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/cust_widget/big_circular_loading.dart';
 import 'package:flutwest/model/account.dart';
+import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
@@ -23,6 +25,8 @@ class _SignInLoadingPageState extends State<SignInLoadingPage> {
       FirestoreController.instance.colAccount
           .getAllByMemberId(Vars.fakeMemberID);
   late final Future<List<Object>> _futures;
+
+  final List<AccountOrderInfo> _accountOrderInfos = [];
 
   List<Account> _accounts = [];
   late Member _member;
@@ -88,6 +92,40 @@ class _SignInLoadingPageState extends State<SignInLoadingPage> {
     );
   }
 
+  Future<bool> _createOrderInfos(List<Account> accounts) async {
+    //TODO: memberID update with auth
+    List<Account> accountsClone = accounts.toList();
+
+    List<AccountIDOrder> accountIDOrders =
+        await SQLiteController.instance.getAccountIDsOrdered();
+
+    AccountOrderInfo? temp;
+
+    for (AccountIDOrder accountIDOrder in accountIDOrders) {
+      AccountID accountID = accountIDOrder.getAccountID;
+      temp = null;
+      for (Account account in accountsClone) {
+        if (account.getNumber == accountID.getNumber &&
+            account.getBsb == accountID.getBsb) {
+          temp = AccountOrderInfo(
+              account: account,
+              order: accountIDOrder.getOrder,
+              hidden: accountIDOrder.getHidden);
+          accountsClone.remove(account);
+          _accountOrderInfos.add(temp);
+          break;
+        }
+      }
+    }
+
+    for (Account account in accountsClone) {
+      _accountOrderInfos.add(AccountOrderInfo(
+          account: account, order: _accountOrderInfos.length, hidden: 0));
+    }
+
+    return true;
+  }
+
   void _getData() async {
     List<Object> data = await _futures;
     QuerySnapshot<Map<String, dynamic>> queryAccounts =
@@ -106,13 +144,18 @@ class _SignInLoadingPageState extends State<SignInLoadingPage> {
     }
     _member = Member.fromMap((queryMember.data() as Map<String, dynamic>),
         _accounts, queryMember.id);
+    await _createOrderInfos(_accounts);
 
     Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-            pageBuilder: ((context, animation, secondaryAnimation) =>
-                HomePage(member: _member, accounts: _accounts)),
-            transitionDuration: Duration.zero,
-            reverseTransitionDuration: Duration.zero));
+          pageBuilder: ((context, animation, secondaryAnimation) => HomePage(
+                member: _member,
+                accounts: _accounts,
+                accountOrderInfos: _accountOrderInfos,
+              )),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ));
   }
 }

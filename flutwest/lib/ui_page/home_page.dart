@@ -19,9 +19,14 @@ import 'package:flutwest/ui_page/transfer_from_page.dart';
 
 class HomePage extends StatefulWidget {
   final Member member;
+  final List<AccountOrderInfo> accountOrderInfos;
   final List<Account> accounts;
 
-  const HomePage({Key? key, required this.member, required this.accounts})
+  const HomePage(
+      {Key? key,
+      required this.member,
+      required this.accounts,
+      required this.accountOrderInfos})
       : super(key: key);
 
   @override
@@ -41,17 +46,12 @@ class _HomePageState extends State<HomePage> {
 
   final List<Widget> _pages = List.filled(5, const SizedBox());
 
-  // final Future<DocumentSnapshot<Map<String, dynamic>>> _futureMember =
-  //     FirestoreController.instance.getMember(Vars.fakeMemberID);
-  // final Future<QuerySnapshot<Map<String, dynamic>>> _futureAccounts =
-  //     FirestoreController.instance.getAccounts(Vars.fakeMemberID);
-
   late final Future<List<Object>> futures;
 
   late Member _member;
   List<Account> _accounts = [];
 
-  final List<AccountOrderInfo> _accountOrderInfos = [];
+  late final List<AccountOrderInfo> _accountOrderInfos;
 
   @override
   void initState() {
@@ -61,6 +61,7 @@ class _HomePageState extends State<HomePage> {
         hideNavBar: hideNavBar,
         changeToPage: _onNavbarTap);
 
+    _accountOrderInfos = widget.accountOrderInfos;
     _accounts = widget.accounts;
     _member = widget.member;
     _pages[0] = (HomeContentPage(
@@ -69,14 +70,6 @@ class _HomePageState extends State<HomePage> {
       member: _member,
       accountOrderInfos: _accountOrderInfos,
     ));
-
-    // _pages.add(HomeContentPage(navbarState: navbarState));
-    // _pages.add(const CardsPage());
-    // _pages.add(const SizedBox());
-    // _pages.add(const ProductsPage());
-    // _pages.add(const ProfilePage());
-
-    //futures = Future.wait([_futureMember, _futureAccounts]);
 
     super.initState();
   }
@@ -91,58 +84,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return _getHomePage();
-    /*return FutureBuilder(
-      future: futures,
-      builder: (BuildContext context, AsyncSnapshot<List<Object>> snapshots) {
-        if (snapshots.hasError) {
-          return _getErrorPage("Error, could not retrieve data");
-        }
-
-        if (snapshots.hasData && snapshots.data!.isEmpty) {
-          return _getErrorPage("Document does not exist");
-        }
-
-        if (snapshots.connectionState == ConnectionState.done) {
-          QuerySnapshot<Map<String, dynamic>> queryAccounts =
-              snapshots.data![1] as QuerySnapshot<Map<String, dynamic>>;
-          DocumentSnapshot<Map<String, dynamic>> queryMember =
-              snapshots.data![0] as DocumentSnapshot<Map<String, dynamic>>;
-
-          if (queryMember.data() == null) {
-            return _getErrorPage(
-                "Could not load member data of member: ${Vars.fakeMemberID}");
-          }
-
-          if (_accounts.isEmpty) {
-            _accounts = queryAccounts.docs
-                .map((e) => Account.fromMap(e.data(), e.id))
-                .toList();
-          }
-          _member = Member.fromMap((queryMember.data() as Map<String, dynamic>),
-              _accounts, queryMember.id);
-
-          for (Account account in _accounts) {
-            print("HomePage : ${account.hashCode}");
-          }
-
-          _pages[0] = (HomeContentPage(
-            rawAccounts: _accounts,
-            navbarState: navbarState,
-            member: _member,
-            accountOrderInfos: _accountOrderInfos,
-          ));
-          //_pages.add(CardsPage(cardNumber: _member.cardNumber));
-          //_pages.add(const SizedBox());
-          //_pages.add(const ProductsPage());
-          //_pages.add(const ProfilePage());
-
-          print("Opening home page in future");
-          return _getHomePage();
-        }
-
-        return const BackgroundImage();
-      },
-    );*/
   }
 
   Widget _getErrorPage(String errorMsg) {
@@ -223,41 +164,6 @@ class _HomePageState extends State<HomePage> {
                     activeIcon:
                         _getNavIcon(Icons.person_sharp, "Profile", true)),
               ],
-              /*items: [
-          const BottomNavigationBarItem(
-              activeIcon: Icon(Icons.home_sharp, size: navItemIconSize),
-              icon: Icon(Icons.home_outlined, size: navItemIconSize),
-              label: "Home",
-              tooltip: "Home"),
-          const BottomNavigationBarItem(
-              activeIcon: Icon(CupertinoIcons.creditcard_fill,
-                  size: navItemIconSize),
-              icon: Icon(CupertinoIcons.creditcard, size: navItemIconSize),
-              label: "Cards",
-              tooltip: "Cards"),
-          BottomNavigationBarItem(
-              icon: Container(
-                width: 30.0,
-                height: 30.0,
-                decoration: BoxDecoration(
-                    shape: BoxShape.circle, color: Colors.red[700]),
-                child: const Icon(
-                  Icons.attach_money,
-                  color: Colors.white,
-                ),
-              ),
-              label: ""),
-          const BottomNavigationBarItem(
-              activeIcon: Icon(CupertinoIcons.cube_fill),
-              icon: Icon(CupertinoIcons.cube),
-              label: "Products",
-              tooltip: "Products"),
-          const BottomNavigationBarItem(
-              activeIcon: Icon(Icons.person_sharp, size: navItemIconSize),
-              icon: Icon(Icons.person_outline, size: navItemIconSize),
-              label: "Profile",
-              tooltip: "Profile"),
-        ],*/
             ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/cust_widget/background_image.dart';
+import 'package:flutwest/cust_widget/clickable_text.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
 import 'package:flutwest/cust_widget/outlined_container.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
@@ -140,8 +141,6 @@ class _HomeContentPageState extends State<HomeContentPage>
   bool _dragging = false;
   int _numOfAccountsHidden = 0;
 
-  late Future<bool> _futureAccountOrders;
-
   @override
   void initState() {
     WidgetsBinding.instance?.addObserver(this);
@@ -157,7 +156,6 @@ class _HomeContentPageState extends State<HomeContentPage>
             CurvedAnimation(parent: _welcomeController, curve: Curves.easeIn));
 
     accounts = widget.member.accounts;
-    _futureAccountOrders = _createOrderInfos(accounts);
 
     FirestoreController.instance.colTransaction
         .addOnTransactionMadeObserver(_recreateAccountDrags);
@@ -235,40 +233,6 @@ class _HomeContentPageState extends State<HomeContentPage>
         ],
       ),
     );
-  }
-
-  Future<bool> _createOrderInfos(List<Account> accounts) async {
-    //TODO: memberID update with auth
-    List<Account> accountsClone = accounts.toList();
-
-    List<AccountIDOrder> accountIDOrders =
-        await SQLiteController.instance.getAccountIDsOrdered();
-
-    AccountOrderInfo? temp;
-
-    for (AccountIDOrder accountIDOrder in accountIDOrders) {
-      AccountID accountID = accountIDOrder.getAccountID;
-      temp = null;
-      for (Account account in accountsClone) {
-        if (account.getNumber == accountID.getNumber &&
-            account.getBsb == accountID.getBsb) {
-          temp = AccountOrderInfo(
-              account: account,
-              order: accountIDOrder.getOrder,
-              hidden: accountIDOrder.getHidden);
-          accountsClone.remove(account);
-          _accountOrderInfos.add(temp);
-          break;
-        }
-      }
-    }
-
-    for (Account account in accountsClone) {
-      _accountOrderInfos.add(AccountOrderInfo(
-          account: account, order: _accountOrderInfos.length, hidden: 0));
-    }
-
-    return true;
   }
 
   void _recreateAccountDrags() {
@@ -431,54 +395,32 @@ class _HomeContentPageState extends State<HomeContentPage>
           const SizedBox(height: 3.0),
           Container(height: 0.25, color: Colors.black45),
           const SizedBox(height: 4.0),
-          FutureBuilder(
-              future: _futureAccountOrders,
-              builder: ((context, snapshot) {
-                if (snapshot.hasData) {
-                  _updateNOfHiddenAccount();
-                  if (_numOfAccountsHidden == _accountOrderInfos.length) {
-                    return const Padding(
-                      padding: EdgeInsets.only(top: Vars.topBotPaddingSize),
-                      child: Text(
-                          "No accounts to see here. Looks like you've hidden all your accounts",
-                          style: TextStyle(fontSize: 18.0)),
-                    );
-                  }
-
-                  return Column(
-                      children:
-                          List.generate(_accountOrderInfos.length, (index) {
-                    print(
-                        "${_accountOrderInfos[index].account.hashCode} recreating and ${_accountOrderInfos[index].account.type}                               ${DateTime.now().toString()}");
-                    return !_accountOrderInfos[index].isHidden
-                        ? _getAccountDrag(_accountOrderInfos[index])
-                        : const SizedBox();
-                  }));
-                }
-
-                return const Text("loading");
-              })),
+          _numOfAccountsHidden == _accountOrderInfos.length
+              ? const Padding(
+                  padding: EdgeInsets.only(top: Vars.topBotPaddingSize),
+                  child: Text(
+                      "No accounts to see here. Looks like you've hidden all your accounts",
+                      style: TextStyle(fontSize: 18.0)),
+                )
+              : Column(
+                  children: List.generate(_accountOrderInfos.length, (index) {
+                  print(
+                      "${_accountOrderInfos[index].account.hashCode} recreating and ${_accountOrderInfos[index].account.type}                               ${DateTime.now().toString()}");
+                  return !_accountOrderInfos[index].isHidden
+                      ? _getAccountDrag(_accountOrderInfos[index])
+                      : const SizedBox();
+                })),
           Padding(
             padding: const EdgeInsets.only(top: Vars.topBotPaddingSize - 4.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                FutureBuilder(
-                  future: _futureAccountOrders,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      _updateNOfHiddenAccount();
-                      return _numOfAccountsHidden > 0
-                          ? GestureDetector(
-                              onTap: () {},
-                              child: Text(
-                                  "$_numOfAccountsHidden hidden account",
-                                  style: const TextStyle(color: Colors.red)))
-                          : const SizedBox();
-                    }
-                    return const SizedBox();
-                  },
-                ),
+                _numOfAccountsHidden > 0
+                    ? ClickableText(
+                        text: _numOfAccountsHidden > 1
+                            ? "$_numOfAccountsHidden hidden accounts"
+                            : "$_numOfAccountsHidden hidden account")
+                    : const SizedBox(),
                 GestureDetector(
                   onTap: () async {
                     await Navigator.push(
@@ -487,42 +429,22 @@ class _HomeContentPageState extends State<HomeContentPage>
                             builder: ((context) => AccountOrderingPage(
                                   accountOrderInfos: _accountOrderInfos,
                                 ))));
-                    //print(_accountOrderInfos.toString());
-                    setState(() {
-                      _accountOrderInfos.length;
-                    });
                     _updateNOfHiddenAccount();
+                    _recreateAccountDrags();
                   },
                   child: Icon(Icons.settings, color: Colors.red[700]),
                 )
               ],
             ),
           )
-          /*Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding:
-                    const EdgeInsets.only(top: Vars.topBotPaddingSize - 4.0),
-                child: GestureDetector(
-                  onTap: () async {
-                    await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: ((context) => AccountOrderingPage(
-                                  accountOrderInfos: _accountOrderInfos,
-                                ))));
-                    print(_accountOrderInfos.toString());
-                    setState(() {
-                      _accountOrderInfos.length;
-                    });
-                  },
-                  child: Icon(Icons.settings, color: Colors.red[700]),
-                ),
-              )),*/
         ]));
   }
 
   Widget _getAccountDrag(AccountOrderInfo accountOrderInfo) {
+    if (accountOrderInfo.isHidden) {
+      return const SizedBox();
+    }
+
     return DraggableAccountButton(
       account: accountOrderInfo.getAccount(),
       feedback: dollarIcon,
