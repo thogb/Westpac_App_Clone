@@ -41,6 +41,9 @@ class _FilteringPageState extends State<FilteringPage> {
   late String _amountSelected;
   late String _typeSelected;
 
+  late DateTime endDate;
+  late DateTime startDate;
+
   @override
   void initState() {
     _amountFilters = TransactionFilter.amounts.keys.toList();
@@ -48,6 +51,9 @@ class _FilteringPageState extends State<FilteringPage> {
     _dateFilters = widget.datesFilters != null
         ? widget.datesFilters!.keys.toList()
         : TransactionFilter.dates.keys.toList();
+
+    endDate = DateTime.now();
+    startDate = DateTime(endDate.year, endDate.month - 2);
 
     super.initState();
   }
@@ -108,7 +114,11 @@ class _FilteringPageState extends State<FilteringPage> {
                               (index) => CustRadio.typeOne(
                                   value: _dateFilters[index],
                                   groupValue: _dateSelected,
-                                  onChanged: (value) {},
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _dateSelected = value;
+                                    });
+                                  },
                                   name: _dateFilters[index]))),
                     ],
                   ),
@@ -127,7 +137,11 @@ class _FilteringPageState extends State<FilteringPage> {
                             (index) => CustRadio.typeOne(
                                 value: _amountFilters[index],
                                 groupValue: _amountSelected,
-                                onChanged: (value) {},
+                                onChanged: (value) {
+                                  setState(() {
+                                    _amountSelected = value;
+                                  });
+                                },
                                 name: _amountFilters[index])),
                       )
                     ],
@@ -146,7 +160,11 @@ class _FilteringPageState extends State<FilteringPage> {
                               (index) => CustRadio.typeOne(
                                   value: _typeFilters[index],
                                   groupValue: _typeSelected,
-                                  onChanged: (value) {},
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _typeSelected = value;
+                                    });
+                                  },
                                   name: _typeFilters[index])))
                     ],
                   )
