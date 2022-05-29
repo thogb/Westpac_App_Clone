@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutwest/model/account.dart';
+import 'package:flutwest/model/payee.dart';
 
 class Member {
   static const String fnRecentPayeeChange = "recentPayeeChange";
@@ -14,6 +15,7 @@ class Member {
   int nOfUnreadInbox;
   int nOfUnreadRewards;
   DateTime? recentPayeeChange;
+  List<Payee>? payees;
 
   Member({
     required this.firstName,

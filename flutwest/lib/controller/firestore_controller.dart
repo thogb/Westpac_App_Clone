@@ -129,6 +129,18 @@ class ColPayee {
         .delete();
     await _firestoreController.colMember.updateRecentPayee(memberId, delDate);
   }
+
+  Future<void> updateLastPayDate(
+      String memberId, String payeeDocId, DateTime lastPayDate) async {
+    await _firebaseFirestore
+        .collection(ColMember.collectionName)
+        .doc(memberId)
+        .collection(collectionName)
+        .doc(payeeDocId)
+        .update({Payee.fnLastPayDate: lastPayDate});
+    await _firestoreController.colMember
+        .updateRecentPayee(memberId, lastPayDate);
+  }
 }
 
 class ColAccount {

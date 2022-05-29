@@ -228,6 +228,7 @@ class SQLiteController {
       required DateTime recentPayeeDate}) async {
     var batch = dataBase.batch();
 
+    /*
     List<Payee?> remotePayeesClone = List.from(remotePayees);
     List<Payee?> localPayeesClone = List.from(localPayees);
 
@@ -266,6 +267,13 @@ class SQLiteController {
             ]*/
             );
       }
+    }*/
+
+    batch.delete(TablePayee.tableName,
+        where: "${TablePayee.memberId} = ?", whereArgs: [memberId]);
+
+    for (Payee payee in remotePayees) {
+      batch.insert(TablePayee.tableName, getPayeeMap(memberId, payee));
     }
 
     await batch.commit();

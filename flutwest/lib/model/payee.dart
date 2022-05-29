@@ -5,6 +5,7 @@ import 'package:flutwest/model/account_id.dart';
 class Payee {
   static const String fnAccountNumber = "accountNumber";
   static const String fnAccountBsb = "accountBsb";
+  static const String fnLastPayDate = "lastPayDate";
 
   final String docId;
   final AccountID accountID;
@@ -61,6 +62,10 @@ class Payee {
 
     result.addAll({'accountName': accountName});
 
+    if (lastPayDate != null) {
+      result.addAll({fnLastPayDate: lastPayDate});
+    }
+
     return result;
   }
 
@@ -70,7 +75,8 @@ class Payee {
         accountNumber: map[fnAccountNumber] ?? "",
         accountBSB: map[fnAccountBsb] ?? "",
         accountName: map['accountName'] ?? "",
-        nickName: map['nickName'] ?? "");
+        nickName: map['nickName'] ?? "",
+        lastPayDate: map[fnLastPayDate]);
   }
 
   String toJson() => json.encode(toMap());
