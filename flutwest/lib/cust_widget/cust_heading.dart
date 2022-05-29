@@ -8,6 +8,15 @@ class CustHeading extends StatelessWidget {
 
   static const TextStyle headingStyle = Vars.headingStyle1;
 
+  static const TextStyle bigHeadingStyle =
+      TextStyle(fontSize: Vars.headingTextSize1, fontWeight: FontWeight.w600);
+
+  static const TextStyle medHeadingStyle =
+      TextStyle(fontSize: Vars.headingTextSize2, fontWeight: FontWeight.w600);
+
+  static const TextStyle smallHeadingStyle =
+      TextStyle(fontSize: Vars.headingTextSize3, fontWeight: FontWeight.w600);
+
   const CustHeading(
       {Key? key,
       required this.heading,
@@ -18,8 +27,7 @@ class CustHeading extends StatelessWidget {
   factory CustHeading.big(
       {required String heading,
       bool showHorPadding = false,
-      TextStyle textStyle = const TextStyle(
-          fontSize: Vars.headingTextSize1, fontWeight: FontWeight.w600),
+      TextStyle textStyle = bigHeadingStyle,
       EdgeInsetsGeometry? padding}) {
     padding = padding ??
         EdgeInsets.symmetric(
@@ -32,8 +40,7 @@ class CustHeading extends StatelessWidget {
   factory CustHeading.medium(
       {required String heading,
       bool showHorPadding = false,
-      TextStyle textStyle = const TextStyle(
-          fontSize: Vars.headingTextSize2, fontWeight: FontWeight.w600),
+      TextStyle textStyle = medHeadingStyle,
       EdgeInsetsGeometry? padding}) {
     padding = padding ??
         EdgeInsets.symmetric(
@@ -46,8 +53,7 @@ class CustHeading extends StatelessWidget {
   factory CustHeading.small(
       {required String heading,
       bool showHorPadding = false,
-      TextStyle textStyle = const TextStyle(
-          fontSize: Vars.headingTextSize3, fontWeight: FontWeight.w600),
+      TextStyle textStyle = smallHeadingStyle,
       EdgeInsetsGeometry? padding}) {
     padding = padding ??
         EdgeInsets.symmetric(
