@@ -1,11 +1,16 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
 import 'package:flutwest/cust_widget/cust_floating_button.dart';
 import 'package:flutwest/cust_widget/cust_heading.dart';
+import 'package:flutwest/cust_widget/cust_paragraph.dart';
 import 'package:flutwest/cust_widget/cust_radio.dart';
 import 'package:flutwest/cust_widget/cust_text_button.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
+import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/transaction_filter.dart';
+import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 
 class FilteringPage extends StatefulWidget {
@@ -41,8 +46,11 @@ class _FilteringPageState extends State<FilteringPage> {
   late String _amountSelected;
   late String _typeSelected;
 
-  late DateTime endDate;
-  late DateTime startDate;
+  late DateTime _startDate;
+  late DateTime _endDate;
+
+  late double? _startAmount;
+  late double? _endAmount;
 
   @override
   void initState() {
@@ -52,8 +60,10 @@ class _FilteringPageState extends State<FilteringPage> {
         ? widget.datesFilters!.keys.toList()
         : TransactionFilter.dates.keys.toList();
 
-    endDate = DateTime.now();
-    startDate = DateTime(endDate.year, endDate.month - 2);
+    DateTime now = DateTime.now();
+    _startDate =
+        widget.filter.startDate ?? DateTime(now.year, now.month - 2, now.day);
+    _endDate = widget.filter.endDate ?? now;
 
     super.initState();
   }
@@ -74,7 +84,11 @@ class _FilteringPageState extends State<FilteringPage> {
           widget.filter.isFilterEqual(widget.resetFilter)
               ? TextButton(onPressed: () {}, child: const Text("Reset"))
               : TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    setState(() {
+                      widget.filter.resetFilter(widget.resetFilter);
+                    });
+                  },
                   child: const Text("Rest",
                       style: TextStyle(color: Vars.disabledClickableColor)))
         ],
@@ -92,13 +106,24 @@ class _FilteringPageState extends State<FilteringPage> {
                       CustHeading.big(
                           heading: "Accounts", textStyle: headingStyle),
                       CustButton(
+                          borderOn: false,
                           paragraph:
-                              "${widget.filter.selectedAccount.length} accounts selected",
-                          rightWidget: GestureDetector(
-                              child: Text("Edit",
-                                  style: Vars.headingStyle1
-                                      .copyWith(color: Vars.clickAbleColor)),
-                              onTap: () {}))
+                              "${widget.filter.selectedAccounts.length} accounts selected",
+                          rightWidget: Text("Edit",
+                              style: Vars.headingStyle1
+                                  .copyWith(color: Vars.clickAbleColor)),
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                    pageBuilder: ((context, animation,
+                                            secondaryAnimation) =>
+                                        AccountFilteringPage(
+                                            allAccounts:
+                                                widget.filter.allAccounts,
+                                            selectedAccounts: widget
+                                                .filter.selectedAccounts))));
+                          })
                     ],
                   ),
             // Date filtering
@@ -120,6 +145,34 @@ class _FilteringPageState extends State<FilteringPage> {
                                     });
                                   },
                                   name: _dateFilters[index]))),
+                      _dateSelected != TransactionFilter.otherDate
+                          ? const SizedBox()
+                          : GestureDetector(
+                              child: CustParagraph.normal(
+                                  reversed: true,
+                                  heading: "Start date - End date",
+                                  paragraph:
+                                      "${Utils.getDateTimeDMY(_startDate)} - ${Utils.getDateTimeDMY(_endDate)}"),
+                              onTap: () async {
+                                DateTime now = DateTime.now();
+                                DateTimeRange? result =
+                                    await showDateRangePicker(
+                                  context: context,
+                                  initialDateRange: DateTimeRange(
+                                      start: _startDate, end: _endDate),
+                                  firstDate: _startDate = DateTime(
+                                      now.year - 1, now.month, now.day),
+                                  lastDate: now,
+                                );
+
+                                if (result != null) {
+                                  setState(() {
+                                    _startDate = result.start;
+                                    _endDate = result.end;
+                                  });
+                                }
+                              },
+                            )
                     ],
                   ),
 
@@ -172,8 +225,80 @@ class _FilteringPageState extends State<FilteringPage> {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton:
-          CustFloatingButton.enabled(title: "Done", onPressed: () {}),
+      floatingActionButton: CustFloatingButton.enabled(
+          title: "Done",
+          onPressed: () {
+            widget.filter.type = _typeSelected;
+            widget.filter.date = _dateSelected;
+            if (widget.filter.date == TransactionFilter.otherDate) {
+              widget.filter.startDate = _startDate;
+              widget.filter.endDate = _endDate;
+            }
+            widget.filter.amount = _amountSelected;
+            if (widget.filter.amount == TransactionFilter.otherAmount) {
+              widget.filter.startAmount = _startAmount;
+              widget.filter.endAmount = _endAmount;
+            }
+          }),
+    );
+  }
+}
+
+class AccountFilteringPage extends StatefulWidget {
+  final List<Account> allAccounts;
+  final HashSet<Account> selectedAccounts;
+  const AccountFilteringPage(
+      {Key? key, required this.allAccounts, required this.selectedAccounts})
+      : super(key: key);
+
+  @override
+  State<AccountFilteringPage> createState() => _AccountFilteringPageState();
+}
+
+class _AccountFilteringPageState extends State<AccountFilteringPage> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Accounts"),
+      ),
+      body: SingleChildScrollView(
+        child: StandardPadding(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                  "Select up to 20 accounts to search. We'll keep this for future searches"),
+              CustHeading.big(heading: "Cash"),
+              Column(
+                  children: List.generate(
+                      widget.allAccounts.length,
+                      (index) => CheckboxListTile(
+                          title: Text(widget.allAccounts[index].getAccountName),
+                          subtitle: Text(
+                              "${widget.allAccounts[index].getBsb} ${widget.allAccounts[index].getNumber}\n\$${Utils.formatDecimalMoneyUS(widget.allAccounts[index].getBalance)}available"),
+                          value: widget.selectedAccounts
+                              .contains(widget.allAccounts[index]),
+                          onChanged: (value) {
+                            setState(() {
+                              if (value != null && value) {
+                                widget.selectedAccounts
+                                    .add(widget.allAccounts[index]);
+                              } else {
+                                widget.selectedAccounts
+                                    .remove(widget.allAccounts[index]);
+                              }
+                            });
+                          })))
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
