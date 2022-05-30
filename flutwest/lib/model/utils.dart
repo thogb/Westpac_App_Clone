@@ -60,6 +60,10 @@ class Utils {
         : getDateTimeWDDMY(dateTime);
   }
 
+  static String getDateTimeDMY(DateTime dateTime) {
+    return "${dateTime.day} ${Vars.months[dateTime.month]} ${dateTime.year}";
+  }
+
   static String formatDecimalMoneyUS(Decimal decimal) {
     return Vars.usFormatter.format(decimal.toDouble());
   }
