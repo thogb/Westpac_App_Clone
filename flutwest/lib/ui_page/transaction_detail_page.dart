@@ -441,10 +441,12 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
               value: AccountTransaction.types[index - 1],
               groupValue: _transactionType,
               onChanged: (value) {
-                _clearTransactions();
-                setState(() {
-                  _transactionType = value;
-                });
+                if (_transactionType != value) {
+                  _clearTransactions();
+                  setState(() {
+                    _transactionType = value;
+                  });
+                }
               },
               name: AccountTransaction.types[index - 1]),
         );
