@@ -7,6 +7,7 @@ class TransactionFilter {
   static const List<String> types = AccountTransaction.types;
 
   static const String anyAmount = "Any amount";
+  static const String otherAmount = "Other";
 
   static const Map<String, List<double?>> amounts = {
     anyAmount: [null, null],
@@ -17,10 +18,11 @@ class TransactionFilter {
     "\$250 - \$500": [250, 500],
     "\$500 - \$1000": [500, 1000],
     "Over \$1000": [1000, null],
-    "Other": [],
+    otherAmount: [],
   };
 
   static const String anyDate = "Any date";
+  static const String otherDate = "Other";
 
   static final DateTime now = DateTime.now();
 
@@ -48,22 +50,22 @@ class TransactionFilter {
       DateTime(now.year + 1, 4, 0)
     ],
     "Last financial year": [DateTime(now.year - 1), DateTime(now.year, 1, 0)],
-    "Other": []
+    otherDate: []
   };
 
   final List<Account> allAccounts;
-  final HashSet<Account> selectedAccount;
-  final DateTime? startDate;
-  final DateTime? endDate;
-  final String date;
-  final String amount;
-  final double? startAmount;
-  final double? endAmount;
-  final String type;
+  final HashSet<Account> selectedAccounts;
+  DateTime? startDate;
+  DateTime? endDate;
+  String date;
+  String amount;
+  double? startAmount;
+  double? endAmount;
+  String type;
 
   TransactionFilter({
     this.allAccounts = const [],
-    HashSet<Account>? selectedAccount,
+    HashSet<Account>? selectedAccounts,
     this.startDate,
     this.endDate,
     this.amount = anyAmount,
@@ -71,7 +73,7 @@ class TransactionFilter {
     this.endAmount,
     this.date = anyDate,
     this.type = AccountTransaction.allTypes,
-  }) : this.selectedAccount = selectedAccount ?? HashSet();
+  }) : this.selectedAccounts = selectedAccounts ?? HashSet();
 
   DateTime? get getStartDate => startDate ?? dates[date]![0];
   DateTime? get getEndDate => endDate ?? dates[date]![1];
@@ -89,5 +91,15 @@ class TransactionFilter {
         date == other.date &&
         startDate == other.startDate &&
         endDate == other.endDate;
+  }
+
+  void resetFilter(TransactionFilter resetFilter) {
+    startDate = resetFilter.startDate;
+    endDate = resetFilter.endDate;
+    amount = resetFilter.amount;
+    startAmount = resetFilter.startAmount;
+    endAmount = resetFilter.endAmount;
+    date = resetFilter.date;
+    type = resetFilter.type;
   }
 }
