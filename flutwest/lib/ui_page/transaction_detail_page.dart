@@ -440,7 +440,12 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
           child: CustRadio.typeOne(
               value: AccountTransaction.types[index - 1],
               groupValue: _transactionType,
-              onChanged: (value) {
+              onChanged: (value) async {
+                if (_scrollController.positions.isNotEmpty) {
+                  await _scrollController.animateTo(0,
+                      duration: const Duration(microseconds: 1),
+                      curve: Curves.easeIn);
+                }
                 if (_transactionType != value) {
                   _clearTransactions();
                   setState(() {
