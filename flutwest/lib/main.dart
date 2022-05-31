@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
             textButtonTheme: TextButtonThemeData(
                 style: TextButton.styleFrom(
                     splashFactory: NoSplash.splashFactory,
-                    primary: Vars.clickAbleColor,
+                    //primary: Vars.clickAbleColor,
                     textStyle: const TextStyle(
                         fontSize: Vars.headingTextSize2,
                         fontWeight: FontWeight.w400))),

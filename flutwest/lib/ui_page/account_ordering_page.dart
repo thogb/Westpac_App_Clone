@@ -43,7 +43,8 @@ class _AccountOrderingPageState extends State<AccountOrderingPage> {
                   .toList());
               Navigator.pop(context);
             },
-            child: const Text("Done"),
+            child: const Text("Done",
+                style: TextStyle(color: Vars.clickAbleColor)),
           )
         ],
       ),

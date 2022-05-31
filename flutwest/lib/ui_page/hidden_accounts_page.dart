@@ -50,11 +50,12 @@ class _HiddenAccountsPageState extends State<HiddenAccountsPage> {
                               ((context, animation, secondaryAnimation) =>
                                   AccountOrderingPage(
                                       accountOrderInfos:
-                                          widget.hiddenAccountOrderInfos))));
+                                          widget.accountOrderInfos))));
                   Navigator.pop(context);
                 },
                 child: const Text(
                   "Edit",
+                  style: TextStyle(color: Vars.clickAbleColor),
                 ))
           ],
         ),
