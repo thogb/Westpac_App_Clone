@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
@@ -10,9 +12,11 @@ import 'package:flutwest/cust_widget/loading_text.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/payee.dart';
+import 'package:flutwest/model/transaction_filter.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/choose_payee_page.dart';
+import 'package:flutwest/ui_page/filtering_page.dart';
 import 'package:flutwest/ui_page/payment_page.dart';
 
 class HomeSearchPage extends StatefulWidget {
@@ -45,12 +49,36 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
 
   final TextEditingController _tecSearch = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  final ScrollController _filterScrollController = ScrollController();
+
+  late final TransactionFilter _transactionFilter;
+  late final TransactionFilter _resetTransactionFilter;
+
+  late final Map<String, List<DateTime?>> _customDateFilters;
 
   String _currFilter = filterTop;
   String _prevFilter = filterTop;
 
   @override
   void initState() {
+    DateTime now = DateTime.now();
+
+    _transactionFilter = TransactionFilter(
+        allAccounts: List.from(widget.rawAccounts),
+        selectedAccounts: HashSet.from(widget.rawAccounts),
+        date: TransactionFilter.otherDate,
+        startDate: DateTime(now.year, now.month - 2),
+        endDate: now);
+    _resetTransactionFilter = TransactionFilter(
+        allAccounts: List.from(widget.rawAccounts),
+        selectedAccounts: HashSet.from(widget.rawAccounts),
+        date: TransactionFilter.otherDate,
+        startDate: DateTime(now.year, now.month - 2),
+        endDate: now);
+
+    _customDateFilters = Map.from(TransactionFilter.dates);
+    _customDateFilters.remove(TransactionFilter.anyDate);
+
     super.initState();
   }
 
@@ -88,6 +116,7 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
                 const SizedBox(height: Vars.standardPaddingSize / 2),
                 // filters
                 SingleChildScrollView(
+                  controller: _filterScrollController,
                   scrollDirection: Axis.horizontal,
                   child: Row(
                       children: List.generate(
@@ -100,21 +129,44 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
                               value: filters[index],
                               groupValue: _currFilter,
                               onChanged: (value) async {
-                                if (_scrollController.positions.isNotEmpty) {
-                                  await _scrollController.animateTo(0,
-                                      duration: const Duration(microseconds: 1),
-                                      curve: Curves.easeIn);
-                                }
-                                if (value != _currFilter) {
-                                  setState(() {
-                                    _prevFilter = _currFilter;
-                                    _currFilter = value;
-                                  });
-                                }
+                                onFilterRadioTap(value);
                               },
                               name: filters[index]))),
                 ),
-                const SizedBox(height: Vars.standardPaddingSize)
+                const SizedBox(height: Vars.standardPaddingSize),
+                _currFilter != filterTransactions
+                    ? const SizedBox()
+                    : Padding(
+                        padding: const EdgeInsets.all(Vars.standardPaddingSize),
+                        child: CustButton(
+                            leftWidget: const Icon(
+                              Icons.filter_list,
+                              color: Vars.radioFilterColor,
+                              size: Vars.headingTextSize2,
+                            ),
+                            heading: "Filter",
+                            headingStyle: CustButton.buttonHeadingStyle
+                                .copyWith(
+                                    color: Vars.radioFilterColor,
+                                    fontSize: Vars.headingTextSize2),
+                            rightWidget: const Text("1"),
+                            onTap: () async {
+                              Object? result = await Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                      pageBuilder: ((context, animation,
+                                              secondaryAnimation) =>
+                                          FilteringPage(
+                                              datesFilters: _customDateFilters,
+                                              filter: _transactionFilter,
+                                              resetFilter:
+                                                  _resetTransactionFilter))));
+                              if (result != null && (result as bool)) {
+                                setState(() {
+                                  _currFilter;
+                                });
+                              }
+                            }))
               ],
             ),
           ),
@@ -133,6 +185,19 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
     ));
   }
 
+  void onFilterRadioTap(String value) async {
+    if (_scrollController.positions.isNotEmpty) {
+      await _scrollController.animateTo(0,
+          duration: const Duration(microseconds: 1), curve: Curves.easeIn);
+    }
+    if (value != _currFilter) {
+      setState(() {
+        _prevFilter = _currFilter;
+        _currFilter = value;
+      });
+    }
+  }
+
   Widget _getMessageWidget(String msg) {
     return LoadingText.getLoadingWithMessage(msg, loading: false);
   }
@@ -143,23 +208,16 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
 
   Widget _getContent() {
     if (_currFilter == filterTop) {
-      return ListView.builder(
-          controller: _scrollController,
-          itemCount: 60,
-          itemBuilder: ((context, index) => Container(
-                margin: const EdgeInsets.all(Vars.standardPaddingSize),
-                color: Colors.green,
-                height: 60,
-              )));
+      return _getTop();
     } else if (_currFilter == filterSelfServe) {
-      return ListView.builder(
-          controller: _scrollController,
-          itemCount: 60,
-          itemBuilder: ((context, index) => Container(
-                margin: const EdgeInsets.all(Vars.standardPaddingSize),
-                color: Colors.yellow,
-                height: 60,
-              )));
+      return ListView(children: [
+        _getHeading("Popular services"),
+        CustTextButton(heading: "Upcoming payments", onTap: () {}),
+        CustTextButton(heading: "Payment list", onTap: () {}),
+        CustTextButton(heading: "Set or change card PIN", onTap: () {}),
+        CustTextButton(heading: "Switch to eStatements", onTap: () {}),
+        CustTextButton(heading: "Activate card", onTap: () {})
+      ]);
     } else if (_currFilter == filterTransactions) {
       return ListView.builder(
           controller: _scrollController,
@@ -172,12 +230,125 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
     } else if (_currFilter == filterPayeeAndBillers) {
       return _getPayeesAndBillers();
     } else if (_currFilter == filterProducts) {
-      return _getMessageWidget("Error");
+      return ListView(children: [
+        _getHeading("Popular products"),
+        CustTextButton(heading: "Bank accounts", onTap: () {}),
+        CustTextButton(heading: "Low Rate Card", onTap: () {}),
+        CustTextButton(heading: "Westpac eSaver", onTap: () {}),
+        CustTextButton(heading: "Unsecured Personal Loan", onTap: () {})
+      ]);
     } else if (_currFilter == filterFQAAndTopics) {
-      return _getMessageWidget("Error");
+      return ListView(children: [
+        _getHeading("Popular FAQs & topics"),
+        CustTextButton(heading: "New app FAQs", onTap: () {}),
+        CustTextButton(heading: "How can I close an account?", onTap: () {}),
+        CustTextButton(heading: "COVID-19: Customer support", onTap: () {}),
+        CustTextButton(
+            heading: "What security devices are available?", onTap: () {}),
+        CustTextButton(
+            heading: "Where can i get the SWIFT and BIC codes from",
+            onTap: () {}),
+        CustTextButton(heading: "Disaster preparation", onTap: () {}),
+      ]);
     } else {
       return _getMessageWidget("Error");
     }
+  }
+
+  Widget _getTop() {
+    String searchText = _tecSearch.text.trim();
+
+    if (searchText.isEmpty) {
+      return ListView(children: [
+        _getHeading("Popular searches"),
+        CustTextButton(heading: "Cardless cash", onTap: () {}),
+        CustTextButton(heading: "Rewards and offers", onTap: () {}),
+        CustTextButton(heading: "Update contact details", onTap: () {}),
+        CustTextButton(heading: "Report lost or stolen", onTap: () {})
+      ]);
+    }
+
+    String nickNameSearch = searchText;
+
+    if (nickNameSearch.length > 2 &&
+        nickNameSearch.substring(0, 3).toLowerCase() == "pay") {
+      nickNameSearch == nickNameSearch.substring(3);
+    }
+
+    return FutureBuilder(
+        future: FirestoreController.instance.colMember.colPayee.getQueriedLocal(
+            memberId: widget.member.id,
+            recentPayee: widget.member.recentPayeeChange,
+            nickNameSearch: nickNameSearch),
+        builder: ((context, AsyncSnapshot<List<Payee>> snapshot) {
+          if (snapshot.hasError) {
+            return _getMessageWidget("Error");
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return _getLoadingMessage("Loading");
+          }
+
+          if (snapshot.connectionState == ConnectionState.done &&
+              snapshot.hasData) {
+            List<Payee> payees = snapshot.data!;
+
+            double scrollOffSet = 0;
+
+            for (String stuff in filters) {
+              if (stuff != filterTransactions) {
+                scrollOffSet += (stuff.length * CustRadio.defaultFontSize / 2) +
+                    (CustRadio.typeOneInnerPadding.right * 2) +
+                    CustRadio.smallPaddingRight.right;
+              } else {
+                break;
+              }
+            }
+
+            return ListView(
+              controller: _scrollController,
+              children: [
+                _getHeading("Transactions"),
+                CustTextButton(
+                    heading: "Show transactions for '$searchText'",
+                    headingTextStyle: CustTextButton.textButtonHeadingStyle
+                        .copyWith(color: Vars.clickAbleColor),
+                    onTap: () {
+                      _filterScrollController.animateTo(scrollOffSet,
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.linear);
+                      setState(() {
+                        onFilterRadioTap(filterTransactions);
+                      });
+                    }),
+                CustTextButton(
+                    heading: "Show all recent transactions",
+                    headingTextStyle: CustTextButton.textButtonHeadingStyle
+                        .copyWith(color: Vars.clickAbleColor),
+                    onTap: () {
+                      _filterScrollController.animateTo(scrollOffSet,
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.linear);
+                      _tecSearch.clear();
+                      setState(() {
+                        onFilterRadioTap(filterTransactions);
+                      });
+                    }),
+                payees.isEmpty
+                    ? const SizedBox()
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: List.generate(
+                            payees.length + 1,
+                            (index) => index == 0
+                                ? _getHeading("Payees & billers")
+                                : _getPayeeButton(payees[index - 1])))
+              ],
+            );
+          }
+
+          return _getMessageWidget("Error");
+        }));
   }
 
   Widget _getPayeesAndBillers() {
@@ -195,7 +366,6 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
               recentPayee: widget.member.recentPayeeChange,
               nickNameSearch: nickNameSearch);
     } else if (_prevFilter != filterPayeeAndBillers) {
-      print("local recent");
       futurePayees = FirestoreController.instance.colMember.colPayee
           .getRecentPayLocal(
               memberId: widget.member.id,
@@ -220,6 +390,7 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
             List<Payee> payees = snapshot.data!;
 
             return ListView(
+              controller: _scrollController,
               children: [
                 payees.isEmpty
                     ? const SizedBox()
