@@ -49,8 +49,8 @@ class _FilteringPageState extends State<FilteringPage> {
   late DateTime _startDate;
   late DateTime _endDate;
 
-  late double? _startAmount;
-  late double? _endAmount;
+  double? _startAmount;
+  double? _endAmount;
 
   @override
   void initState() {
@@ -60,12 +60,30 @@ class _FilteringPageState extends State<FilteringPage> {
         ? widget.datesFilters!.keys.toList()
         : TransactionFilter.dates.keys.toList();
 
-    DateTime now = DateTime.now();
-    _startDate =
-        widget.filter.startDate ?? DateTime(now.year, now.month - 2, now.day);
-    _endDate = widget.filter.endDate ?? now;
+    resetFilter(widget.filter);
 
     super.initState();
+  }
+
+  void resetFilter(TransactionFilter filter) {
+    _dateSelected = filter.date;
+    _amountSelected = filter.amount;
+    _typeSelected = filter.type;
+
+    DateTime now = DateTime.now();
+    _startDate = filter.startDate ?? DateTime(now.year, now.month - 2, now.day);
+    _endDate = filter.endDate ?? now;
+  }
+
+  bool isEqualToFilter(TransactionFilter filter) {
+    return _dateSelected == filter.date &&
+        _amountSelected == filter.amount &&
+        _typeSelected == filter.type &&
+        (_amountSelected != TransactionFilter.otherAmount ||
+            _startAmount == filter.startAmount &&
+                _endAmount == filter.endAmount) &&
+        (_dateSelected != TransactionFilter.otherDate ||
+            _startDate == filter.startDate && _endDate == filter.endDate);
   }
 
   @override
@@ -81,147 +99,160 @@ class _FilteringPageState extends State<FilteringPage> {
         ),
         title: const Text("Filter"),
         actions: [
-          widget.filter.isFilterEqual(widget.resetFilter)
-              ? TextButton(onPressed: () {}, child: const Text("Reset"))
-              : TextButton(
+          !isEqualToFilter(widget.resetFilter)
+              ? TextButton(
                   onPressed: () {
                     setState(() {
-                      widget.filter.resetFilter(widget.resetFilter);
+                      resetFilter(widget.resetFilter);
                     });
                   },
-                  child: const Text("Rest",
+                  child: const Text("Reset"))
+              : TextButton(
+                  onPressed: () {},
+                  child: const Text("Reset",
                       style: TextStyle(color: Vars.disabledClickableColor)))
         ],
       ),
       body: StandardPadding(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Account filtering
-            widget.filter.allAccounts.isEmpty
-                ? const SizedBox()
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CustHeading.big(
-                          heading: "Accounts", textStyle: headingStyle),
-                      CustButton(
-                          borderOn: false,
-                          paragraph:
-                              "${widget.filter.selectedAccounts.length} accounts selected",
-                          rightWidget: Text("Edit",
-                              style: Vars.headingStyle1
-                                  .copyWith(color: Vars.clickAbleColor)),
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                PageRouteBuilder(
-                                    pageBuilder: ((context, animation,
-                                            secondaryAnimation) =>
-                                        AccountFilteringPage(
-                                            allAccounts:
-                                                widget.filter.allAccounts,
-                                            selectedAccounts: widget
-                                                .filter.selectedAccounts))));
-                          })
-                    ],
-                  ),
-            // Date filtering
-            !widget.filterDates
-                ? const SizedBox()
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CustHeading.big(heading: "Date", textStyle: headingStyle),
-                      Wrap(
-                          children: List.generate(
-                              _dateFilters.length,
-                              (index) => CustRadio.typeOne(
-                                  value: _dateFilters[index],
-                                  groupValue: _dateSelected,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _dateSelected = value;
-                                    });
+        child: SingleChildScrollView(
+          child: SafeArea(
+            top: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Account filtering
+                widget.filter.allAccounts.isEmpty
+                    ? const SizedBox()
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CustHeading.big(
+                              heading: "Accounts", textStyle: headingStyle),
+                          CustButton(
+                              borderOn: false,
+                              paragraph:
+                                  "${widget.filter.selectedAccounts.length} accounts selected",
+                              rightWidget: Text("Edit",
+                                  style: Vars.headingStyle1
+                                      .copyWith(color: Vars.clickAbleColor)),
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    PageRouteBuilder(
+                                        pageBuilder: ((context, animation,
+                                                secondaryAnimation) =>
+                                            AccountFilteringPage(
+                                                allAccounts:
+                                                    widget.filter.allAccounts,
+                                                selectedAccounts: widget.filter
+                                                    .selectedAccounts))));
+                              })
+                        ],
+                      ),
+                // Date filtering
+                !widget.filterDates
+                    ? const SizedBox()
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CustHeading.big(
+                              heading: "Date", textStyle: headingStyle),
+                          Wrap(
+                              children: List.generate(
+                                  _dateFilters.length,
+                                  (index) => CustRadio.typeOne(
+                                      padding: CustRadio.paddingRightBot,
+                                      value: _dateFilters[index],
+                                      groupValue: _dateSelected,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _dateSelected = value;
+                                        });
+                                      },
+                                      name: _dateFilters[index]))),
+                          _dateSelected != TransactionFilter.otherDate
+                              ? const SizedBox()
+                              : GestureDetector(
+                                  child: CustParagraph.normal(
+                                      reversed: true,
+                                      heading: "Start date - End date",
+                                      paragraph:
+                                          "${Utils.getDateTimeDMY(_startDate)} - ${Utils.getDateTimeDMY(_endDate)}"),
+                                  onTap: () async {
+                                    DateTime now = DateTime.now();
+                                    DateTimeRange? result =
+                                        await showDateRangePicker(
+                                      context: context,
+                                      initialDateRange: DateTimeRange(
+                                          start: _startDate, end: _endDate),
+                                      firstDate: _startDate = DateTime(
+                                          now.year - 1, now.month, now.day),
+                                      lastDate: now,
+                                    );
+
+                                    if (result != null) {
+                                      setState(() {
+                                        _startDate = result.start;
+                                        _endDate = result.end;
+                                      });
+                                    }
                                   },
-                                  name: _dateFilters[index]))),
-                      _dateSelected != TransactionFilter.otherDate
-                          ? const SizedBox()
-                          : GestureDetector(
-                              child: CustParagraph.normal(
-                                  reversed: true,
-                                  heading: "Start date - End date",
-                                  paragraph:
-                                      "${Utils.getDateTimeDMY(_startDate)} - ${Utils.getDateTimeDMY(_endDate)}"),
-                              onTap: () async {
-                                DateTime now = DateTime.now();
-                                DateTimeRange? result =
-                                    await showDateRangePicker(
-                                  context: context,
-                                  initialDateRange: DateTimeRange(
-                                      start: _startDate, end: _endDate),
-                                  firstDate: _startDate = DateTime(
-                                      now.year - 1, now.month, now.day),
-                                  lastDate: now,
-                                );
+                                )
+                        ],
+                      ),
 
-                                if (result != null) {
-                                  setState(() {
-                                    _startDate = result.start;
-                                    _endDate = result.end;
-                                  });
-                                }
-                              },
-                            )
-                    ],
-                  ),
+                // Amount filtering
+                !widget.filterAmount
+                    ? const SizedBox()
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CustHeading.big(
+                              heading: "Amount", textStyle: headingStyle),
+                          Wrap(
+                            children: List.generate(
+                                _amountFilters.length,
+                                (index) => CustRadio.typeOne(
+                                    padding: CustRadio.paddingRightBot,
+                                    value: _amountFilters[index],
+                                    groupValue: _amountSelected,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _amountSelected = value;
+                                      });
+                                    },
+                                    name: _amountFilters[index])),
+                          )
+                        ],
+                      ),
 
-            // Amount filtering
-            !widget.filterAmount
-                ? const SizedBox()
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CustHeading.big(
-                          heading: "Amount", textStyle: headingStyle),
-                      Wrap(
-                        children: List.generate(
-                            _amountFilters.length,
-                            (index) => CustRadio.typeOne(
-                                value: _amountFilters[index],
-                                groupValue: _amountSelected,
-                                onChanged: (value) {
-                                  setState(() {
-                                    _amountSelected = value;
-                                  });
-                                },
-                                name: _amountFilters[index])),
-                      )
-                    ],
-                  ),
-
-            // Type filtering
-            !widget.filterType
-                ? const SizedBox()
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      CustHeading.big(heading: "Type", textStyle: headingStyle),
-                      Wrap(
-                          children: List.generate(
-                              _typeFilters.length,
-                              (index) => CustRadio.typeOne(
-                                  value: _typeFilters[index],
-                                  groupValue: _typeSelected,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _typeSelected = value;
-                                    });
-                                  },
-                                  name: _typeFilters[index])))
-                    ],
-                  )
-          ],
+                // Type filtering
+                !widget.filterType
+                    ? const SizedBox()
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CustHeading.big(
+                              heading: "Type", textStyle: headingStyle),
+                          Wrap(
+                              children: List.generate(
+                                  _typeFilters.length,
+                                  (index) => CustRadio.typeOne(
+                                      padding: CustRadio.paddingRightBot,
+                                      value: _typeFilters[index],
+                                      groupValue: _typeSelected,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _typeSelected = value;
+                                        });
+                                      },
+                                      name: _typeFilters[index])))
+                        ],
+                      ),
+                const SizedBox(height: 100)
+              ],
+            ),
+          ),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -239,6 +270,8 @@ class _FilteringPageState extends State<FilteringPage> {
               widget.filter.startAmount = _startAmount;
               widget.filter.endAmount = _endAmount;
             }
+
+            Navigator.pop(context, true);
           }),
     );
   }
