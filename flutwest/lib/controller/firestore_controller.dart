@@ -146,9 +146,9 @@ class ColPayee {
         .updateRecentPayee(memberId, lastPayDate);
   }
 
-  Future<List<Payee>?> getAllLocal(
+  Future<List<Payee>> getAllLocal(
       String memberId, DateTime? memberRecentPayeeEdit) async {
-    List<Payee>? payees;
+    List<Payee> payees;
 
     List<Payee> localPayees =
         await SQLiteController.instance.getPayees(memberId);
@@ -191,6 +191,39 @@ class ColPayee {
       }
     } else {
       payees = [];
+    }
+
+    return payees;
+  }
+
+  Future<List<Payee>> getQueriedLocal(
+      {required String memberId,
+      required DateTime? recentPayee,
+      String? nickNameSearch}) async {
+    List<Payee> payees = await getAllLocal(memberId, recentPayee);
+
+    if (nickNameSearch != null && nickNameSearch.length >= 2) {
+      nickNameSearch = nickNameSearch.toLowerCase();
+      payees.removeWhere((element) {
+        return !(element.getNickName.toLowerCase().contains(nickNameSearch!));
+      });
+    }
+
+    return payees;
+  }
+
+  Future<List<Payee>> getRecentPayLocal(
+      {required String memberId, required DateTime? recentPayee}) async {
+    List<Payee> payees = await getAllLocal(memberId, recentPayee);
+
+    DateTime now = DateTime.now();
+    int startDate =
+        DateTime(now.year, now.month, now.day - 14).millisecondsSinceEpoch;
+
+    payees.removeWhere((element) => !(element.lastPayDate != null &&
+        element.lastPayDate!.millisecondsSinceEpoch > startDate));
+    if (payees.length > 5) {
+      payees.removeRange(5, payees.length);
     }
 
     return payees;
