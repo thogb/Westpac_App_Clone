@@ -360,18 +360,38 @@ class ColTransaction {
       String accountNumber, int limit,
       {String transactionType = AccountTransaction.allTypes,
       String? description,
-      double? amount}) async {
+      double? amount,
+      double? startAmount,
+      double? endAmount,
+      DateTime? startDate,
+      DateTime? endDate}) async {
     await Future.delayed(const Duration(milliseconds: 1000));
     Query<Map<String, dynamic>> query = _firebaseFirestore
         .collection(collectionName)
         .where(AccountTransaction.fnAccountNumbers,
             arrayContains: accountNumber);
-
     if (amount != null) {
+      startAmount = amount - 0.050;
+      endAmount = amount + 0.050;
+    }
+
+    if (startAmount != null) {
       query = query.where(AccountTransaction.fnDoubleTypeAmount,
-          isGreaterThan: (amount - 0.050));
+          isGreaterThanOrEqualTo: (startAmount));
+    }
+    if (endAmount != null) {
       query = query.where(AccountTransaction.fnDoubleTypeAmount,
-          isLessThan: (amount + 0.050));
+          isLessThanOrEqualTo: (endAmount));
+    }
+
+    if (startDate != null) {
+      query = query.where(AccountTransaction.fnDateTime,
+          isGreaterThanOrEqualTo: startDate.millisecondsSinceEpoch);
+    }
+
+    if (endDate != null) {
+      query = query.where(AccountTransaction.fnDateTime,
+          isLessThanOrEqualTo: endDate.millisecondsSinceEpoch);
     }
 
     if (description != null && description.length > 2) {
