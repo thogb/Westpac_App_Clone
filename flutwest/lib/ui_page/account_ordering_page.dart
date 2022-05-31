@@ -116,6 +116,7 @@ class _AccountOrderingPageState extends State<AccountOrderingPage> {
 
   Widget _getListItem(int index, AccountOrderInfo accountOrderInfo) {
     return CheckboxListTile(
+      activeColor: Vars.radioFilterColor,
       contentPadding: const EdgeInsets.fromLTRB(
           Vars.standardPaddingSize - 8,
           Vars.topBotPaddingSize - 8,
