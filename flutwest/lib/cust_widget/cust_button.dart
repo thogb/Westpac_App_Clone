@@ -9,8 +9,11 @@ class CustButton extends StatelessWidget {
   static const TextStyle buttonParaStyle =
       TextStyle(fontSize: buttonParaSize, fontWeight: FontWeight.w300);
 
-  final double topBotPadding = Vars.topBotPaddingSize;
-  final double leftRightPadding = Vars.standardPaddingSize;
+  static const double topBotPadding = Vars.topBotPaddingSize;
+  static const double leftRightPadding = Vars.standardPaddingSize;
+
+  static const EdgeInsets defaultPadding = EdgeInsets.symmetric(
+      vertical: topBotPadding, horizontal: leftRightPadding);
 
   final String? heading;
   final String? paragraph;
@@ -51,9 +54,7 @@ class CustButton extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: Padding(
-            padding: padding ??
-                EdgeInsets.symmetric(
-                    vertical: topBotPadding, horizontal: leftRightPadding),
+            padding: padding ?? defaultPadding,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
