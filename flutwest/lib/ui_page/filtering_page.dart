@@ -129,14 +129,18 @@ class _FilteringPageState extends State<FilteringPage> {
                           CustHeading.big(
                               heading: "Accounts", textStyle: headingStyle),
                           CustButton(
+                              padding:
+                                  CustButton.defaultPadding.copyWith(left: 0.0),
                               borderOn: false,
                               paragraph:
                                   "${widget.filter.selectedAccounts.length} accounts selected",
+                              paragraphStyle: CustButton.buttonParaStyle
+                                  .copyWith(fontSize: Vars.headingTextSize3),
                               rightWidget: Text("Edit",
                                   style: Vars.headingStyle1
                                       .copyWith(color: Vars.clickAbleColor)),
-                              onTap: () {
-                                Navigator.push(
+                              onTap: () async {
+                                await Navigator.push(
                                     context,
                                     PageRouteBuilder(
                                         pageBuilder: ((context, animation,
@@ -146,6 +150,9 @@ class _FilteringPageState extends State<FilteringPage> {
                                                     widget.filter.allAccounts,
                                                 selectedAccounts: widget.filter
                                                     .selectedAccounts))));
+                                setState(() {
+                                  widget.filter.selectedAccounts.length;
+                                });
                               })
                         ],
                       ),
@@ -298,6 +305,7 @@ class _AccountFilteringPageState extends State<AccountFilteringPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0.0,
         title: const Text("Accounts"),
       ),
       body: SingleChildScrollView(
@@ -305,13 +313,16 @@ class _AccountFilteringPageState extends State<AccountFilteringPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: Vars.heightGapBetweenWidgets),
               const Text(
                   "Select up to 20 accounts to search. We'll keep this for future searches"),
-              CustHeading.big(heading: "Cash"),
+              CustHeading.big(heading: "Cash", showHorPadding: true),
               Column(
                   children: List.generate(
                       widget.allAccounts.length,
                       (index) => CheckboxListTile(
+                          activeColor: Vars.radioFilterColor,
+                          controlAffinity: ListTileControlAffinity.leading,
                           title: Text(widget.allAccounts[index].getAccountName),
                           subtitle: Text(
                               "${widget.allAccounts[index].getBsb} ${widget.allAccounts[index].getNumber}\n\$${Utils.formatDecimalMoneyUS(widget.allAccounts[index].getBalance)}available"),
