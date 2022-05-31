@@ -46,4 +46,24 @@ class LoadingText extends StatelessWidget {
           borderRadius: BorderRadius.circular(3.0)),
     );
   }
+
+  static Widget getLoadingWithMessage(String msg) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(msg,
+            style: const TextStyle(
+                fontSize: Vars.headingTextSize3, color: Vars.loadingColor)),
+        const SizedBox(width: Vars.heightGapBetweenWidgets / 2),
+        const SizedBox(
+            height: Vars.headingTextSize3,
+            width: Vars.headingTextSize3,
+            child: CircularProgressIndicator(
+              strokeWidth: 1.5,
+              color: Vars.loadingColor,
+            )),
+      ],
+    );
+  }
 }

@@ -5,6 +5,7 @@ import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/cust_widget/cust_fake_appbar.dart';
 import 'package:flutwest/cust_widget/cust_radio.dart';
 import 'package:flutwest/cust_widget/cust_text_field_search.dart';
+import 'package:flutwest/cust_widget/loading_text.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_transaction.dart';
@@ -297,21 +298,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
   }
 
   Widget _getLoading(String msg) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(msg,
-            style: const TextStyle(fontSize: 15.0, color: Vars.loadingColor)),
-        const SizedBox(width: Vars.heightGapBetweenWidgets / 2),
-        const SizedBox(
-            height: 15.0,
-            width: 15.0,
-            child: CircularProgressIndicator(
-              strokeWidth: 1.5,
-              color: Vars.loadingColor,
-            )),
-      ],
-    );
+    return LoadingText.getLoadingWithMessage(msg);
   }
 
   Widget _getFakeAppBar() {
