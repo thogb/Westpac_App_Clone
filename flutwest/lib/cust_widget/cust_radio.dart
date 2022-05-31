@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutwest/model/vars.dart';
 
 class CustRadio<T> extends StatelessWidget {
+  static const EdgeInsets normalPaddingRight = EdgeInsets.only(right: 10);
+  static const EdgeInsets paddingRightBot =
+      EdgeInsets.only(right: 10, bottom: 15);
+
   static const Color? typeOneSelectColor = Color.fromARGB(255, 2, 32, 73);
   static const Color unselectColor = Colors.white;
 
@@ -9,6 +14,7 @@ class CustRadio<T> extends StatelessWidget {
   final Widget unselectedChild;
   final Widget selectedChild;
   final ValueSetter onChanged;
+  final EdgeInsetsGeometry padding;
 
   const CustRadio(
       {Key? key,
@@ -16,14 +22,18 @@ class CustRadio<T> extends StatelessWidget {
       required this.groupValue,
       required this.unselectedChild,
       required this.selectedChild,
-      required this.onChanged})
+      required this.onChanged,
+      this.padding = normalPaddingRight})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => onChanged(value),
-      child: value == groupValue ? selectedChild : unselectedChild,
+    return Padding(
+      padding: padding,
+      child: GestureDetector(
+        onTap: () => onChanged(value),
+        child: value == groupValue ? selectedChild : unselectedChild,
+      ),
     );
   }
 
@@ -31,32 +41,41 @@ class CustRadio<T> extends StatelessWidget {
       {required T value,
       required T groupValue,
       required ValueSetter onChanged,
-      required String name}) {
+      required String name,
+      EdgeInsets padding = normalPaddingRight}) {
     return CustRadio(
+        padding: padding,
         value: value,
         groupValue: groupValue,
-        unselectedChild: _getTypeOneUnS(name),
-        selectedChild: _getTypeOneS(name),
+        unselectedChild: _getTypeOneUnS(name: name),
+        selectedChild: _getTypeOneS(name: name),
         onChanged: onChanged);
   }
 
-  static Widget _getTypeOneUnS(String name) {
-    return getTypeOne(name, unselectColor, Colors.black);
+  static Widget _getTypeOneUnS({required String name}) {
+    return getTypeOne(
+        name: name, backGroundColor: unselectColor, fontColor: Colors.black);
   }
 
-  static Widget _getTypeOneS(String name) {
-    return getTypeOne(name, typeOneSelectColor!, Colors.white);
+  static Widget _getTypeOneS({required String name}) {
+    return getTypeOne(
+        name: name,
+        backGroundColor: typeOneSelectColor!,
+        fontColor: Colors.white);
   }
 
-  static Widget getTypeOne(String name, Color backGroundColor, Color fontColor,
-      [Widget? trailing]) {
+  static Widget getTypeOne(
+      {required String name,
+      required Color backGroundColor,
+      required Color fontColor,
+      Widget? trailing}) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 10.0),
       decoration: BoxDecoration(
           color: backGroundColor,
           borderRadius: BorderRadius.circular(15.0),
           border: Border.all(color: typeOneSelectColor!)),
-      child: Row(
+      child: Wrap(
         children: [
           Text(name, style: TextStyle(fontSize: 15.0, color: fontColor)),
           trailing ?? const SizedBox()
