@@ -6,6 +6,10 @@ class CustRadio<T> extends StatelessWidget {
   static const EdgeInsets normalPaddingRight = EdgeInsets.only(right: 10);
   static const EdgeInsets paddingRightBot =
       EdgeInsets.only(right: 10, bottom: 15);
+  static const double defaultFontSize = 15.0;
+
+  static const EdgeInsets typeOneInnerPadding =
+      EdgeInsets.symmetric(vertical: 6.0, horizontal: 10.0);
 
   static const Color? typeOneSelectColor = Color.fromARGB(255, 2, 32, 73);
   static const Color unselectColor = Colors.white;
@@ -71,14 +75,15 @@ class CustRadio<T> extends StatelessWidget {
       required Color fontColor,
       Widget? trailing}) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 10.0),
+      padding: typeOneInnerPadding,
       decoration: BoxDecoration(
           color: backGroundColor,
           borderRadius: BorderRadius.circular(15.0),
           border: Border.all(color: typeOneSelectColor!)),
       child: Wrap(
         children: [
-          Text(name, style: TextStyle(fontSize: 15.0, color: fontColor)),
+          Text(name,
+              style: TextStyle(fontSize: defaultFontSize, color: fontColor)),
           trailing ?? const SizedBox()
         ],
       ),
