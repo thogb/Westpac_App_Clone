@@ -47,23 +47,30 @@ class LoadingText extends StatelessWidget {
     );
   }
 
-  static Widget getLoadingWithMessage(String msg) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(msg,
-            style: const TextStyle(
-                fontSize: Vars.headingTextSize3, color: Vars.loadingColor)),
-        const SizedBox(width: Vars.heightGapBetweenWidgets / 2),
-        const SizedBox(
-            height: Vars.headingTextSize3,
-            width: Vars.headingTextSize3,
-            child: CircularProgressIndicator(
-              strokeWidth: 1.5,
-              color: Vars.loadingColor,
-            )),
-      ],
+  static Widget getLoadingWithMessage(String msg, {bool loading = true}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: Vars.topBotPaddingSize),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(msg,
+              style: const TextStyle(
+                  fontSize: Vars.headingTextSize3, color: Vars.loadingColor)),
+          loading
+              ? const SizedBox(width: Vars.heightGapBetweenWidgets / 2)
+              : const SizedBox(),
+          loading
+              ? const SizedBox(
+                  height: Vars.headingTextSize3,
+                  width: Vars.headingTextSize3,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 1.5,
+                    color: Vars.loadingColor,
+                  ))
+              : const SizedBox(),
+        ],
+      ),
     );
   }
 }
