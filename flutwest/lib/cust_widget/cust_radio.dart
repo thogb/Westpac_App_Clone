@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutwest/model/vars.dart';
 
 class CustRadio<T> extends StatelessWidget {
+  static const EdgeInsets smallPaddingRight = EdgeInsets.only(right: 5);
   static const EdgeInsets normalPaddingRight = EdgeInsets.only(right: 10);
   static const EdgeInsets paddingRightBot =
       EdgeInsets.only(right: 10, bottom: 15);
@@ -42,9 +43,9 @@ class CustRadio<T> extends StatelessWidget {
       required T groupValue,
       required ValueSetter onChanged,
       required String name,
-      EdgeInsets padding = normalPaddingRight}) {
+      EdgeInsets? padding}) {
     return CustRadio(
-        padding: padding,
+        padding: padding ?? normalPaddingRight,
         value: value,
         groupValue: groupValue,
         unselectedChild: _getTypeOneUnS(name: name),

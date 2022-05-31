@@ -189,22 +189,19 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
               child: Row(
                 children: List.generate(
                     payeeFilters.length,
-                    (index) => Padding(
-                          padding: EdgeInsets.only(
-                              left: index == 0
-                                  ? Vars.standardPaddingSize
-                                  : Vars.gapBetweenHorizontalRadio / 2,
-                              right: Vars.gapBetweenHorizontalRadio / 2),
-                          child: CustRadio.typeOne(
-                              value: payeeFilters[index],
-                              groupValue: _currFilter,
-                              onChanged: (value) {
-                                setState(() {
-                                  _currFilter = value;
-                                });
-                              },
-                              name: payeeFilters[index]),
-                        )),
+                    (index) => CustRadio.typeOne(
+                        padding: index == 0
+                            ? CustRadio.smallPaddingRight
+                                .copyWith(left: Vars.standardPaddingSize)
+                            : CustRadio.smallPaddingRight,
+                        value: payeeFilters[index],
+                        groupValue: _currFilter,
+                        onChanged: (value) {
+                          setState(() {
+                            _currFilter = value;
+                          });
+                        },
+                        name: payeeFilters[index])),
               ),
             ),
             /*

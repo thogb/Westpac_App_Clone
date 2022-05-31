@@ -417,9 +417,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
           children: List.generate(AccountTransaction.types.length + 1, (index) {
         if (index == 0) {
           return Padding(
-            padding: const EdgeInsets.only(
-                left: Vars.standardPaddingSize,
-                right: Vars.gapBetweenHorizontalRadio / 2),
+            padding: CustRadio.smallPaddingRight
+                .copyWith(left: Vars.standardPaddingSize),
             child: GestureDetector(
               onTap: () async {
                 Object? result = await Navigator.push(
@@ -449,27 +448,24 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
             ),
           );
         }
-        return Padding(
-          padding: const EdgeInsets.symmetric(
-              horizontal: Vars.gapBetweenHorizontalRadio / 2),
-          child: CustRadio.typeOne(
-              value: AccountTransaction.types[index - 1],
-              groupValue: _transactionType,
-              onChanged: (value) async {
-                if (_scrollController.positions.isNotEmpty) {
-                  await _scrollController.animateTo(0,
-                      duration: const Duration(microseconds: 1),
-                      curve: Curves.easeIn);
-                }
-                if (_transactionType != value) {
-                  _clearTransactions();
-                  setState(() {
-                    _transactionType = value;
-                  });
-                }
-              },
-              name: AccountTransaction.types[index - 1]),
-        );
+        return CustRadio.typeOne(
+            padding: CustRadio.smallPaddingRight,
+            value: AccountTransaction.types[index - 1],
+            groupValue: _transactionType,
+            onChanged: (value) async {
+              if (_scrollController.positions.isNotEmpty) {
+                await _scrollController.animateTo(0,
+                    duration: const Duration(microseconds: 1),
+                    curve: Curves.easeIn);
+              }
+              if (_transactionType != value) {
+                _clearTransactions();
+                setState(() {
+                  _transactionType = value;
+                });
+              }
+            },
+            name: AccountTransaction.types[index - 1]);
       })),
     );
   }
