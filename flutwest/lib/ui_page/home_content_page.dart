@@ -16,6 +16,7 @@ import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/account_ordering_page.dart';
 import 'package:flutwest/ui_page/hidden_accounts_page.dart';
+import 'package:flutwest/ui_page/home_search_page.dart';
 
 import 'account_detail_page.dart';
 
@@ -302,19 +303,30 @@ class _HomeContentPageState extends State<HomeContentPage>
   Widget _getSearchBar() {
     return Padding(
         padding: const EdgeInsets.symmetric(vertical: Vars.topBotPaddingSize),
-        child: Container(
-          decoration: BoxDecoration(
-              color: Colors.grey[50], borderRadius: BorderRadius.circular(3.0)),
-          child: TextField(
-            enabled: false,
-            decoration: InputDecoration(
-                contentPadding: EdgeInsets.zero,
-                prefixIcon: const Icon(Icons.search),
-                hintText: "Try 'Pay Alice'",
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(3.0))),
-            onTap: () {},
+        child: GestureDetector(
+          child: Container(
+            decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(3.0)),
+            child: TextField(
+              enabled: false,
+              decoration: InputDecoration(
+                  contentPadding: EdgeInsets.zero,
+                  prefixIcon: const Icon(Icons.search),
+                  hintText: "Try 'Pay Alice'",
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(3.0))),
+            ),
           ),
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: ((context) => HomeSearchPage(
+                          member: widget.member,
+                          rawAccounts: widget.rawAccounts,
+                        ))));
+          },
         ));
   }
 
