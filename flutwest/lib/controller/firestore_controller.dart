@@ -1,14 +1,18 @@
 //import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/account_transaction.dart';
 import 'package:flutwest/model/bank_card.dart';
 import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/payee.dart';
+import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 
 class FirestoreController {
@@ -140,6 +144,56 @@ class ColPayee {
         .update({Payee.fnLastPayDate: lastPayDate});
     await _firestoreController.colMember
         .updateRecentPayee(memberId, lastPayDate);
+  }
+
+  Future<List<Payee>?> getAllLocal(
+      String memberId, DateTime? memberRecentPayeeEdit) async {
+    List<Payee>? payees;
+
+    List<Payee> localPayees =
+        await SQLiteController.instance.getPayees(memberId);
+    DateTime? recentPayeeEdit =
+        await SQLiteController.instance.getRecentPayeeEditDate(memberId);
+
+    // memberRecentPayeeEdit is null means a new user, no payee added to cloud
+    // yet
+    if (memberRecentPayeeEdit != null) {
+      // recentPayeeEdit is null, means a existing user who added payee but is
+      // now using another device, device does not have any thing stored.
+      // recentPayeeEdit smaller than memberRecentPayeeEdit, if the local
+      // local storage has payees but is outdated with the cloud fire store's
+      // payees.
+      if (recentPayeeEdit == null ||
+          recentPayeeEdit.millisecondsSinceEpoch <
+              memberRecentPayeeEdit.millisecondsSinceEpoch) {
+        var remotePayees = await FirestoreController.instance.colMember.colPayee
+            .getAllByMemberId(memberId);
+        SQLiteController.instance.syncPayees(
+            memberId: memberId,
+            remotePayees: remotePayees,
+            localPayees: localPayees,
+            recentPayeeDate: memberRecentPayeeEdit);
+        //remotePayees.sort(((a, b) => a.getNickName.compareTo(b.getNickName)));
+        //_sortPayeeList(remotePayees);
+        Utils.sortPayeeListByLastPay(localPayees);
+        for (int i = 0; i < min(localPayees.length, 5); i++) {
+          for (Payee payee in remotePayees) {
+            if (payee.isAllEqual(localPayees[i])) {
+              payee.lastPayDate = localPayees[i].lastPayDate;
+            }
+          }
+        }
+        payees = remotePayees;
+      } else {
+        //localPayees.sort(((a, b) => a.getNickName.compareTo(b.getNickName)));
+        //_sortPayeeList(localPayees);
+        payees = localPayees;
+      }
+    } else {
+      payees = [];
+    }
+
+    return payees;
   }
 }
 
