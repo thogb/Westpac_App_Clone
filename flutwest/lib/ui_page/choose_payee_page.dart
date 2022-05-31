@@ -77,7 +77,8 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
 
   @override
   void initState() {
-    _futurePayees = _getPayees(widget.memberId, widget.recentPayeeEdit);
+    _futurePayees = FirestoreController.instance.colMember.colPayee
+        .getAllLocal(widget.memberId, widget.recentPayeeEdit);
 
     super.initState();
   }
@@ -307,47 +308,6 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
             )));
   }*/
 
-  Future<List<Payee>?> _getPayees(
-      String memberId, DateTime? memberRecentPayeeEdit) async {
-    List<Payee>? payees;
-
-    List<Payee> localPayees =
-        await SQLiteController.instance.getPayees(memberId);
-    DateTime? recentPayeeEdit =
-        await SQLiteController.instance.getRecentPayeeEditDate(memberId);
-
-    if (memberRecentPayeeEdit != null) {
-      if (recentPayeeEdit == null || recentPayeeEdit != memberRecentPayeeEdit) {
-        var remotePayees = await FirestoreController.instance.colMember.colPayee
-            .getAllByMemberId(memberId);
-        SQLiteController.instance.syncPayees(
-            memberId: memberId,
-            remotePayees: remotePayees,
-            localPayees: localPayees,
-            recentPayeeDate: memberRecentPayeeEdit);
-        //remotePayees.sort(((a, b) => a.getNickName.compareTo(b.getNickName)));
-        //_sortPayeeList(remotePayees);
-        _sortPayeeListByLastPay(localPayees);
-        for (int i = 0; i < min(localPayees.length, 5); i++) {
-          for (Payee payee in remotePayees) {
-            if (payee.isAllEqual(localPayees[i])) {
-              payee.lastPayDate = localPayees[i].lastPayDate;
-            }
-          }
-        }
-        payees = remotePayees;
-      } else {
-        //localPayees.sort(((a, b) => a.getNickName.compareTo(b.getNickName)));
-        //_sortPayeeList(localPayees);
-        payees = localPayees;
-      }
-    } else {
-      payees = [];
-    }
-
-    return payees;
-  }
-
   Widget _getPayeeList() {
     return FutureBuilder(
         future: _futurePayees,
@@ -375,7 +335,7 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
                 DateTime sevenDayAgo =
                     DateTime(now.year, now.month, now.day - 7);
 
-                _sortPayeeListByLastPay(_payees);
+                Utils.sortPayeeListByLastPay(_payees);
 
                 for (int i = 0; i < 5; i++) {
                   if (i < _payees.length &&
@@ -385,7 +345,7 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
                   }
                 }
 
-                _sortPayeeList(payees);
+                Utils.sortPayeeList(payees);
                 //currChar = _payees[0].getNickName[0].toUpperCase();
                 String currChar = "";
                 List<Payee> group = [];
@@ -500,25 +460,6 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
 
           return const LoadingText(repeats: 2);
         }));
-  }
-
-  void _sortPayeeList(List<Payee> payeeList) {
-    payeeList.sort(((a, b) =>
-        a.getNickName.toUpperCase().compareTo(b.getNickName.toUpperCase())));
-  }
-
-  void _sortPayeeListByLastPay(List<Payee> payees) {
-    payees.sort(((a, b) {
-      if (a.lastPayDate == null) {
-        return 1;
-      }
-
-      if (b.lastPayDate == null) {
-        return a.lastPayDate != null ? -1 : 1;
-      }
-
-      return a.lastPayDate!.compareTo(b.lastPayDate!) * -1;
-    }));
   }
 
   Widget _getPayeeHeader(String title) {

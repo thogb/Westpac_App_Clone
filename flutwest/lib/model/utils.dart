@@ -72,6 +72,25 @@ class Utils {
     return "${value.substring(0, 1).toUpperCase()}${value.substring(1).toLowerCase()}";
   }
 
+  static void sortPayeeList(List<Payee> payeeList) {
+    payeeList.sort(((a, b) =>
+        a.getNickName.toUpperCase().compareTo(b.getNickName.toUpperCase())));
+  }
+
+  static void sortPayeeListByLastPay(List<Payee> payees) {
+    payees.sort(((a, b) {
+      if (a.lastPayDate == null) {
+        return 1;
+      }
+
+      if (b.lastPayDate == null) {
+        return a.lastPayDate != null ? -1 : 1;
+      }
+
+      return a.lastPayDate!.compareTo(b.lastPayDate!) * -1;
+    }));
+  }
+
   static void putData() async {
     AccountID accountID = AccountID(number: "111111", bsb: "111-111");
     Account account1 = Account(
