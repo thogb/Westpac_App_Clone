@@ -8,8 +8,10 @@ import 'package:flutwest/cust_widget/cust_text_field_search.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_transaction.dart';
+import 'package:flutwest/model/transaction_filter.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
+import 'package:flutwest/ui_page/filtering_page.dart';
 import 'package:sticky_headers/sticky_headers.dart';
 
 import '../cust_widget/cust_button.dart';
@@ -68,6 +70,9 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
   final ScrollController _scrollController = ScrollController();
   bool _showLoading = false;
 
+  late TransactionFilter _transactionFilter;
+  late TransactionFilter _resetTransactionFilter;
+
   @override
   void initState() {
     if (widget.isInputting) {
@@ -75,6 +80,9 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
     }
     _isInputting = widget.isInputting;
     _scrollController.addListener(_onScrollTransactions);
+
+    _resetTransactionFilter = TransactionFilter();
+    _transactionFilter = TransactionFilter();
 
     // _prevbalance = widget.account.getBalance;
 
@@ -126,7 +134,11 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                 widget.account.getNumber, _readLimits,
                 transactionType: _transactionType,
                 amount: _amountSearch,
-                description: _descriptionSearch),
+                description: _descriptionSearch,
+                startAmount: _transactionFilter.getStartAmount,
+                endAmount: _transactionFilter.getEndAmount,
+                startDate: _transactionFilter.getStartDate,
+                endDate: _transactionFilter.getEndDate),
             builder: (context, snapshots) {
               if (snapshots.hasError) {
                 return const Center(child: Text("Error"));
@@ -422,12 +434,28 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                 left: Vars.standardPaddingSize,
                 right: Vars.gapBetweenHorizontalRadio / 2),
             child: GestureDetector(
-              onTap: () {},
+              onTap: () async {
+                Object? result = await Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                        pageBuilder:
+                            ((context, animation, secondaryAnimation) =>
+                                FilteringPage(
+                                    filterType: false,
+                                    filter: _transactionFilter,
+                                    resetFilter: _resetTransactionFilter))));
+                if (result != null && (result as bool)) {
+                  _clearTransactions();
+                  setState(() {
+                    _transactionFilter;
+                  });
+                }
+              },
               child: CustRadio.getTypeOne(
-                  "Filter",
-                  CustRadio.unselectColor,
-                  Colors.black,
-                  const Icon(
+                  name: "Filter",
+                  backGroundColor: CustRadio.unselectColor,
+                  fontColor: Colors.black,
+                  trailing: const Icon(
                     Icons.arrow_drop_down,
                     size: 15,
                   )),
