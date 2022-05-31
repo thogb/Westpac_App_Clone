@@ -50,6 +50,10 @@ class Utils {
     return "${Vars.days[dateTime.weekday]} ${dateTime.day} ${Vars.months[dateTime.month]} ${dateTime.year}";
   }
 
+  static String getDateTimeWDDM(DateTime dateTime) {
+    return "${Vars.days[dateTime.weekday]} ${dateTime.day} ${Vars.months[dateTime.month]}";
+  }
+
   static String getDateTimeWDDNM(DateTime dateTime) {
     return "${Vars.days[dateTime.weekday]} ${dateTime.day} ${Vars.months[dateTime.month]}";
   }
