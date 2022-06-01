@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_transaction.dart';
+import 'package:flutwest/model/vars.dart';
 
 class TransactionFilter {
   static const List<String> types = AccountTransaction.types;
@@ -75,13 +76,84 @@ class TransactionFilter {
     this.type = AccountTransaction.allTypes,
   }) : this.selectedAccounts = selectedAccounts ?? HashSet();
 
-  DateTime? get getStartDate => startDate ?? dates[date]![0];
-  DateTime? get getEndDate => endDate ?? dates[date]![1];
+  DateTime? get getStartDate {
+    //print("startDate in here = $date and this = ${dates[date]![0]}");
+    if (date == otherDate) {
+      return startDate;
+    }
 
-  double? get getStartAmount => startAmount ?? amounts[amount]![0];
-  double? get getEndAmount => endAmount ?? amounts[amount]![1];
+    return dates[date]![0];
+  }
+
+  DateTime? get getEndDate {
+    if (date == otherDate) {
+      return endDate;
+    }
+
+    return dates[date]![1];
+  }
+
+  double? get getStartAmount {
+    if (amount == otherAmount) {
+      return startAmount;
+    }
+
+    return amounts[amount]![0];
+  }
+
+  double? get getEndAmount {
+    if (amount == otherAmount) {
+      return endAmount;
+    }
+
+    return amounts[amount]![1];
+  }
 
   String get getType => type;
+
+  int getChangedCount(TransactionFilter resetFilter) {
+    int count = allAccounts.length - selectedAccounts.length;
+
+    count += getNormalChangedCount(resetFilter);
+
+    return count;
+  }
+
+  int getNormalChangedCount(TransactionFilter resetFilter) {
+    int count = 0;
+
+    count += !isTypeEqual(resetFilter) ? 1 : 0;
+    count += !isDateEqual(resetFilter) ? 1 : 0;
+    count += !(isAmountEqual(resetFilter)) ? 1 : 0;
+
+    return count;
+  }
+
+  bool isTypeEqual(TransactionFilter resetFilter) {
+    return !(type != resetFilter.type);
+  }
+
+  bool isDateEqual(TransactionFilter resetFilter) {
+    return date == resetFilter.date &&
+        (date != otherDate ||
+            (Vars.isSameDay(startDate, resetFilter.startDate) &&
+                Vars.isSameDay(endDate, resetFilter.endDate)));
+  }
+
+  bool isAmountEqual(TransactionFilter resetFilter) {
+    return amount == resetFilter.amount &&
+        (amount != otherAmount ||
+            (amountEqual(startAmount, resetFilter.startAmount) &&
+                amountEqual(endAmount, resetFilter.endAmount)));
+  }
+
+  bool amountEqual(double? amount1, double? amount2) {
+    if (amount1 == null || amount2 == null) {
+      return false;
+    }
+
+    return amount1 == amount2;
+  }
 
   bool isFilterEqual(TransactionFilter other) {
     return type == other.type &&
