@@ -107,7 +107,11 @@ class Vars {
     "Dec"
   ];
 
-  static bool isSameDay(DateTime dateTime, DateTime otherDateTime) {
+  static bool isSameDay(DateTime? dateTime, DateTime? otherDateTime) {
+    if (dateTime == null || otherDateTime == null) {
+      return false;
+    }
+
     return dateTime.year == otherDateTime.year &&
         dateTime.month == otherDateTime.month &&
         dateTime.day == otherDateTime.day;
