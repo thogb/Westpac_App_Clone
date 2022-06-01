@@ -1,5 +1,7 @@
 import 'dart:collection';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
@@ -9,7 +11,9 @@ import 'package:flutwest/cust_widget/cust_radio.dart';
 import 'package:flutwest/cust_widget/cust_text_button.dart';
 import 'package:flutwest/cust_widget/cust_text_field_search.dart';
 import 'package:flutwest/cust_widget/loading_text.dart';
+import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account.dart';
+import 'package:flutwest/model/account_transaction.dart';
 import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/payee.dart';
 import 'package:flutwest/model/transaction_filter.dart';
@@ -47,6 +51,9 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
     filterFQAAndTopics
   ];
 
+  static const int limitIncrement = 10;
+  static const int initialLimit = 20;
+
   final TextEditingController _tecSearch = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final ScrollController _filterScrollController = ScrollController();
@@ -59,8 +66,19 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
   String _currFilter = filterTop;
   String _prevFilter = filterTop;
 
+  int _filterCount = 0;
+
+  // Used by transactions section
+  String? _descriptionSearch;
+  double? _amountSearch;
+  int _limit = initialLimit;
+  int _prevTransactionCount = 0;
+  bool _noMoreToLoad = false;
+  bool _newSearch = true;
+
   @override
   void initState() {
+    _scrollController.addListener(_onScroll);
     DateTime now = DateTime.now();
 
     _transactionFilter = TransactionFilter(
@@ -77,9 +95,27 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
         endDate: now);
 
     _customDateFilters = Map.from(TransactionFilter.dates);
-    _customDateFilters.remove(TransactionFilter.anyDate);
+    //_customDateFilters.remove(TransactionFilter.anyDate);
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_currFilter == filterTransactions &&
+        !_noMoreToLoad &&
+        _scrollController.position.extentAfter == 0.0) {
+      setState(() {
+        _limit += limitIncrement;
+      });
+    }
   }
 
   @override
@@ -89,7 +125,7 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
       child: Column(
         children: [
           CustFakeAppbar(
-            bottomspaceHeight: 0,
+            bottomspaceHeight: 3,
             scrollController: _scrollController,
             content: Column(
               children: [
@@ -104,12 +140,12 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
                     onPrefixButtonTap: () {
                       Navigator.pop(context);
                     },
-                    onSubmitted: (value) {
-                      if (value.isNotEmpty) {
-                        setState(() {
-                          _currFilter;
-                        });
-                      }
+                    onSubmitted: (value) async {
+                      await resetScrollControllerPosition();
+                      _resetTransactionsValue();
+                      setState(() {
+                        _currFilter;
+                      });
                     },
                   ),
                 ),
@@ -149,7 +185,7 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
                                 .copyWith(
                                     color: Vars.radioFilterColor,
                                     fontSize: Vars.headingTextSize2),
-                            rightWidget: const Text("1"),
+                            rightWidget: Text("${1 + _filterCount}"),
                             onTap: () async {
                               Object? result = await Navigator.push(
                                   context,
@@ -161,7 +197,17 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
                                               filter: _transactionFilter,
                                               resetFilter:
                                                   _resetTransactionFilter))));
+                              print(result);
+                              setState(() {
+                                _filterCount = _transactionFilter
+                                    .getChangedCount(_resetTransactionFilter);
+                              });
                               if (result != null && (result as bool)) {
+                                await resetScrollControllerPosition();
+                                if (_currFilter == filterTransactions) {
+                                  _resetTransactionsValue();
+                                }
+
                                 setState(() {
                                   _currFilter;
                                 });
@@ -185,16 +231,24 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
     ));
   }
 
-  void onFilterRadioTap(String value) async {
+  Future<void> resetScrollControllerPosition() async {
     if (_scrollController.positions.isNotEmpty) {
       await _scrollController.animateTo(0,
           duration: const Duration(microseconds: 1), curve: Curves.easeIn);
     }
+  }
+
+  void onFilterRadioTap(String value) async {
+    await resetScrollControllerPosition();
     if (value != _currFilter) {
       setState(() {
         _prevFilter = _currFilter;
         _currFilter = value;
       });
+
+      if (value == filterTransactions) {
+        _resetTransactionsValue();
+      }
     }
   }
 
@@ -219,14 +273,8 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
         CustTextButton(heading: "Activate card", onTap: () {})
       ]);
     } else if (_currFilter == filterTransactions) {
-      return ListView.builder(
-          controller: _scrollController,
-          itemCount: 60,
-          itemBuilder: ((context, index) => Container(
-                margin: const EdgeInsets.all(Vars.standardPaddingSize),
-                color: Colors.red,
-                height: 60,
-              )));
+      print("run here once");
+      return _getTransactions();
     } else if (_currFilter == filterPayeeAndBillers) {
       return _getPayeesAndBillers();
     } else if (_currFilter == filterProducts) {
@@ -272,7 +320,7 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
 
     if (nickNameSearch.length > 2 &&
         nickNameSearch.substring(0, 3).toLowerCase() == "pay") {
-      nickNameSearch == nickNameSearch.substring(3);
+      nickNameSearch = nickNameSearch.substring(3).trim();
     }
 
     return FutureBuilder(
@@ -351,6 +399,171 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
         }));
   }
 
+  void _resetTransactionsValue() {
+    _limit = initialLimit;
+    _noMoreToLoad = false;
+    _newSearch = true;
+  }
+
+  Widget _getTransactions() {
+    _amountSearch = null;
+    _descriptionSearch = null;
+
+    String input = _tecSearch.text.trim();
+
+    if (input.isNotEmpty) {
+      _amountSearch = double.tryParse(input);
+
+      if (_amountSearch == null) {
+        _descriptionSearch = input;
+      }
+    }
+
+    return FutureBuilder(
+        future: FirestoreController.instance.colTransaction.getAllLimitBy(
+            "", _limit,
+            description: _descriptionSearch,
+            amount: _amountSearch,
+            startAmount: _transactionFilter.getStartAmount,
+            endAmount: _transactionFilter.getEndAmount,
+            startDate: _transactionFilter.getStartDate,
+            endDate: _transactionFilter.getEndDate,
+            transactionType: _transactionFilter.getType,
+            accountNumbers: _transactionFilter.selectedAccounts
+                .map((e) => e.getNumber)
+                .toList()),
+        builder: ((context,
+            AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
+          if (snapshot.hasError) {
+            return LoadingText.getLoadingWithMessage("Error", loading: false);
+          }
+
+          if (snapshot.hasData &&
+              (!_newSearch ||
+                  ConnectionState.done == snapshot.connectionState)) {
+            _newSearch = false;
+            QuerySnapshot<Map<String, dynamic>> readTransactions =
+                snapshot.data!;
+            List<AccountTransactionBinded> transactions = [];
+            Map<String, Account> selectedAccountMap = {};
+            HashSet<int> headerIndexes = HashSet();
+
+            DateTime currDate = Vars.invalidDateTime;
+            int count = 0;
+
+            print(snapshot.data!.docs.length);
+
+            _noMoreToLoad =
+                _prevTransactionCount == readTransactions.docs.length;
+            _prevTransactionCount = readTransactions.docs.length;
+
+            for (Account account in _transactionFilter.selectedAccounts) {
+              selectedAccountMap.addAll({account.getNumber: account});
+            }
+
+            print(selectedAccountMap.toString());
+
+            for (var readTransaction in readTransactions.docs) {
+              AccountTransaction accountTransaction =
+                  AccountTransaction.fromMap(
+                      readTransaction.data(), readTransaction.id);
+              Account? account =
+                  selectedAccountMap[accountTransaction.sender.getNumber];
+              if (!Vars.isSameDay(currDate, accountTransaction.dateTime)) {
+                headerIndexes.add(count);
+                currDate = accountTransaction.dateTime;
+              }
+              if (account != null) {
+                transactions.add(AccountTransactionBinded(
+                    accountTransaction: accountTransaction, account: account));
+                count++;
+              }
+              account =
+                  selectedAccountMap[accountTransaction.receiver.getNumber];
+              if (account != null) {
+                transactions.add(AccountTransactionBinded(
+                    accountTransaction: accountTransaction, account: account));
+                count++;
+              }
+            }
+
+            return ListView.builder(
+              controller: _scrollController,
+              itemCount: transactions.length + 1,
+              itemBuilder: (context, index) {
+                if (headerIndexes.contains(index)) {
+                  return Column(children: [
+                    _getheader(transactions[index].accountTransaction.dateTime),
+                    _getTransactionButton(
+                        transactions[index].accountTransaction,
+                        transactions[index].account)
+                  ]);
+                } else if (index == transactions.length) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return LoadingText.getLoadingWithMessage("Loading more");
+                  }
+
+                  return const StandardPadding(
+                    showVerticalPadding: true,
+                    child: Center(
+                        child: Text(
+                      "Can't find what you're looking for?\nTry changing the date or amount range filter",
+                      textAlign: TextAlign.center,
+                    )),
+                  );
+                }
+
+                return _getTransactionButton(
+                    transactions[index].accountTransaction,
+                    transactions[index].account);
+              },
+            );
+          }
+
+          return LoadingText.getLoadingWithMessage("Loading");
+        }));
+  }
+
+  Widget _getheader(DateTime dateTime) {
+    return StandardPadding(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(Utils.getDateTimeWDDMYToday(dateTime)),
+          const SizedBox(height: Vars.gapBetweenTextVertical / 2),
+          const Divider(
+            height: 1,
+            thickness: 0.5,
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _getTransactionButton(
+      AccountTransaction accountTransaction, Account account) {
+    Decimal amount =
+        accountTransaction.getAmountPerspReceiver(account.getNumber);
+    return CustButton(
+      borderOn: false,
+      leftWidget: const Icon(
+        Icons.monetization_on_sharp,
+        size: 30,
+      ),
+      heading: accountTransaction.getDescription[account.getNumber],
+      headingStyle: const TextStyle(fontSize: Vars.headingTextSize3),
+      paragraph: account.getAccountName,
+      rightWidget: Padding(
+        padding: const EdgeInsets.only(left: Vars.standardPaddingSize * 3),
+        child: Text(
+          "\$${Utils.formatDecimalMoneyUS(amount)}",
+          style: TextStyle(color: amount > Decimal.zero ? Colors.green : null),
+        ),
+      ),
+      onTap: () {},
+    );
+  }
+
   Widget _getPayeesAndBillers() {
     String nickNameSearch = _tecSearch.text.trim();
     Future<List<Payee>> futurePayees;
@@ -358,7 +571,7 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
     if (nickNameSearch.isNotEmpty) {
       if (nickNameSearch.length > 2 &&
           nickNameSearch.substring(0, 3).toLowerCase() == "pay") {
-        nickNameSearch == nickNameSearch.substring(3);
+        nickNameSearch = nickNameSearch.substring(3).trim();
       }
       futurePayees = FirestoreController.instance.colMember.colPayee
           .getQueriedLocal(
