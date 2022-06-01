@@ -24,7 +24,10 @@ class _ProfilePageState extends State<ProfilePage> {
         CustSilverAppbar(
           title: "Profile",
           actions: [
-            TextButton(onPressed: () {}, child: const Text("Sign Out"))
+            TextButton(
+                onPressed: () {},
+                child: const Text("Sign Out",
+                    style: TextStyle(color: Vars.clickAbleColor)))
           ],
         ),
         SliverList(
