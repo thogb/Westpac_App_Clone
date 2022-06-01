@@ -1,13 +1,23 @@
 import 'dart:math';
 
+import 'package:decimal/decimal.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:intl/intl.dart';
 
 class CustTextField extends StatefulWidget {
   static const double moneyInputFontSize = 30.0;
+  static const double moneyInputSmallFontSize = 15.0;
+  static const TextStyle moneyInputSmallTextStyle = TextStyle(
+      fontSize: moneyInputSmallFontSize,
+      color: Colors.black,
+      fontWeight: FontWeight.bold);
   static final NumberFormat usMoneyFormatter = NumberFormat("#,###", "en_US");
+  static final NumberFormat usMoneyFormatterDecimal =
+      NumberFormat("#,###.00", "en_US");
 
   final TextEditingController? controller;
   final InputDecoration decoration;
@@ -45,20 +55,74 @@ class CustTextField extends StatefulWidget {
       this.onFocusChange})
       : super(key: key);
 
+  static double? moneyInputConvertToDouble(String moneyInput) {
+    Decimal? amount = Decimal.tryParse(moneyInput.replaceAll(",", ""));
+
+    return amount?.toDouble();
+  }
+
+  static String moneyInputConvertToString(double? value) {
+    return value == null
+        ? ""
+        : (value % 1 == 0)
+            ? usMoneyFormatter.format(value)
+            : usMoneyFormatterDecimal.format(value);
+  }
+
+  factory CustTextField.moneyInputSmall(
+      {String? labelText,
+      TextEditingController? controller,
+      String? errorText,
+      String? Function(String value)? getErrorMsg,
+      void Function(String)? onChanged}) {
+    return CustTextField.moneyInput(
+      controller: controller,
+      errorText: errorText,
+      getErrorMsg: getErrorMsg,
+      onChanged: onChanged,
+      cursorHeight: moneyInputSmallFontSize,
+      textStyle: moneyInputSmallTextStyle,
+      inputDecoration: InputDecoration(
+          labelText: labelText,
+          labelStyle: moneyInputSmallTextStyle.copyWith(
+              fontWeight: FontWeight.normal, color: Colors.black87),
+          errorText: errorText,
+          isDense: true,
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: moneyInputSmallFontSize),
+          errorBorder: const UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.red, width: 1.5)),
+          suffixIcon: errorText != null
+              ? const Icon(Icons.error, color: Vars.errorColor)
+              : null,
+          prefix: const Padding(
+            padding: EdgeInsets.only(right: 4.0),
+            child: Text(
+              "\$",
+              style: TextStyle(color: Colors.black),
+            ),
+          ),
+          hintText: "0.00"),
+    );
+  }
+
   factory CustTextField.moneyInput(
       {TextEditingController? controller,
       String? errorText,
       String? Function(String value)? getErrorMsg,
-      void Function(String)? onChanged}) {
+      void Function(String)? onChanged,
+      InputDecoration? inputDecoration,
+      double? cursorHeight,
+      TextStyle? textStyle}) {
     controller ??= TextEditingController();
 
     return CustTextField(
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp("[0-9.,]"))],
-      cursorHeight: moneyInputFontSize + 5,
+      cursorHeight: cursorHeight ?? moneyInputFontSize + 5,
       cursorColor: Vars.clickAbleColor,
       controller: controller,
       getErrorMsg: getErrorMsg,
-      textStyle:
+      textStyle: textStyle ??
           const TextStyle(fontSize: moneyInputFontSize, color: Colors.black),
       onChanged: (value) {
         if (controller != null) {
@@ -137,23 +201,24 @@ class CustTextField extends StatefulWidget {
           }
         }
       },
-      decoration: InputDecoration(
-          errorText: errorText,
-          isDense: true,
-          contentPadding: EdgeInsets.zero,
-          errorBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.red, width: 1.5)),
-          suffixIcon: errorText != null
-              ? const Icon(Icons.error, color: Vars.errorColor)
-              : null,
-          prefix: const Padding(
-            padding: EdgeInsets.only(right: 4.0),
-            child: Text(
-              "\$",
-              style: TextStyle(color: Colors.black),
-            ),
-          ),
-          hintText: "0.00"),
+      decoration: inputDecoration ??
+          InputDecoration(
+              errorText: errorText,
+              isDense: true,
+              contentPadding: EdgeInsets.zero,
+              errorBorder: const UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.red, width: 1.5)),
+              suffixIcon: errorText != null
+                  ? const Icon(Icons.error, color: Vars.errorColor)
+                  : null,
+              prefix: const Padding(
+                padding: EdgeInsets.only(right: 4.0),
+                child: Text(
+                  "\$",
+                  style: TextStyle(color: Colors.black),
+                ),
+              ),
+              hintText: "0.00"),
       keyboardType: TextInputType.number,
     );
   }
@@ -229,6 +294,12 @@ class _CustTextFieldState extends State<CustTextField> {
   void onFocusChange() {
     if (_focusNode.hasFocus == false) {
       _controller.text = _controller.text.trim();
+
+      if (widget.getErrorMsg != null) {
+        setState(() {
+          _errorMsg = widget.getErrorMsg!(_controller.text);
+        });
+      }
     }
 
     checkClearButton(_controller.text);
@@ -270,6 +341,12 @@ class _CustTextFieldState extends State<CustTextField> {
       controller: _controller,
       buildCounter: widget.buildCounter,
       decoration: widget.decoration.copyWith(
+          labelStyle: _errorMsg == null
+              ? widget.decoration.labelStyle
+              : widget.decoration.labelStyle != null
+                  ? widget.decoration.labelStyle!
+                      .copyWith(color: Theme.of(context).errorColor)
+                  : null,
           errorText: _errorMsg,
           enabledBorder: const UnderlineInputBorder(
               borderSide: BorderSide(color: Colors.grey, width: 0.5)),
