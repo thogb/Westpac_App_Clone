@@ -451,17 +451,25 @@ class ColTransaction {
       double? startAmount,
       double? endAmount,
       DateTime? startDate,
-      DateTime? endDate}) async {
+      DateTime? endDate,
+      List<String>? accountNumbers}) async {
     await Future.delayed(const Duration(milliseconds: 1000));
-    Query<Map<String, dynamic>> query = _firebaseFirestore
-        .collection(collectionName)
-        .where(AccountTransaction.fnAccountNumbers,
-            arrayContains: accountNumber);
+    CollectionReference<Map<String, dynamic>> transactions =
+        _firebaseFirestore.collection(collectionName);
+    Query<Map<String, dynamic>> query;
+
+    if (accountNumbers != null && accountNumbers.isNotEmpty) {
+      query = transactions.where(AccountTransaction.fnAccountNumbers,
+          arrayContainsAny: accountNumbers);
+    } else {
+      query = transactions.where(AccountTransaction.fnAccountNumbers,
+          arrayContains: accountNumber);
+    }
+
     if (amount != null) {
       startAmount = amount - 0.050;
       endAmount = amount + 0.050;
     }
-
     if (startAmount != null) {
       query = query.where(AccountTransaction.fnDoubleTypeAmount,
           isGreaterThanOrEqualTo: (startAmount));
