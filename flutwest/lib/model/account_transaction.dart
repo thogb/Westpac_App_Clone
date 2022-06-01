@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:decimal/decimal.dart';
+import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/vars.dart';
 
@@ -84,7 +85,7 @@ class AccountTransaction {
 
   get getId => this.id;
 
-  get getDescription => this.description;
+  Map<String, String> get getDescription => this.description;
 
   get getAmount => this.amount;
 
@@ -154,4 +155,12 @@ class AccountTransaction {
 
   factory AccountTransaction.fromJson(String source, String inId) =>
       AccountTransaction.fromMap(json.decode(source), inId);
+}
+
+class AccountTransactionBinded {
+  final AccountTransaction accountTransaction;
+  final Account account;
+
+  AccountTransactionBinded(
+      {required this.accountTransaction, required this.account});
 }
