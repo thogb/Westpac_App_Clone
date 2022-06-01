@@ -30,17 +30,17 @@ class Account {
       this.docID})
       : accountID = AccountID(number: number, bsb: bsb);
 
-  get getType => this.type;
+  String get getType => this.type;
 
-  get getBsb => this.accountID.bsb;
+  String get getBsb => this.accountID.bsb;
 
-  get getNumber => this.accountID.number;
+  String get getNumber => this.accountID.number;
 
   get getBalance => this.balance;
 
   set setBalance(balance) => this.balance = balance;
 
-  get getCardNumber => this.cardNumber;
+  String get getCardNumber => this.cardNumber;
 
   String get getBalanceUSDToString => "\$${balance.round(scale: 2)}";
 
