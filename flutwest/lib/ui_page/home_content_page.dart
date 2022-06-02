@@ -1,3 +1,4 @@
+import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/controller/sqlite_controller.dart';
@@ -104,6 +105,13 @@ class _HomeContentPageState extends State<HomeContentPage>
           parent: _paymentContentFadeController,
           curve: const Interval(0.0, 1.0, curve: Curves.easeIn)));
 
+  late final Animation<Color?> _colorAnimation =
+      ColorTween(begin: Colors.transparent, end: Colors.grey[50]).animate(
+          CurvedAnimation(parent: _colorController, curve: Curves.easeOut));
+
+  late final AnimationController _colorController =
+      AnimationController(vsync: this, duration: const Duration(seconds: 0));
+
   /// the controller for welcome text animation sliding in
   late final AnimationController _welcomeController;
 
@@ -144,6 +152,9 @@ class _HomeContentPageState extends State<HomeContentPage>
 
   bool _dragging = false;
 
+  late double _topSectionHeight;
+  late bool _pinnedSearch = false;
+
   @override
   void initState() {
     WidgetsBinding.instance?.addObserver(this);
@@ -165,6 +176,8 @@ class _HomeContentPageState extends State<HomeContentPage>
     FirestoreController.instance.colTransaction
         .addOnTransactionMadeObserver(_recreateAccountDrags);
 
+    _scrollController.addListener(_onScroll);
+
     super.initState();
   }
 
@@ -177,6 +190,10 @@ class _HomeContentPageState extends State<HomeContentPage>
     _paymentContentFadeController.dispose();
     _welcomeController.dispose();
     _botAnimationController.dispose();
+    _colorController.dispose();
+
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
 
     FirestoreController.instance.colTransaction
         .removeOnTransactionMadeObserver(_recreateAccountDrags);
@@ -184,10 +201,27 @@ class _HomeContentPageState extends State<HomeContentPage>
     super.dispose();
   }
 
+  void _onScroll() {
+    _colorController.animateTo(_scrollController.offset / _topSectionHeight);
+
+    if (_scrollController.offset >= _topSectionHeight) {
+      if (!_pinnedSearch) {
+        setState(() {
+          _pinnedSearch = true;
+        });
+      }
+    } else {
+      if (_pinnedSearch) {
+        setState(() {
+          _pinnedSearch = false;
+        });
+      }
+    }
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      print("Resumed called");
       setState(() {
         _accountOrderInfos.length = _accountOrderInfos.length;
       });
@@ -199,42 +233,81 @@ class _HomeContentPageState extends State<HomeContentPage>
 
   @override
   Widget build(BuildContext context) {
+    _topSectionHeight = MediaQuery.of(context).size.height * 0.3;
     return Scaffold(
-      backgroundColor: Colors.transparent,
       body: Stack(
         children: [
           const BackgroundImage(),
-          SingleChildScrollView(
+          AnimatedBuilder(
+              animation: _colorController,
+              builder: (context, child) => Container(
+                  color: _dragging ? Colors.grey[50] : _colorAnimation.value)),
+          CustomScrollView(
             controller: _scrollController,
-            child: Column(
-              children: [
-                StandardPadding(
+            slivers: [
+              SliverList(
+                  delegate: SliverChildListDelegate([
+                SizedBox(
+                  height: _topSectionHeight,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const SizedBox(height: 50.0),
-                      FadeTransition(
-                        opacity: _topFadeAnimation,
-                        child: _getFakeAppBar(),
+                      StandardPadding(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: kToolbarHeight - 10),
+                            FadeTransition(
+                              opacity: _topFadeAnimation,
+                              child: _getFakeAppBar(),
+                            ),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 120.0),
-                      SlideTransition(
-                          position: _welcomeAnimation,
-                          child: FadeTransition(
-                              opacity: _welcomeFadeAnimation,
-                              child: _getWelcomeText())),
-                      FadeTransition(
-                          opacity: _topFadeAnimation, child: _getSearchBar())
+                      StandardPadding(
+                        child: SlideTransition(
+                            position: _welcomeAnimation,
+                            child: FadeTransition(
+                                opacity: _welcomeFadeAnimation,
+                                child: _getWelcomeText())),
+                      ),
                     ],
                   ),
-                ),
+                )
+              ])),
+              SliverPersistentHeader(
+                  pinned: true,
+                  floating: true,
+                  delegate: HeaderDelegate(
+                      height: _pinnedSearch ? 100 : 80,
+                      child: Material(
+                        animationDuration: Duration.zero,
+                        elevation: _pinnedSearch ? 2.0 : 0.0,
+                        color: _pinnedSearch
+                            ? Colors.grey[50]
+                            : Colors.transparent,
+                        child: SizedBox(
+                          height: _pinnedSearch ? 100 : 80,
+                          child: Align(
+                            alignment: Alignment.bottomCenter,
+                            child: StandardPadding(
+                              child: FadeTransition(
+                                  opacity: _topFadeAnimation,
+                                  child: _getSearchBar()),
+                            ),
+                          ),
+                        ),
+                      ))),
+              SliverList(
+                  delegate: SliverChildListDelegate([
                 SlideTransition(
                   position: _botOffSetAnimation,
                   child: _getBottomContent(),
                 )
-              ],
-            ),
-          ),
+              ]))
+            ],
+          )
         ],
       ),
     );
@@ -342,12 +415,55 @@ class _HomeContentPageState extends State<HomeContentPage>
             const SizedBox(height: Vars.topBotPaddingSize),
             _getAccountSection(),
             const SizedBox(height: Vars.heightGapBetweenWidgets),
+            _getNetPosition(),
+            const SizedBox(height: Vars.heightGapBetweenWidgets),
             _getPaymentsContent(),
             const SizedBox(height: 200.0)
           ],
         ),
       ),
     );
+  }
+
+  Widget _getNetPosition() {
+    Decimal total = Decimal.zero;
+
+    for (Account account in accounts) {
+      total = total + account.balance;
+    }
+    return OutlinedContainer(
+        child: Column(children: [
+      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        const Text("Net position", style: Vars.headingStyle2),
+        GestureDetector(
+          child: const Icon(Icons.info_outline,
+              size: Vars.headingTextSize2, color: Vars.clickAbleColor),
+          onTap: () {},
+        ),
+      ]),
+      const SizedBox(height: Vars.heightGapBetweenWidgets / 2),
+      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        const Text("Credit", style: Vars.paragraphStyleGrey),
+        Text("\$${Utils.formatDecimalMoneyUS(total)}",
+            style: Vars.paragraphStyleGrey)
+      ]),
+      const SizedBox(height: Vars.gapBetweenTextVertical),
+      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        const Text("Debit", style: Vars.paragraphStyleGrey),
+        Text("\$${Utils.formatDecimalMoneyUS(Decimal.zero)}",
+            style: Vars.paragraphStyleGrey)
+      ]),
+      const SizedBox(height: Vars.gapBetweenTextVertical),
+      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+        const Text(
+          "Total",
+          style: TextStyle(fontSize: Vars.headingTextSize3),
+        ),
+        const SizedBox(height: Vars.gapBetweenTextVertical),
+        Text("\$${Utils.formatDecimalMoneyUS(total)}",
+            style: Vars.headingStyle3)
+      ]),
+    ]));
   }
 
   Widget _getPaymentsContent() {
@@ -460,7 +576,8 @@ class _HomeContentPageState extends State<HomeContentPage>
                     _updateNOfHiddenAccount();
                     _recreateAccountDrags();
                   },
-                  child: Icon(Icons.settings, color: Colors.red[700]),
+                  child: Icon(Icons.settings,
+                      color: _dragging ? Colors.transparent : Colors.red[700]),
                 )
               ],
             ),
@@ -484,8 +601,8 @@ class _HomeContentPageState extends State<HomeContentPage>
 
         _scrollController.jumpTo(_scrollController.offset + 40.0);
 
-        if (_scrollController.offset > 160.0) {
-          _scrollController.jumpTo(150.0);
+        if (_scrollController.offset > _topSectionHeight * 0.75) {
+          _scrollController.jumpTo((_topSectionHeight * 0.75) - 10);
         }
 
         widget.navbarState.hide();
@@ -627,5 +744,29 @@ class _DraggableAccountButtonState extends State<DraggableAccountButton>
                 : !_onBeingDragFocused
                     ? Border.all(width: 0.5, color: Colors.black12)
                     : Border.all(width: 2.0, color: Colors.red)));
+  }
+}
+
+class HeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  final double height;
+
+  HeaderDelegate({required this.child, required this.height});
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return child;
+  }
+
+  @override
+  double get maxExtent => height;
+
+  @override
+  double get minExtent => height;
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
+    return true;
   }
 }
