@@ -227,6 +227,18 @@ class _PaymentPageState extends State<PaymentPage> {
                                     },
                                     child: const Text("Ok"))
                               ]);
+                        } else if (amount > _currAccount.balance) {
+                          return AlertDialog(
+                              title: const Text("Insufficent fund"),
+                              content: Text(
+                                  "Insufficient funds in your ${_currAccount.getAccountName} account."),
+                              actions: [
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    child: const Text("Ok"))
+                              ]);
                         } else {
                           return AlertDialog(
                             title: const Text("Check details"),
