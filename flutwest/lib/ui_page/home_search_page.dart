@@ -197,7 +197,6 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
                                               filter: _transactionFilter,
                                               resetFilter:
                                                   _resetTransactionFilter))));
-                              print(result);
                               setState(() {
                                 _filterCount = _transactionFilter
                                     .getChangedCount(_resetTransactionFilter);
@@ -264,7 +263,7 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
     if (_currFilter == filterTop) {
       return _getTop();
     } else if (_currFilter == filterSelfServe) {
-      return ListView(children: [
+      return ListView(controller: _scrollController, children: [
         _getHeading("Popular services"),
         CustTextButton(heading: "Upcoming payments", onTap: () {}),
         CustTextButton(heading: "Payment list", onTap: () {}),
@@ -273,12 +272,11 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
         CustTextButton(heading: "Activate card", onTap: () {})
       ]);
     } else if (_currFilter == filterTransactions) {
-      print("run here once");
       return _getTransactions();
     } else if (_currFilter == filterPayeeAndBillers) {
       return _getPayeesAndBillers();
     } else if (_currFilter == filterProducts) {
-      return ListView(children: [
+      return ListView(controller: _scrollController, children: [
         _getHeading("Popular products"),
         CustTextButton(heading: "Bank accounts", onTap: () {}),
         CustTextButton(heading: "Low Rate Card", onTap: () {}),
@@ -286,7 +284,7 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
         CustTextButton(heading: "Unsecured Personal Loan", onTap: () {})
       ]);
     } else if (_currFilter == filterFQAAndTopics) {
-      return ListView(children: [
+      return ListView(controller: _scrollController, children: [
         _getHeading("Popular FAQs & topics"),
         CustTextButton(heading: "New app FAQs", onTap: () {}),
         CustTextButton(heading: "How can I close an account?", onTap: () {}),
@@ -307,7 +305,7 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
     String searchText = _tecSearch.text.trim();
 
     if (searchText.isEmpty) {
-      return ListView(children: [
+      return ListView(controller: _scrollController, children: [
         _getHeading("Popular searches"),
         CustTextButton(heading: "Cardless cash", onTap: () {}),
         CustTextButton(heading: "Rewards and offers", onTap: () {}),
