@@ -6,7 +6,8 @@ import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/sign_in_page.dart';
 
 class GuestPage extends StatefulWidget {
-  const GuestPage({Key? key}) : super(key: key);
+  final bool signedOut;
+  const GuestPage({Key? key, this.signedOut = false}) : super(key: key);
 
   @override
   _GuestPageState createState() => _GuestPageState();
@@ -52,6 +53,14 @@ class _GuestPageState extends State<GuestPage> with TickerProviderStateMixin {
               parent: _welcomeSlideController, curve: Curves.linear));
 
   @override
+  void dispose() {
+    _buttonSizeController.dispose();
+    _welcomeFadeController.dispose();
+    _welcomeSlideController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
@@ -80,20 +89,25 @@ class _GuestPageState extends State<GuestPage> with TickerProviderStateMixin {
                             sizeFactor: _buttonSizeAnimation,
                             axis: Axis.vertical,
                             axisAlignment: -1.0,
-                            child: Column(
-                              children: [
-                                _getButton("Cardless Cash", _openSignInPage),
-                                _getButton("Locate us", () {}),
-                              ],
-                            ),
+                            child: widget.signedOut
+                                ? _getButton("Give Feedback", () {})
+                                : Column(
+                                    children: [
+                                      _getButton(
+                                          "Cardless Cash", _openSignInPage),
+                                      _getButton("Locate us", () {}),
+                                    ],
+                                  ),
                           ),
                           const SizedBox(height: 20.0),
-                          Align(
-                              alignment: Alignment.centerLeft,
-                              child: GestureDetector(
-                                  onTap: _openSignInPage,
-                                  child: const Icon(Icons.settings,
-                                      color: Colors.white)))
+                          widget.signedOut
+                              ? const SizedBox()
+                              : Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: GestureDetector(
+                                      onTap: _openSignInPage,
+                                      child: const Icon(Icons.settings,
+                                          color: Colors.white)))
                         ],
                       ),
                     ],
@@ -110,18 +124,23 @@ class _GuestPageState extends State<GuestPage> with TickerProviderStateMixin {
     return Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
       const WestLogo(width: 50.0),
       const SizedBox(width: Vars.standardPaddingSize),
-      GestureDetector(
-          onTap: _openSignInPage,
-          child: const Text("Contact us",
-              style: TextStyle(fontSize: 16.0, color: Colors.white)))
+      widget.signedOut
+          ? const SizedBox()
+          : GestureDetector(
+              onTap: _openSignInPage,
+              child: const Text("Contact us",
+                  style: TextStyle(fontSize: 16.0, color: Colors.white)))
     ]);
   }
 
   Widget _getWelcomeText() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(vertical: Vars.topBotPaddingSize),
-      child: Text("HOW CAN WE HELP YOU THIS EVENING?",
-          style: TextStyle(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: Vars.topBotPaddingSize),
+      child: Text(
+          widget.signedOut
+              ? "We've signed you out"
+              : "HOW CAN WE HELP YOU THIS EVENING?",
+          style: const TextStyle(
               color: Colors.white,
               fontSize: 24.0,
               fontWeight: FontWeight.bold)),
@@ -168,13 +187,14 @@ class _GuestPageState extends State<GuestPage> with TickerProviderStateMixin {
         child: InkWell(
           highlightColor: const Color.fromARGB(80, 243, 123, 123),
           onTap: _openSignInPage,
-          child: const Padding(
-            padding: EdgeInsets.symmetric(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
                 vertical: Vars.topBotPaddingSize,
                 horizontal: Vars.standardPaddingSize),
             child: Center(
-                child: Text("Sign in",
-                    style: TextStyle(color: Colors.white, fontSize: 18.0))),
+                child: Text(widget.signedOut ? "Done" : "Sign in",
+                    style:
+                        const TextStyle(color: Colors.white, fontSize: 18.0))),
           ),
         ),
       ),
@@ -182,14 +202,14 @@ class _GuestPageState extends State<GuestPage> with TickerProviderStateMixin {
   }
 
   void _openSignInPage() {
-    Navigator.push(
+    Navigator.pushReplacement(
             context,
             PageRouteBuilder(
                 pageBuilder: ((context, animation, secondaryAnimation) =>
                     const SignInPage()),
                 transitionDuration: Duration.zero,
                 reverseTransitionDuration: Duration.zero))
-        .then((value) {
+        /*.then((value) {
       _buttonSizeController.reset();
       _welcomeFadeController.reset();
       _welcomeSlideController.reset();
@@ -199,6 +219,7 @@ class _GuestPageState extends State<GuestPage> with TickerProviderStateMixin {
           _welcomeSlideController.forward();
         });
       });
-    });
+    })*/
+        ;
   }
 }

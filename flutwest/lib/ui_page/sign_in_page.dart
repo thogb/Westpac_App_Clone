@@ -1,8 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/cust_widget/west_logo.dart';
+import 'package:flutwest/ui_page/guest_page.dart';
 import 'package:flutwest/ui_page/home_page.dart';
+import 'package:flutwest/ui_page/loading_page.dart';
 import 'package:flutwest/ui_page/sign_in_loading_page.dart';
 
 import '../model/vars.dart';
@@ -44,14 +49,48 @@ class _SignInPageState extends State<SignInPage> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(top: 30.0),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Icon(
-                        Icons.close,
-                        color: Colors.white,
-                      ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            SystemNavigator.pop();
+                          },
+                          child: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Theme(
+                          data: ThemeData(
+                              highlightColor: Colors.green,
+                              splashColor: Colors.green),
+                          child: TextButton(
+                              style: TextButton.styleFrom(
+                                  splashFactory: InkSplash.splashFactory),
+                              onPressed: () {
+                                int delay;
+                                if (FirestoreController
+                                        .instance.delay.inMilliseconds !=
+                                    500) {
+                                  delay = 500;
+                                  FirestoreController.instance.delay =
+                                      const Duration(milliseconds: 500);
+                                } else {
+                                  delay = 0;
+                                  FirestoreController.instance.delay =
+                                      Duration.zero;
+                                }
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                    content: Text(
+                                        "Firestore additonal delay set to $delay milliseconds")));
+                              },
+                              child: const Text(
+                                "Add Delay",
+                                style: TextStyle(color: Colors.transparent),
+                              )),
+                        )
+                      ],
                     ),
                   ),
                   Column(
@@ -206,8 +245,10 @@ class _SignInPageState extends State<SignInPage> {
                 }
               }
             },
+            maxLength: 6,
             decoration: InputDecoration(
-                labelText: "Customer ID",
+                labelText: "Password",
+                counterText: "",
                 labelStyle: const TextStyle(color: Colors.white),
                 enabledBorder: const UnderlineInputBorder(
                     borderSide: BorderSide(color: Colors.white)),
@@ -263,7 +304,7 @@ class _SignInPageState extends State<SignInPage> {
         borderRadius: BorderRadius.circular(3.0),
         child: InkWell(
           highlightColor: const Color.fromARGB(80, 243, 123, 123),
-          onTap: () {
+          onTap: () async {
             String errMsg = "";
 
             if (_customIDController.text.length < 8) {
@@ -276,7 +317,7 @@ class _SignInPageState extends State<SignInPage> {
               _passwordController.clear();
             }
 
-            if (errMsg != "") {
+            if (errMsg.isNotEmpty) {
               showDialog(
                   context: context,
                   builder: (context) {
@@ -291,6 +332,56 @@ class _SignInPageState extends State<SignInPage> {
                       ],
                     );
                   });
+            } else {
+              try {
+                Object? result = await Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                        pageBuilder:
+                            ((context, animation, secondaryAnimation) =>
+                                SignInLoadingPage(
+                                  userName: _customIDController.text,
+                                  password: _passwordController.text,
+                                )),
+                        transitionDuration: Duration.zero,
+                        reverseTransitionDuration: Duration.zero));
+                if (result != null) {
+                  if (result is FirebaseAuthException) {
+                    throw result;
+                  } else if (result is String) {
+                    String message = result;
+                    if (message.isNotEmpty) {
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(SnackBar(content: Text(message)));
+                    }
+                  }
+                } else {
+                  if (FirebaseAuth.instance.currentUser != null) {
+                    await FirebaseAuth.instance.signOut();
+                  }
+
+                  Navigator.pushReplacement(
+                      context,
+                      PageRouteBuilder(
+                          pageBuilder:
+                              ((context, animation, secondaryAnimation) =>
+                                  const GuestPage(signedOut: true))));
+                }
+
+                _customIDController.clear();
+                _passwordController.clear();
+              } on FirebaseAuthException catch (e) {
+                String errMsg = "Unknown Error";
+
+                if (e.code == 'user-not-found') {
+                  errMsg = 'No user found for that email.';
+                } else if (e.code == 'wrong-password') {
+                  errMsg = 'Wrong password provided for that user.';
+                }
+
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(SnackBar(content: Text(errMsg)));
+              }
             }
           },
           child: const Padding(
@@ -317,23 +408,7 @@ class _SignInPageState extends State<SignInPage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(3.0),
         child: InkWell(
-          onTap: () async {
-            Object? result = await Navigator.push(
-                context,
-                PageRouteBuilder(
-                    pageBuilder: ((context, animation, secondaryAnimation) =>
-                        const SignInLoadingPage()),
-                    transitionDuration: Duration.zero,
-                    reverseTransitionDuration: Duration.zero));
-            if (result != null) {
-              String message = result as String;
-
-              if (message.isNotEmpty) {
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(SnackBar(content: Text(message)));
-              }
-            }
-          },
+          onTap: () async {},
           child: const Padding(
             padding: EdgeInsets.symmetric(
                 vertical: Vars.topBotPaddingSize,
