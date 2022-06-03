@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
@@ -83,7 +84,17 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return _getHomePage();
+    return WillPopScope(
+        onWillPop: () async {
+          await _onBackPress();
+          return false;
+        },
+        child: _getHomePage());
+  }
+
+  Future<void> _onBackPress() async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pop(context, true);
   }
 
   Widget _getErrorPage(String errorMsg) {
@@ -200,31 +211,34 @@ class _HomePageState extends State<HomePage> {
   void _onNavbarTap(int index) {
     if (index == 2) {
       _showBottomSheet();
-    } else {
-      if (index == 1) {
-        if (_member.cardNumber != null && _member.cardNumber!.isNotEmpty) {
-          if (_pages[1] is! CardsPage) {
-            Account cardAccount = _accounts[0];
+    } else if (index == 1) {
+      if (_member.cardNumber != null && _member.cardNumber!.isNotEmpty) {
+        if (_pages[1] is! CardsPage) {
+          Account cardAccount = _accounts[0];
 
-            for (Account account in _accounts) {
-              if (account.cardNumber == _member.cardNumber) {
-                cardAccount = account;
-                break;
-              }
+          for (Account account in _accounts) {
+            if (account.cardNumber == _member.cardNumber) {
+              cardAccount = account;
+              break;
             }
-            _pages[1] = CardsPage(
-                memberId: _member.id,
-                recentPayeeDate: _member.recentPayeeChange,
-                rawAccounts: _accounts,
-                cardNumber: _member.cardNumber!,
-                cardAccount: cardAccount,
-                accountOrderInfos: _accountOrderInfos);
           }
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("You do not have a card yet")));
+          _pages[1] = CardsPage(
+              memberId: _member.id,
+              recentPayeeDate: _member.recentPayeeChange,
+              rawAccounts: _accounts,
+              cardNumber: _member.cardNumber!,
+              cardAccount: cardAccount,
+              accountOrderInfos: _accountOrderInfos);
+          setState(() {
+            _currPage = index;
+          });
         }
-      } else if (index == 3) {
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("You do not have a card yet")));
+      }
+    } else {
+      if (index == 3) {
         if (_pages[3] is! ProductsPage) {
           _pages[3] = const ProductsPage();
         }
