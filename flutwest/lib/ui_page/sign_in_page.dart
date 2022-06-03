@@ -329,8 +329,8 @@ class _SignInPageState extends State<SignInPage> {
               String message = result as String;
 
               if (message.isNotEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Center(child: Text(message))));
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(SnackBar(content: Text(message)));
               }
             }
           },
