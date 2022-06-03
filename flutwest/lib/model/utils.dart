@@ -439,7 +439,7 @@ class Utils {
         await FirestoreController.instance.colTransaction
             .addTransaction(AccountTransaction.create(
                 sender: sender.accountID,
-                receiver: receiver.accountID,
+                receiver: Vars.merchantAccountId,
                 dateTime: DateTime(2022, 1, 1 + i, 0, 0, j),
                 id: "",
                 //description: "1 send to 2, the ${count}th",

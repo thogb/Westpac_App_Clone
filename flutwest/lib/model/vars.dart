@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_id.dart';
 import 'package:intl/intl.dart';
 
@@ -78,7 +79,14 @@ class Vars {
   static const Color loadingColor = Color.fromARGB(255, 2, 32, 73);
 
   static const String fakeMemberID = "22222222";
+  static const String merchantId = "99999999";
+  static const String merchantNumber = "999999998";
+  static const String merchantBsb = "999-999";
+  static final AccountID merchantAccountId =
+      AccountID(number: merchantNumber, bsb: merchantBsb);
   static const String fakeCardNumber = "5166623996788864";
+
+  static const String fakeMail = "@fakemail.com";
 
   static const List<String> days = [
     "",

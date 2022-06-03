@@ -10,7 +10,7 @@ class Member {
   String middleName;
   String surName;
   String id;
-  String cardNumber;
+  String? cardNumber;
   List<Account> accounts;
   int nOfUnreadInbox;
   int nOfUnreadRewards;
@@ -22,7 +22,7 @@ class Member {
     required this.middleName,
     required this.surName,
     required this.id,
-    required this.cardNumber,
+    required cardNumber,
     required this.accounts,
     this.nOfUnreadInbox = -1,
     this.nOfUnreadRewards = -1,
@@ -36,7 +36,10 @@ class Member {
     result.addAll({'middleName': middleName});
     result.addAll({'surName': surName});
     //result.addAll({'id': id});
-    result.addAll({'cardNumber': cardNumber});
+    if (cardNumber != null && cardNumber!.isNotEmpty) {
+      result.addAll({'cardNumber': cardNumber});
+    }
+
     if (recentPayeeChange != null) {
       result.addAll({fnRecentPayeeChange: recentPayeeChange});
     }
@@ -52,7 +55,7 @@ class Member {
         surName: map['surName'] ?? '',
         id: docId,
         //id: map['id'] ?? '',
-        cardNumber: map['cardNumber'] ?? '',
+        cardNumber: map['cardNumber'],
         accounts: inAccounts,
         recentPayeeChange: map[fnRecentPayeeChange] != null
             ? DateTime.fromMillisecondsSinceEpoch(map[fnRecentPayeeChange])
