@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
@@ -25,7 +26,10 @@ class _ProfilePageState extends State<ProfilePage> {
           title: "Profile",
           actions: [
             TextButton(
-                onPressed: () {},
+                onPressed: () async {
+                  await FirebaseAuth.instance.signOut();
+                  Navigator.pop(context);
+                },
                 child: const Text("Sign Out",
                     style: TextStyle(color: Vars.clickAbleColor)))
           ],
