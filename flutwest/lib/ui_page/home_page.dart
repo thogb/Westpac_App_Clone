@@ -202,22 +202,27 @@ class _HomePageState extends State<HomePage> {
       _showBottomSheet();
     } else {
       if (index == 1) {
-        if (_pages[1] is! CardsPage) {
-          Account cardAccount = _accounts[0];
+        if (_member.cardNumber != null && _member.cardNumber!.isNotEmpty) {
+          if (_pages[1] is! CardsPage) {
+            Account cardAccount = _accounts[0];
 
-          for (Account account in _accounts) {
-            if (account.cardNumber == _member.cardNumber) {
-              cardAccount = account;
-              break;
+            for (Account account in _accounts) {
+              if (account.cardNumber == _member.cardNumber) {
+                cardAccount = account;
+                break;
+              }
             }
+            _pages[1] = CardsPage(
+                memberId: _member.id,
+                recentPayeeDate: _member.recentPayeeChange,
+                rawAccounts: _accounts,
+                cardNumber: _member.cardNumber!,
+                cardAccount: cardAccount,
+                accountOrderInfos: _accountOrderInfos);
           }
-          _pages[1] = CardsPage(
-              memberId: _member.id,
-              recentPayeeDate: _member.recentPayeeChange,
-              rawAccounts: _accounts,
-              cardNumber: _member.cardNumber,
-              cardAccount: cardAccount,
-              accountOrderInfos: _accountOrderInfos);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("You do not have a card yet")));
         }
       } else if (index == 3) {
         if (_pages[3] is! ProductsPage) {
