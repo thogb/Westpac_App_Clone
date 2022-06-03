@@ -41,6 +41,10 @@ class MyApp extends StatelessWidget {
             // or simply save your changes to "hot reload" in a Flutter IDE).
             // Notice that the counter didn't reset back to zero; the application
             // is not restarted.
+            checkboxTheme: CheckboxThemeData(
+                side: const BorderSide(color: Colors.black54, width: 0.5),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(100))),
             androidOverscrollIndicator: AndroidOverscrollIndicator.stretch,
             scaffoldBackgroundColor: Colors.grey[50],
             textButtonTheme: TextButtonThemeData(
