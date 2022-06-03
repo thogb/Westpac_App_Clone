@@ -136,6 +136,7 @@ class _SignInLoadingPageState extends State<SignInLoadingPage> {
     if (queryMember.data() == null) {
       Navigator.pop(context,
           "Could not load member data of member: ${Vars.fakeMemberID}");
+      return;
     }
 
     if (_accounts.isEmpty) {
