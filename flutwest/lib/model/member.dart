@@ -22,7 +22,7 @@ class Member {
     required this.middleName,
     required this.surName,
     required this.id,
-    required cardNumber,
+    this.cardNumber,
     required this.accounts,
     this.nOfUnreadInbox = -1,
     this.nOfUnreadRewards = -1,
