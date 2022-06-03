@@ -21,7 +21,11 @@ class LoadingPage extends StatelessWidget {
   }
 
   void awaitFutureObject(BuildContext context) async {
-    dynamic stuff = await futureObject;
-    Navigator.pop(context, stuff);
+    try {
+      dynamic stuff = await futureObject;
+      Navigator.pop(context, stuff);
+    } catch (e) {
+      Navigator.pop(context, e);
+    }
   }
 }
