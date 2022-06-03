@@ -364,94 +364,98 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
                 _requireReconstruct = false;
               }
 
-              print("${DateTime.now()} Rebuild choose");
-              return ListView.builder(
-                  padding: EdgeInsets.zero,
-                  controller: _scrollController,
-                  itemCount:
-                      _payeeGroups.length + (_recentPayees.isEmpty ? 0 : 1),
-                  itemBuilder: (context, index) {
-                    if (index == 0 && _recentPayees.isNotEmpty) {
-                      List<Payee> displayPayees = [];
-                      for (Payee payee in _recentPayees) {
+              return SafeArea(
+                top: false,
+                child: ListView.builder(
+                    padding: EdgeInsets.zero,
+                    controller: _scrollController,
+                    itemCount:
+                        _payeeGroups.length + (_recentPayees.isEmpty ? 0 : 1),
+                    itemBuilder: (context, index) {
+                      if (index == 0 && _recentPayees.isNotEmpty) {
+                        List<Payee> displayPayees = [];
+                        for (Payee payee in _recentPayees) {
+                          if (_payeeSatisfyFilter(payee)) {
+                            displayPayees.add(payee);
+                          }
+                        }
+
+                        if (displayPayees.isEmpty) {
+                          return const SizedBox();
+                        }
+
+                        return Column(
+                            children: List.generate(
+                                displayPayees.length + 1,
+                                (index) => index == 0
+                                    ? _getPayeeHeader("Recently paid")
+                                    : _getRecentPayeeButton(
+                                        displayPayees[index - 1])));
+                        /*
+                        if (_payeeSatisfyFilter(_recentPayees[index])) {
+                          bool? displayHeader =
+                              _alphabetHeaderIndexs[recentPaymentKey];
+                          if (displayHeader != null && !displayHeader) {
+                            _alphabetHeaderIndexs[recentPaymentKey] = true;
+                            return Column(children: [
+                              _getPayeeHeader("Recently paid"),
+                              _getRecentPayeeButton(_recentPayees[index])
+                            ]);
+                          } else {
+                            return _getRecentPayeeButton(_recentPayees[index]);
+                          }
+                        }*/
+                      } else {
+                        int actualIndex =
+                            index - (_recentPayees.isEmpty ? 0 : 1);
+                        List<Payee> displayPayees = [];
+
+                        for (Payee payee in _payeeGroups[actualIndex]) {
+                          if (_payeeSatisfyFilter(payee)) {
+                            displayPayees.add(payee);
+                          }
+                        }
+
+                        if (displayPayees.isEmpty) {
+                          return const SizedBox();
+                        }
+
+                        return Column(
+                            children: List.generate(
+                                displayPayees.length + 1,
+                                (index) => index == 0
+                                    ? _getPayeeHeader(displayPayees
+                                        .first.getNickName[0]
+                                        .toUpperCase())
+                                    : _getPayeeButton(
+                                        displayPayees[index - 1])));
+                        /*
+                        int actualIndex = index - _recentPayees.length;
+                        Payee payee = _payees[actualIndex];
+              
                         if (_payeeSatisfyFilter(payee)) {
-                          displayPayees.add(payee);
+                          String initialUpper =
+                              payee.getNickName[0].toUpperCase();
+                          bool? displayHeader =
+                              _alphabetHeaderIndexs[initialUpper];
+                          if (displayHeader != null && !displayHeader) {
+                            _alphabetHeaderIndexs[initialUpper] = true;
+                            return Column(
+                              children: [
+                                _getPayeeHeader(
+                                    payee.getNickName[0].toUpperCase()),
+                                _getPayeeButton(payee)
+                              ],
+                            );
+                          } else {
+                            return _getPayeeButton(payee);
+                          }
                         }
                       }
-
-                      if (displayPayees.isEmpty) {
-                        return const SizedBox();
+                      return const SizedBox();*/
                       }
-
-                      return Column(
-                          children: List.generate(
-                              displayPayees.length + 1,
-                              (index) => index == 0
-                                  ? _getPayeeHeader("Recently paid")
-                                  : _getRecentPayeeButton(
-                                      displayPayees[index - 1])));
-                      /*
-                      if (_payeeSatisfyFilter(_recentPayees[index])) {
-                        bool? displayHeader =
-                            _alphabetHeaderIndexs[recentPaymentKey];
-                        if (displayHeader != null && !displayHeader) {
-                          _alphabetHeaderIndexs[recentPaymentKey] = true;
-                          return Column(children: [
-                            _getPayeeHeader("Recently paid"),
-                            _getRecentPayeeButton(_recentPayees[index])
-                          ]);
-                        } else {
-                          return _getRecentPayeeButton(_recentPayees[index]);
-                        }
-                      }*/
-                    } else {
-                      int actualIndex = index - (_recentPayees.isEmpty ? 0 : 1);
-                      List<Payee> displayPayees = [];
-
-                      for (Payee payee in _payeeGroups[actualIndex]) {
-                        if (_payeeSatisfyFilter(payee)) {
-                          displayPayees.add(payee);
-                        }
-                      }
-
-                      if (displayPayees.isEmpty) {
-                        return const SizedBox();
-                      }
-
-                      return Column(
-                          children: List.generate(
-                              displayPayees.length + 1,
-                              (index) => index == 0
-                                  ? _getPayeeHeader(displayPayees
-                                      .first.getNickName[0]
-                                      .toUpperCase())
-                                  : _getPayeeButton(displayPayees[index - 1])));
-                      /*
-                      int actualIndex = index - _recentPayees.length;
-                      Payee payee = _payees[actualIndex];
-
-                      if (_payeeSatisfyFilter(payee)) {
-                        String initialUpper =
-                            payee.getNickName[0].toUpperCase();
-                        bool? displayHeader =
-                            _alphabetHeaderIndexs[initialUpper];
-                        if (displayHeader != null && !displayHeader) {
-                          _alphabetHeaderIndexs[initialUpper] = true;
-                          return Column(
-                            children: [
-                              _getPayeeHeader(
-                                  payee.getNickName[0].toUpperCase()),
-                              _getPayeeButton(payee)
-                            ],
-                          );
-                        } else {
-                          return _getPayeeButton(payee);
-                        }
-                      }
-                    }
-                    return const SizedBox();*/
-                    }
-                  });
+                    }),
+              );
             }
           }
 
