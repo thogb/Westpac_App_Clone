@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "276997097913",
+    "project_id": "westpac-clone",
+    "storage_bucket": "westpac-clone.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:276997097913:android:ecb6251eb16dd3d2aece68",
+        "android_client_info": {
+          "package_name": "com.notcombatarms.flutwest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "276997097913-co1aq7n8h6ci82u967i1nb4054gvp9h5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAzt8yfwrVJUhOti66MlTeykf_f6aKL8k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "276997097913-co1aq7n8h6ci82u967i1nb4054gvp9h5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
