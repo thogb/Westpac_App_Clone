@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/controller/sqlite_controller.dart';
+import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/guest_page.dart';
@@ -15,10 +18,13 @@ void main() async {
 
   await SQLiteController.instance.loadDB();
 
+  await Firebase.initializeApp();
+
   // WidgetsFlutterBinding.ensureInitialized();
-  FirestoreController.instance.setFirebaseFireStore(FakeFirebaseFirestore());
+  //FirestoreController.instance.setFirebaseFireStore(FakeFirebaseFirestore());
+  FirestoreController.instance.setFirebaseFireStore(FirebaseFirestore.instance);
   //FirestoreController.instance.enablePersistentData(true);
-  Utils.putData();
+  //Utils.putData();
 
   runApp(const MyApp());
 }
