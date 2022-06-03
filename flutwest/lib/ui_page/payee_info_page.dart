@@ -115,6 +115,7 @@ class PayeeInfoPage extends StatelessWidget {
     DateTime delDate = DateTime.now();
     await FirestoreController.instance.colMember.colPayee
         .deletePayee(memberId, payee.docId, delDate);
-    await SQLiteController.instance.delPayee(memberId, payee.docId, delDate);
+    await SQLiteController.instance.tablePayee
+        .delPayee(memberId, payee.docId, delDate);
   }
 }

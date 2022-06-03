@@ -466,7 +466,7 @@ class Utils {
     }
 
     // Remove later TODO:
-    SQLiteController.instance
+    SQLiteController.instance.tableMember
         .insertMemberIfNotExist(Vars.fakeMemberID, DateTime.now());
     /*DateTime? lastDate = await SQLiteController.instance.getRecentPayeeEditDate(Vars.fakeMemberID);
         SQLiteController.instance

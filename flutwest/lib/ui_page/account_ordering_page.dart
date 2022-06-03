@@ -33,14 +33,15 @@ class _AccountOrderingPageState extends State<AccountOrderingPage> {
               for (int i = 0; i < widget.accountOrderInfos.length; i++) {
                 widget.accountOrderInfos[i].setOrder = i;
               }
-              SQLiteController.instance.replaceAccountOrder(widget
-                  .accountOrderInfos
-                  .map((e) => AccountIDOrder(
-                      number: e.getAccount().getNumber,
-                      bsb: e.getAccount().getBsb,
-                      order: e.getOrder,
-                      hidden: e.getHidden))
-                  .toList());
+              SQLiteController.instance.tableAccountOrder.replaceAccountOrder(
+                  widget
+                      .accountOrderInfos
+                      .map((e) => AccountIDOrder(
+                          number: e.getAccount().getNumber,
+                          bsb: e.getAccount().getBsb,
+                          order: e.getOrder,
+                          hidden: e.getHidden))
+                      .toList());
               Navigator.pop(context);
             },
             child: const Text("Done",

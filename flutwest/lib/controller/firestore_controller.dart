@@ -151,9 +151,9 @@ class ColPayee {
     List<Payee> payees;
 
     List<Payee> localPayees =
-        await SQLiteController.instance.getPayees(memberId);
-    DateTime? recentPayeeEdit =
-        await SQLiteController.instance.getRecentPayeeEditDate(memberId);
+        await SQLiteController.instance.tablePayee.getPayees(memberId);
+    DateTime? recentPayeeEdit = await SQLiteController.instance.tableMember
+        .getRecentPayeeEditDate(memberId);
 
     // memberRecentPayeeEdit is null means a new user, no payee added to cloud
     // yet
@@ -168,7 +168,7 @@ class ColPayee {
               memberRecentPayeeEdit.millisecondsSinceEpoch) {
         var remotePayees = await FirestoreController.instance.colMember.colPayee
             .getAllByMemberId(memberId);
-        SQLiteController.instance.syncPayees(
+        SQLiteController.instance.tablePayee.syncPayees(
             memberId: memberId,
             remotePayees: remotePayees,
             localPayees: localPayees,

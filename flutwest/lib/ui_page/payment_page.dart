@@ -294,7 +294,7 @@ class _PaymentPageState extends State<PaymentPage> {
         senderDescription: _tecDescSender.text,
         receiverDescription: _tecDescReceiver.text,
         amount: amount);
-    await SQLiteController.instance
+    await SQLiteController.instance.tablePayee
         .updatePayeeLastPayDate(memberId, payee.docId, payDate);
     payee.lastPayDate = payDate;
   }

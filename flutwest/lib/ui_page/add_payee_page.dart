@@ -135,7 +135,8 @@ class _AddPayeePageState extends State<AddPayeePage> {
                           pageBuilder: ((context, animation,
                                   secondaryAnimation) =>
                               LoadingPage(
-                                  futureObject: SQLiteController.instance
+                                  futureObject: SQLiteController
+                                      .instance.tablePayee
                                       .doesPayeeExist(widget.memberId, payee))),
                           transitionDuration: Duration.zero,
                           reverseTransitionDuration: Duration.zero));
@@ -180,7 +181,8 @@ class _AddPayeePageState extends State<AddPayeePage> {
                           pageBuilder: ((context, animation,
                                   secondaryAnimation) =>
                               LoadingPage(
-                                  futureObject: SQLiteController.instance
+                                  futureObject: SQLiteController
+                                      .instance.tablePayee
                                       .addPayee(
                                           widget.memberId, payee, addTime))),
                           transitionDuration: Duration.zero,

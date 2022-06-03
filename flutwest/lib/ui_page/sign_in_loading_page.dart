@@ -96,8 +96,9 @@ class _SignInLoadingPageState extends State<SignInLoadingPage> {
     //TODO: memberID update with auth
     List<Account> accountsClone = accounts.toList();
 
-    List<AccountIDOrder> accountIDOrders =
-        await SQLiteController.instance.getAccountIDsOrdered();
+    List<AccountIDOrder> accountIDOrders = await SQLiteController
+        .instance.tableAccountOrder
+        .getAccountIDsOrdered();
 
     AccountOrderInfo? temp;
 
