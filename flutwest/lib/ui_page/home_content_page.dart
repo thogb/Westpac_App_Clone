@@ -415,12 +415,29 @@ class _HomeContentPageState extends State<HomeContentPage>
             const SizedBox(height: Vars.topBotPaddingSize),
             _getAccountSection(),
             const SizedBox(height: Vars.heightGapBetweenWidgets),
-            _getNetPosition(),
-            const SizedBox(height: Vars.heightGapBetweenWidgets),
             _getPaymentsContent(),
             const SizedBox(height: 200.0)
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _getPaymentsContent() {
+    // column there might be more stuff under payments button
+    return FadeTransition(
+      opacity: _paymentContentFadeAnimation,
+      child: Column(
+        children: [
+          _getNetPosition(),
+          const SizedBox(height: Vars.heightGapBetweenWidgets),
+          CustButton(
+            leftWidget: const Icon(Icons.money),
+            heading: "Payments",
+            paragraph: "Upcoming, past, direct debits, BPAY View",
+            onTap: () {},
+          ),
+        ],
       ),
     );
   }
@@ -464,23 +481,6 @@ class _HomeContentPageState extends State<HomeContentPage>
             style: Vars.headingStyle3)
       ]),
     ]));
-  }
-
-  Widget _getPaymentsContent() {
-    // column there might be more stuff under payments button
-    return FadeTransition(
-      opacity: _paymentContentFadeAnimation,
-      child: Column(
-        children: [
-          CustButton(
-            leftWidget: const Icon(Icons.money),
-            heading: "Payments",
-            paragraph: "Upcoming, past, direct debits, BPAY View",
-            onTap: () {},
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _getAccountSection() {
