@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/controller/sqlite_controller.dart';
@@ -12,18 +13,19 @@ import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/home_page.dart';
 
 class SignInLoadingPage extends StatefulWidget {
-  const SignInLoadingPage({Key? key}) : super(key: key);
+  final String userName;
+  final String password;
+  const SignInLoadingPage(
+      {Key? key, required this.userName, required this.password})
+      : super(key: key);
 
   @override
   _SignInLoadingPageState createState() => _SignInLoadingPageState();
 }
 
 class _SignInLoadingPageState extends State<SignInLoadingPage> {
-  final Future<DocumentSnapshot<Map<String, dynamic>>> _futureMember =
-      FirestoreController.instance.colMember.getByDocId(Vars.fakeMemberID);
-  final Future<QuerySnapshot<Map<String, dynamic>>> _futureAccounts =
-      FirestoreController.instance.colAccount
-          .getAllByMemberId(Vars.fakeMemberID);
+  late final Future<DocumentSnapshot<Map<String, dynamic>>> _futureMember;
+  late final Future<QuerySnapshot<Map<String, dynamic>>> _futureAccounts;
   late final Future<List<Object>> _futures;
 
   final List<AccountOrderInfo> _accountOrderInfos = [];
@@ -33,10 +35,9 @@ class _SignInLoadingPageState extends State<SignInLoadingPage> {
 
   @override
   void initState() {
-    _futures = Future.wait([_futureMember, _futureAccounts]);
     Utils.showSysNavBarColour();
     WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
-      _getData();
+      _trySignIn();
     });
 
     super.initState();
@@ -127,37 +128,56 @@ class _SignInLoadingPageState extends State<SignInLoadingPage> {
     return true;
   }
 
-  void _getData() async {
-    List<Object> data = await _futures;
-    QuerySnapshot<Map<String, dynamic>> queryAccounts =
-        data[1] as QuerySnapshot<Map<String, dynamic>>;
-    DocumentSnapshot<Map<String, dynamic>> queryMember =
-        data[0] as DocumentSnapshot<Map<String, dynamic>>;
-    if (queryMember.data() == null) {
-      Navigator.pop(context,
-          "Could not load member data of member: ${Vars.fakeMemberID}");
+  void _trySignIn() async {
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+              email: "${widget.userName}${Vars.fakeMail}",
+              password: widget.password);
+
+      _futureMember =
+          FirestoreController.instance.colMember.getByDocId(widget.userName);
+      _futureAccounts = FirestoreController.instance.colAccount
+          .getAllByMemberId(widget.userName);
+
+      _futures = Future.wait([_futureMember, _futureAccounts]);
+
+      List<Object> data = await _futures;
+      QuerySnapshot<Map<String, dynamic>> queryAccounts =
+          data[1] as QuerySnapshot<Map<String, dynamic>>;
+      DocumentSnapshot<Map<String, dynamic>> queryMember =
+          data[0] as DocumentSnapshot<Map<String, dynamic>>;
+      if (queryMember.data() == null) {
+        Navigator.pop(context,
+            "Could not load member data of member: ${Vars.fakeMemberID}");
+        return;
+      }
+
+      if (_accounts.isEmpty) {
+        _accounts = queryAccounts.docs
+            .map((e) => Account.fromMap(e.data(), e.id))
+            .toList();
+      }
+      _member = Member.fromMap((queryMember.data() as Map<String, dynamic>),
+          _accounts, queryMember.id);
+
+      await _createOrderInfos(_accounts);
+
+      await Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: ((context, animation, secondaryAnimation) => HomePage(
+                  member: _member,
+                  accounts: _accounts,
+                  accountOrderInfos: _accountOrderInfos,
+                )),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero,
+          ));
+      Navigator.pop(context);
+    } on FirebaseAuthException catch (e) {
+      Navigator.pop(context, e);
       return;
     }
-
-    if (_accounts.isEmpty) {
-      _accounts = queryAccounts.docs
-          .map((e) => Account.fromMap(e.data(), e.id))
-          .toList();
-    }
-    _member = Member.fromMap((queryMember.data() as Map<String, dynamic>),
-        _accounts, queryMember.id);
-    await _createOrderInfos(_accounts);
-
-    Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: ((context, animation, secondaryAnimation) => HomePage(
-                member: _member,
-                accounts: _accounts,
-                accountOrderInfos: _accountOrderInfos,
-              )),
-          transitionDuration: Duration.zero,
-          reverseTransitionDuration: Duration.zero,
-        ));
   }
 }
