@@ -233,7 +233,7 @@ class _HomeContentPageState extends State<HomeContentPage>
 
   @override
   Widget build(BuildContext context) {
-    _topSectionHeight = MediaQuery.of(context).size.height * 0.3;
+    _topSectionHeight = MediaQuery.of(context).size.height * 0.25;
     return Scaffold(
       body: Stack(
         children: [
