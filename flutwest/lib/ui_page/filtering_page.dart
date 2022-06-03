@@ -399,6 +399,8 @@ class _AccountFilteringPageState extends State<AccountFilteringPage> {
                   children: List.generate(
                       widget.allAccounts.length,
                       (index) => CheckboxListTile(
+                          contentPadding:
+                              const EdgeInsets.all(Vars.standardPaddingSize),
                           activeColor: Vars.radioFilterColor,
                           controlAffinity: ListTileControlAffinity.leading,
                           title: Text(widget.allAccounts[index].getAccountName),
