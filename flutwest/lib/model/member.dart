@@ -6,6 +6,8 @@ import 'package:flutwest/model/payee.dart';
 class Member {
   static const String fnRecentPayeeChange = "recentPayeeChange";
 
+  static String? lastLoginMemberId;
+
   String firstName;
   String middleName;
   String surName;
