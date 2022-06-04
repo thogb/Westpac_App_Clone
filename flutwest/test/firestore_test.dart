@@ -276,7 +276,7 @@ void main() {
         .docs
         .map((e) => Account.fromMap(e.data(), e.id))
         .toList();
-    print(
+    /*print(
         "After send 200.30, Account 1: ${readAccounts[0].getBalance}, account 2: ${readAccounts[1].balance}");
     await FirestoreController.instance.colTransaction.addPaymentTransaction(
         senderAccount: readAccounts[0],
@@ -317,6 +317,6 @@ void main() {
         .map((e) => Account.fromMap(e.data(), e.id))
         .toList();
     print(
-        "After send another 1400.11 from accoutn 2 to acount 1 using addPaymentTransaction\nAccount 1: ${readAccounts[1].getBalance}, account 2: ${readAccounts[0].balance}");
+        "After send another 1400.11 from accoutn 2 to acount 1 using addPaymentTransaction\nAccount 1: ${readAccounts[1].getBalance}, account 2: ${readAccounts[0].balance}");*/
   });
 }
