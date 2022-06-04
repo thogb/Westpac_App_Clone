@@ -254,12 +254,31 @@ class ColAccount {
   static const String collectionName = "account";
   late final FirestoreController _firestoreController;
   late final FirebaseFirestore _firebaseFirestore;
+  late final List<void Function(String docId, Decimal balance)>
+      _onBalanceChangeObserver;
 
   ColAccount(
       {required FirestoreController firestoreController,
       required FirebaseFirestore firebaseFirestore})
       : _firestoreController = firestoreController,
-        _firebaseFirestore = firebaseFirestore;
+        _firebaseFirestore = firebaseFirestore,
+        _onBalanceChangeObserver = [];
+
+  void addOnBalanceChangeObserver(
+      void Function(String docId, Decimal balance) callback) {
+    _onBalanceChangeObserver.add(callback);
+  }
+
+  void removeOnBalanceChangeObserver(
+      void Function(String docId, Decimal balance) callback) {
+    _onBalanceChangeObserver.remove(callback);
+  }
+
+  void notifyOnBalanceChangeObservers(String docId, Decimal balance) {
+    for (var callback in _onBalanceChangeObserver) {
+      callback(docId, balance);
+    }
+  }
 
   Future<void> addAccount(String memberId, Account account) async {
     await Future.delayed(_firestoreController.delay);
@@ -313,6 +332,17 @@ class ColAccount {
     return _firebaseFirestore.collection(collectionName).doc(docID).get();
   }
 
+  Future<Decimal> getLatestBalance({required String docId}) async {
+    var account = await getByDocId(docID: docId);
+    if (account.exists) {
+      Decimal balance = Decimal.parse(account.data()![Account.fnBalance]);
+      notifyOnBalanceChangeObservers(docId, balance);
+      return balance;
+    } else {
+      return Decimal.parse("-1");
+    }
+  }
+
   Future<void> updateBalance(
       {required String docId, required Decimal newBalance}) async {
     await Future.delayed(_firestoreController.delay);
@@ -320,6 +350,7 @@ class ColAccount {
         .collection(collectionName)
         .doc(docId)
         .update({Account.fnBalance: newBalance.toString()});
+    notifyOnBalanceChangeObservers(docId, newBalance);
   }
 }
 
@@ -327,7 +358,8 @@ class ColTransaction {
   static const String collectionName = "transaction";
   late final FirestoreController _firestoreController;
   late final FirebaseFirestore _firebaseFirestore;
-  late final List<VoidCallback> _onTransactionMadeObservers;
+  late final List<void Function(AccountTransaction)>
+      _onTransactionMadeObservers;
 
   ColTransaction(
       {required FirestoreController firestoreController,
@@ -336,17 +368,19 @@ class ColTransaction {
         _firebaseFirestore = firebaseFirestore,
         _onTransactionMadeObservers = [];
 
-  void addOnTransactionMadeObserver(VoidCallback callback) {
+  void addOnTransactionMadeObserver(
+      void Function(AccountTransaction) callback) {
     _onTransactionMadeObservers.add(callback);
   }
 
-  void removeOnTransactionMadeObserver(VoidCallback callback) {
+  void removeOnTransactionMadeObserver(
+      void Function(AccountTransaction) callback) {
     _onTransactionMadeObservers.remove(callback);
   }
 
-  void notifyOnTransactionMadebservers() {
-    for (VoidCallback element in _onTransactionMadeObservers) {
-      element();
+  void notifyOnTransactionMadebservers(AccountTransaction accountTransaction) {
+    for (var element in _onTransactionMadeObservers) {
+      element(accountTransaction);
     }
   }
 
@@ -372,8 +406,10 @@ class ColTransaction {
     await Future.delayed(_firestoreController.delay);
     Decimal senderNewBal = senderAccount.getBalance - amount;
     Decimal receiverNewBal = receiverAccount.getBalance + amount;
+
+    var transactionRef = await addTransaction(transaction);
+
     await Future.wait([
-      addTransaction(transaction),
       _firestoreController.colAccount
           .updateBalance(newBalance: senderNewBal, docId: senderAccount.docID!),
       _firestoreController.colAccount.updateBalance(
@@ -383,7 +419,8 @@ class ColTransaction {
     senderAccount.setBalance = senderNewBal;
     receiverAccount.setBalance = receiverNewBal;
 
-    notifyOnTransactionMadebservers();
+    notifyOnTransactionMadebservers(
+        AccountTransaction.fromMap(transaction.toMap(), transactionRef.id));
   }
 
   Future<void> addPaymentTransaction(
@@ -420,8 +457,10 @@ class ColTransaction {
           AccountTransaction.credits
         ]);
     Decimal senderNewBal = senderAccount.getBalance - amount;
+
+    var transactionRef = await addTransaction(transaction);
+
     await Future.wait([
-      addTransaction(transaction),
       _firestoreController.colAccount
           .updateBalance(newBalance: senderNewBal, docId: senderAccount.docID!),
       _firestoreController.colMember.colPayee
@@ -436,7 +475,8 @@ class ColTransaction {
           newBalance: receiverNewBal, docId: receiverAccount.docID!);
     }
 
-    notifyOnTransactionMadebservers();
+    notifyOnTransactionMadebservers(
+        AccountTransaction.fromMap(transaction.toMap(), transactionRef.id));
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> getStreamLimitBy(
