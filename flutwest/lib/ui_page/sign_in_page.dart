@@ -5,6 +5,7 @@ import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/cust_widget/west_logo.dart';
+import 'package:flutwest/model/member.dart';
 import 'package:flutwest/ui_page/guest_page.dart';
 import 'package:flutwest/ui_page/home_page.dart';
 import 'package:flutwest/ui_page/loading_page.dart';
@@ -31,6 +32,15 @@ class _SignInPageState extends State<SignInPage> {
   String _errorMsg = "";
 
   TextFieldFocus _textFieldFocus = TextFieldFocus.none;
+
+  bool _changeUser = false;
+
+  @override
+  void initState() {
+    _changeUser = Member.lastLoginMemberId == null;
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -152,61 +162,86 @@ class _SignInPageState extends State<SignInPage> {
   Widget _getTextFields() {
     return Column(
       children: [
+        _changeUser || Member.lastLoginMemberId == null
+            ? Padding(
+                padding: const EdgeInsets.symmetric(
+                    vertical: Vars.topBotPaddingSize),
+                child: TextField(
+                  style: const TextStyle(color: Colors.white),
+                  maxLength: 8,
+                  keyboardType: TextInputType.number,
+                  controller: _customIDController,
+                  onTap: () {
+                    if (_textFieldFocus != TextFieldFocus.customID) {
+                      setState(() {
+                        _textFieldFocus = TextFieldFocus.customID;
+                      });
+                    }
+                  },
+                  onChanged: (value) {
+                    if (_textFieldFocus == TextFieldFocus.customID) {
+                      if (value.isNotEmpty) {
+                        if (!_showIDCancel) {
+                          setState(() {
+                            _showIDCancel = true;
+                          });
+                        }
+                      } else {
+                        if (_showIDCancel) {
+                          setState(() {
+                            _showIDCancel = false;
+                          });
+                        }
+                      }
+                    }
+                  },
+                  decoration: InputDecoration(
+                      counterText: "",
+                      labelText: "Customer ID",
+                      labelStyle: const TextStyle(color: Colors.white),
+                      enabledBorder: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white)),
+                      focusedBorder: const UnderlineInputBorder(
+                          borderSide:
+                              BorderSide(color: Colors.white, width: 2.0)),
+                      suffixIcon: _textFieldFocus == TextFieldFocus.customID &&
+                              _showIDCancel
+                          ? IconButton(
+                              icon:
+                                  const Icon(Icons.cancel, color: Colors.white),
+                              onPressed: () {
+                                _customIDController.clear();
+                                setState(() {
+                                  _showIDCancel = false;
+                                });
+                              },
+                            )
+                          : const SizedBox()),
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                      "Sign in as * * * * ${Member.lastLoginMemberId!.substring(4)}",
+                      style: Vars.headingStyle2.copyWith(color: Colors.white)),
+                  GestureDetector(
+                    child: const Text(
+                      "Change",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onTap: () {
+                      setState(() {
+                        _changeUser = true;
+                      });
+                    },
+                  )
+                ],
+              ),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: Vars.topBotPaddingSize),
           child: TextField(
-            maxLength: 8,
-            keyboardType: TextInputType.number,
-            controller: _customIDController,
-            onTap: () {
-              if (_textFieldFocus != TextFieldFocus.customID) {
-                setState(() {
-                  _textFieldFocus = TextFieldFocus.customID;
-                });
-              }
-            },
-            onChanged: (value) {
-              if (_textFieldFocus == TextFieldFocus.customID) {
-                if (value.isNotEmpty) {
-                  if (!_showIDCancel) {
-                    setState(() {
-                      _showIDCancel = true;
-                    });
-                  }
-                } else {
-                  if (_showIDCancel) {
-                    setState(() {
-                      _showIDCancel = false;
-                    });
-                  }
-                }
-              }
-            },
-            decoration: InputDecoration(
-                counterText: "",
-                labelText: "Customer ID",
-                labelStyle: const TextStyle(color: Colors.white),
-                enabledBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white)),
-                focusedBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white, width: 2.0)),
-                suffixIcon:
-                    _textFieldFocus == TextFieldFocus.customID && _showIDCancel
-                        ? IconButton(
-                            icon: const Icon(Icons.cancel, color: Colors.white),
-                            onPressed: () {
-                              _customIDController.clear();
-                              setState(() {
-                                _showIDCancel = false;
-                              });
-                            },
-                          )
-                        : const SizedBox()),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: Vars.topBotPaddingSize),
-          child: TextField(
+            style: const TextStyle(color: Colors.white),
             controller: _passwordController,
             obscureText: true,
             onTap: () {
@@ -216,15 +251,17 @@ class _SignInPageState extends State<SignInPage> {
                 });
               }
 
-              if (_customIDController.text.length < 8) {
-                if (_errorMsg.isEmpty) {
-                  setState(() {
-                    _errorMsg = "Customer ID is too short. Enter 8 digits.";
-                  });
-                }
-              } else {
-                if (_errorMsg.isNotEmpty) {
-                  _errorMsg = "";
+              if (_changeUser) {
+                if (_customIDController.text.length < 8) {
+                  if (_errorMsg.isEmpty) {
+                    setState(() {
+                      _errorMsg = "Customer ID is too short. Enter 8 digits.";
+                    });
+                  }
+                } else {
+                  if (_errorMsg.isNotEmpty) {
+                    _errorMsg = "";
+                  }
                 }
               }
             },
@@ -307,16 +344,17 @@ class _SignInPageState extends State<SignInPage> {
           onTap: () async {
             String errMsg = "";
 
-            if (_customIDController.text.length < 8) {
-              errMsg = "Enter 8 digits";
-            } else if (_passwordController.text.isEmpty) {
-              errMsg = "No password entered";
-            } else if (_passwordController.text.length < 6) {
-              errMsg =
-                  "Your password does no meet requirements. Please try again.";
-              _passwordController.clear();
+            if (_changeUser) {
+              if (_customIDController.text.length < 8) {
+                errMsg = "Enter 8 digits";
+              } else if (_passwordController.text.isEmpty) {
+                errMsg = "No password entered";
+              } else if (_passwordController.text.length < 6) {
+                errMsg =
+                    "Your password does no meet requirements. Please try again.";
+                _passwordController.clear();
+              }
             }
-
             if (errMsg.isNotEmpty) {
               showDialog(
                   context: context,
@@ -333,6 +371,9 @@ class _SignInPageState extends State<SignInPage> {
                     );
                   });
             } else {
+              String userName = _changeUser
+                  ? _customIDController.text
+                  : Member.lastLoginMemberId ?? _customIDController.text;
               try {
                 Object? result = await Navigator.push(
                     context,
@@ -340,7 +381,7 @@ class _SignInPageState extends State<SignInPage> {
                         pageBuilder:
                             ((context, animation, secondaryAnimation) =>
                                 SignInLoadingPage(
-                                  userName: _customIDController.text,
+                                  userName: userName,
                                   password: _passwordController.text,
                                 )),
                         transitionDuration: Duration.zero,
