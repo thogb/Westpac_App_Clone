@@ -9,6 +9,7 @@ import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/guest_page.dart';
+import 'package:flutwest/ui_page/sign_in_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +26,9 @@ void main() async {
   FirestoreController.instance.setFirebaseFireStore(FirebaseFirestore.instance);
   //FirestoreController.instance.enablePersistentData(true);
   //Utils.putData();
+
+  Member.lastLoginMemberId =
+      await SQLiteController.instance.tableMember.getRecentLoggedMemberId();
 
   runApp(const MyApp());
 }
@@ -76,7 +80,9 @@ class MyApp extends StatelessWidget {
             highlightColor: Colors.grey[200],
             splashFactory: NoSplash.splashFactory),
         //home: const HomePage(),
-        home: const GuestPage());
+        home: Member.lastLoginMemberId == null
+            ? const GuestPage()
+            : const SignInPage());
     //home: const HomePage());
     /*
         home: Scaffold(
