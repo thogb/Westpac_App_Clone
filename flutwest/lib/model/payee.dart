@@ -63,7 +63,7 @@ class Payee {
     result.addAll({'accountName': accountName});
 
     if (lastPayDate != null) {
-      result.addAll({fnLastPayDate: lastPayDate});
+      result.addAll({fnLastPayDate: lastPayDate!.millisecondsSinceEpoch});
     }
 
     return result;
@@ -76,7 +76,9 @@ class Payee {
         accountBSB: map[fnAccountBsb] ?? "",
         accountName: map['accountName'] ?? "",
         nickName: map['nickName'] ?? "",
-        lastPayDate: map[fnLastPayDate]);
+        lastPayDate: map[fnLastPayDate] == null
+            ? null
+            : DateTime.fromMillisecondsSinceEpoch(map[fnLastPayDate]));
   }
 
   String toJson() => json.encode(toMap());
