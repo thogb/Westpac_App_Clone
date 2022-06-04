@@ -19,6 +19,7 @@ import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/account_ordering_page.dart';
 import 'package:flutwest/ui_page/hidden_accounts_page.dart';
 import 'package:flutwest/ui_page/home_search_page.dart';
+import 'package:flutwest/ui_page/transfer_page.dart';
 
 import 'account_detail_page.dart';
 
@@ -596,6 +597,7 @@ class _HomeContentPageState extends State<HomeContentPage>
     }
 
     return DraggableAccountButton(
+      rawAccounts: widget.rawAccounts,
       account: accountOrderInfo.getAccount(),
       feedback: dollarIcon,
       onDragStart: () {
@@ -646,6 +648,7 @@ class _HomeContentPageState extends State<HomeContentPage>
 
 class DraggableAccountButton extends StatefulWidget {
   final Account account;
+  final List<Account> rawAccounts;
   final VoidCallback? onTap;
   final Widget feedback;
   final VoidCallback? onDragStart;
@@ -653,6 +656,7 @@ class DraggableAccountButton extends StatefulWidget {
 
   const DraggableAccountButton(
       {Key? key,
+      required this.rawAccounts,
       this.onDragStart,
       this.onDragEnd,
       required this.account,
@@ -725,8 +729,15 @@ class _DraggableAccountButtonState extends State<DraggableAccountButton>
         }
       },
       onAccept: (Account inAccount) {
-        //TODO: open transaction page
         if (widget.account.getNumber != inAccount.getNumber) {
+          Navigator.push(
+              context,
+              PageRouteBuilder(
+                  pageBuilder: ((context, animation, secondaryAnimation) =>
+                      TransferPage(
+                          accounts: widget.rawAccounts,
+                          currAccount: inAccount,
+                          toAccount: widget.account))));
           setState(() {
             _onBeingDragFocused = false;
             _scaleController.reverse();
