@@ -7,9 +7,11 @@ import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/vars.dart';
 
 class AccountOrderingPage extends StatefulWidget {
+  final String memberId;
   final List<AccountOrderInfo> accountOrderInfos;
 
-  const AccountOrderingPage({Key? key, required this.accountOrderInfos})
+  const AccountOrderingPage(
+      {Key? key, required this.accountOrderInfos, required this.memberId})
       : super(key: key);
 
   @override
@@ -34,14 +36,14 @@ class _AccountOrderingPageState extends State<AccountOrderingPage> {
                 widget.accountOrderInfos[i].setOrder = i;
               }
               SQLiteController.instance.tableAccountOrder.replaceAccountOrder(
-                  widget
-                      .accountOrderInfos
+                  widget.accountOrderInfos
                       .map((e) => AccountIDOrder(
                           number: e.getAccount().getNumber,
                           bsb: e.getAccount().getBsb,
                           order: e.getOrder,
                           hidden: e.getHidden))
-                      .toList());
+                      .toList(),
+                  widget.memberId);
               Navigator.pop(context);
             },
             child: const Text("Done",

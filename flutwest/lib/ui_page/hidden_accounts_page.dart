@@ -49,8 +49,9 @@ class _HiddenAccountsPageState extends State<HiddenAccountsPage> {
                           pageBuilder:
                               ((context, animation, secondaryAnimation) =>
                                   AccountOrderingPage(
-                                      accountOrderInfos:
-                                          widget.accountOrderInfos))));
+                                    accountOrderInfos: widget.accountOrderInfos,
+                                    memberId: widget.memberId,
+                                  ))));
                   Navigator.pop(context);
                 },
                 child: const Text(
