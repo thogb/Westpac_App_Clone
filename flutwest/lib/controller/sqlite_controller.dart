@@ -9,7 +9,6 @@ class SQLiteController {
   static const int invalidDateIntValue = -1;
   static const String invalidString = "";
   static const String dbName = "flutWest.db";
-  static const String testID = Vars.fakeMemberID;
 
   //static SQLiteController? _controller;
   static final SQLiteController _controller = SQLiteController._internal();
@@ -62,15 +61,15 @@ class TableAccountOrder {
   TableAccountOrder({required Database database}) : _database = database;
 
   // AccountIDOrder
-  Future<void> insertAccountID(AccountIDOrder accountIDOrder) async {
-    await _database.insert(tableName, getAccountIDOrderMap(accountIDOrder));
+  Future<void> insertAccountID(
+      AccountIDOrder accountIDOrder, String memberId) async {
+    await _database.insert(
+        tableName, getAccountIDOrderMap(accountIDOrder, memberId));
   }
 
-  Future<List<AccountIDOrder>> getAccountIDs() async {
-    final List<Map<String, dynamic>> accountIDs = await _database.query(
-        tableName,
-        where: "$colMemberId = ?",
-        whereArgs: [/*TODO: memberid*/ Vars.fakeMemberID]);
+  Future<List<AccountIDOrder>> getAccountIDs(String memberId) async {
+    final List<Map<String, dynamic>> accountIDs = await _database
+        .query(tableName, where: "$colMemberId = ?", whereArgs: [memberId]);
 
     List<AccountIDOrder> accountIDOrders = List.generate(
         accountIDs.length,
@@ -83,31 +82,30 @@ class TableAccountOrder {
     return accountIDOrders;
   }
 
-  Future<List<AccountIDOrder>> getAccountIDsOrdered() async {
-    List<AccountIDOrder> accountIDOrders = await getAccountIDs();
+  Future<List<AccountIDOrder>> getAccountIDsOrdered(String memberId) async {
+    List<AccountIDOrder> accountIDOrders = await getAccountIDs(memberId);
 
     accountIDOrders.sort(((a, b) => a.order.compareTo(b.order)));
 
     return accountIDOrders;
   }
 
-  Future<void> replaceAccountOrder(List<AccountIDOrder> accountIDOrders) async {
+  Future<void> replaceAccountOrder(
+      List<AccountIDOrder> accountIDOrders, String memberId) async {
     Batch batch = _database.batch();
 
-    batch.delete(tableName,
-        where: "$colMemberId = ?",
-        whereArgs: [/* TODO: member id */ Vars.fakeMemberID]);
+    batch.delete(tableName, where: "$colMemberId = ?", whereArgs: [memberId]);
     for (AccountIDOrder accountIDOrder in accountIDOrders) {
-      batch.insert(tableName, getAccountIDOrderMap(accountIDOrder));
+      batch.insert(tableName, getAccountIDOrderMap(accountIDOrder, memberId));
     }
 
     batch.commit();
   }
 
-  Map<String, Object?> getAccountIDOrderMap(AccountIDOrder accountIDOrder) {
+  Map<String, Object?> getAccountIDOrderMap(
+      AccountIDOrder accountIDOrder, String memberId) {
     return {
-      //TODO: member id
-      colMemberId: Vars.fakeMemberID,
+      colMemberId: memberId,
       colOrder: accountIDOrder.order,
       colNumber: accountIDOrder.getAccountID.getNumber,
       colBsb: accountIDOrder.getAccountID.getBsb,
@@ -324,10 +322,17 @@ class TableMember {
         : null;
   }
 
+  Future<void> updateRecentLogin(
+      {required String memberId, required DateTime dateTime}) async {
+    await _database.update(
+        tableName, {colLastLogin: dateTime.millisecondsSinceEpoch},
+        where: "$colMemberId = ?", whereArgs: [memberId]);
+  }
+
   /// This will get the member id of the last member who logged in with this app
   /// on this device
   /// null returned when no records of member logged in is found
-  Future<String?> getRcentLoggedMemberId() async {
+  Future<String?> getRecentLoggedMemberId() async {
     final List<Map<String, dynamic>> query = await _database
         .query(TableMember.tableName, orderBy: "$colLastLogin DESC", limit: 1);
 
