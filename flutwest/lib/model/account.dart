@@ -68,7 +68,7 @@ class Account {
         type: map['type'] ?? '',
         bsb: map['bsb'] ?? '',
         number: map[fnAccountNumber] ?? '',
-        balance: Decimal.parse(map[fnBalance] ?? "0"),
+        balance: Decimal.parse(map[fnBalance] ?? "-1"),
         cardNumber: map['cardNumber'] ?? '',
         memberID: map[fnMemberID] ?? "",
         docID: docID);
