@@ -187,6 +187,8 @@ class TablePayee {
         TablePayee.tableName, {colLastPayDate: payDate.millisecondsSinceEpoch},
         where: "$colMemberId = ? AND $colDocId = ?",
         whereArgs: [memberId, docId]);
+    await SQLiteController.instance.tableMember
+        .updateRecentPayeeEditDate(memberId, payDate);
   }
 
   Future<void> syncPayees(

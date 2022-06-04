@@ -271,6 +271,7 @@ class _PaymentPageState extends State<PaymentPage> {
                         }
                       });
                   if (amount != null && finishedPayment) {
+                    print("opening payment loading");
                     await Navigator.push(
                         context,
                         PageRouteBuilder(
@@ -287,15 +288,22 @@ class _PaymentPageState extends State<PaymentPage> {
   Future<void> handlePayment(
       Decimal amount, String memberId, Payee payee) async {
     DateTime payDate = DateTime.now();
+    print("in handlepayment");
+    print("Payee id mark  before = ${payee.docId}");
     await FirestoreController.instance.colTransaction.addPaymentTransaction(
+        memberId: widget.memberId,
+        payeeId: payee.docId,
         senderAccount: _currAccount,
         receiver: AccountID(number: "number", bsb: "bsb"),
         receiverName: widget.payee.getNickName,
         senderDescription: _tecDescSender.text,
         receiverDescription: _tecDescReceiver.text,
-        amount: amount);
-    await SQLiteController.instance.tablePayee
-        .updatePayeeLastPayDate(memberId, payee.docId, payDate);
+        amount: amount,
+        dateTime: payDate);
+    print("Out handle payment");
+    print("Payee id mark after  = ${payee.docId}");
+    /*await SQLiteController.instance.tablePayee
+        .updatePayeeLastPayDate(memberId, payee.docId, payDate);*/
     payee.lastPayDate = payDate;
   }
 }

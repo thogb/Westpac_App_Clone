@@ -17,8 +17,12 @@ import 'package:flutwest/ui_page/transfer_from_page.dart';
 class TransferPage extends StatefulWidget {
   final List<Account> accounts;
   final Account currAccount;
+  final Account? toAccount;
   const TransferPage(
-      {Key? key, required this.accounts, required this.currAccount})
+      {Key? key,
+      required this.accounts,
+      required this.currAccount,
+      this.toAccount})
       : super(key: key);
 
   @override
@@ -40,11 +44,16 @@ class _TransferPageState extends State<TransferPage> {
   @override
   void initState() {
     _currAccount = widget.currAccount;
-    for (Account account in widget.accounts) {
-      if (account.getNumber != _currAccount.getNumber) {
-        _toAccount = account;
+    if (widget.toAccount != null && widget.toAccount != _currAccount) {
+      _toAccount = widget.toAccount!;
+    } else {
+      for (Account account in widget.accounts) {
+        if (account.getNumber != _currAccount.getNumber) {
+          _toAccount = account;
+        }
       }
     }
+
     super.initState();
   }
 

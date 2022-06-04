@@ -124,9 +124,11 @@ class ColPayee {
         .collection(collectionName)
         .get();
     var docs = snapshot.docs;
+    List<Payee> payees = List.generate(docs.length, (index) {
+      return Payee.fromMap(docs[index].data(), docs[index].id);
+    });
 
-    return List.generate(docs.length,
-        (index) => Payee.fromMap(docs[index].data(), docs[index].id));
+    return payees;
   }
 
   Future<void> deletePayee(
@@ -144,14 +146,19 @@ class ColPayee {
   Future<void> updateLastPayDate(
       String memberId, String payeeDocId, DateTime lastPayDate) async {
     await Future.delayed(_firestoreController.delay);
-    await _firebaseFirestore
-        .collection(ColMember.collectionName)
-        .doc(memberId)
-        .collection(collectionName)
-        .doc(payeeDocId)
-        .update({Payee.fnLastPayDate: lastPayDate});
-    await _firestoreController.colMember
-        .updateRecentPayee(memberId, lastPayDate);
+    await Future.wait([
+      _firebaseFirestore
+          .collection(ColMember.collectionName)
+          .doc(memberId)
+          .collection(collectionName)
+          .doc(payeeDocId)
+          .update({Payee.fnLastPayDate: lastPayDate.millisecondsSinceEpoch}),
+      _firestoreController.colMember.updateRecentPayee(memberId, lastPayDate),
+      /*SQLiteController.instance.tableMember
+          .updateRecentPayeeEditDate(memberId, lastPayDate)*/
+      SQLiteController.instance.tablePayee
+          .updatePayeeLastPayDate(memberId, payeeDocId, lastPayDate)
+    ]);
   }
 
   Future<List<Payee>> getAllLocal(
@@ -177,6 +184,8 @@ class ColPayee {
               memberRecentPayeeEdit.millisecondsSinceEpoch) {
         var remotePayees = await FirestoreController.instance.colMember.colPayee
             .getAllByMemberId(memberId);
+        await SQLiteController.instance.tableMember
+            .updateRecentPayeeEditDate(memberId, memberRecentPayeeEdit);
         SQLiteController.instance.tablePayee.syncPayees(
             memberId: memberId,
             remotePayees: remotePayees,
@@ -379,12 +388,15 @@ class ColTransaction {
 
   Future<void> addPaymentTransaction(
       {required Account senderAccount,
+      required String memberId,
+      required String payeeId,
       required AccountID receiver,
       required String receiverName,
       required String senderDescription,
       required String receiverDescription,
       required Decimal amount,
-      DateTime? dateTime}) async {
+      required DateTime dateTime}) async {
+    DateTime payTime = dateTime;
     await Future.delayed(_firestoreController.delay);
     QueryDocumentSnapshot<Map<String, dynamic>>? receiverDoc =
         await _firestoreController.colAccount
@@ -394,10 +406,9 @@ class ColTransaction {
         : null;
     AccountTransaction transaction = AccountTransaction.create(
         sender: senderAccount.accountID,
-        receiver: receiverAccount != null
-            ? receiverAccount.accountID
-            : Vars.invalidAccountID,
-        dateTime: dateTime ?? DateTime.now(),
+        receiver:
+            receiverAccount != null ? receiverAccount.accountID : receiver,
+        dateTime: payTime,
         id: "",
         amount: amount,
         senderDescription:
@@ -408,12 +419,13 @@ class ColTransaction {
           AccountTransaction.paymentsAndTransfers,
           AccountTransaction.credits
         ]);
-    await Future.delayed(_firestoreController.delay);
     Decimal senderNewBal = senderAccount.getBalance - amount;
     await Future.wait([
       addTransaction(transaction),
       _firestoreController.colAccount
           .updateBalance(newBalance: senderNewBal, docId: senderAccount.docID!),
+      _firestoreController.colMember.colPayee
+          .updateLastPayDate(memberId, payeeId, payTime)
     ]);
 
     senderAccount.setBalance = senderNewBal;
@@ -449,11 +461,13 @@ class ColTransaction {
         .snapshots();
   }
 
-  Future<void> addTransaction(AccountTransaction transaction) async {
+  Future<DocumentReference<Map<String, dynamic>>> addTransaction(
+      AccountTransaction transaction) async {
     await Future.delayed(_firestoreController.delay);
-    await _firebaseFirestore
+    DocumentReference<Map<String, dynamic>> docRef = await _firebaseFirestore
         .collection(collectionName)
         .add(transaction.toMap());
+    return docRef;
   }
 
   Future<QuerySnapshot<Map<String, dynamic>>> getAll(String accountId) async {
