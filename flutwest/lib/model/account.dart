@@ -17,7 +17,7 @@ class Account {
   final String? docID;
   final AccountID accountID;
   Decimal balance;
-  final String cardNumber;
+  final String? cardNumber;
   final String memberID;
 
   Account(
@@ -25,7 +25,7 @@ class Account {
       required bsb,
       required number,
       required this.balance,
-      required this.cardNumber,
+      this.cardNumber,
       required this.memberID,
       this.docID})
       : accountID = AccountID(number: number, bsb: bsb);
@@ -40,7 +40,7 @@ class Account {
 
   set setBalance(balance) => this.balance = balance;
 
-  String get getCardNumber => this.cardNumber;
+  String? get getCardNumber => this.cardNumber;
 
   String get getBalanceUSDToString => "\$${balance.round(scale: 2)}";
 
@@ -57,7 +57,9 @@ class Account {
     result.addAll({'bsb': accountID.bsb});
     result.addAll({fnAccountNumber: accountID.number});
     result.addAll({fnBalance: balance.toString()});
-    result.addAll({'cardNumber': cardNumber});
+    if (cardNumber != null) {
+      result.addAll({'cardNumber': cardNumber});
+    }
     result.addAll({fnMemberID: memberID});
 
     return result;
