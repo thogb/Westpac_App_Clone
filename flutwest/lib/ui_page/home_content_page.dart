@@ -587,6 +587,7 @@ class _HomeContentPageState extends State<HomeContentPage>
                         context,
                         MaterialPageRoute(
                             builder: ((context) => AccountOrderingPage(
+                                  memberId: widget.member.id,
                                   accountOrderInfos: _accountOrderInfos,
                                 ))));
                     _updateNOfHiddenAccount();
