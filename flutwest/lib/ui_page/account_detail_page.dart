@@ -538,7 +538,7 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
   Widget _getTransactions(Account account,
       AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
     if (snapshot.hasError) {
-      return const Text("Error while retrieving transactions");
+      return const Text("Error while retrieving transactions.");
     }
 
     if (snapshot.hasData && snapshot.connectionState == ConnectionState.done) {
@@ -549,6 +549,9 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
           .toList();
       Decimal balance = account.getBalance;
       DateTime dateTime = Vars.invalidDateTime;
+      if (transactions.isEmpty) {
+        return const Text("No transactions yet.");
+      }
       return Column(
         children: transactions.map(((transaction) {
           Widget retWidget;
