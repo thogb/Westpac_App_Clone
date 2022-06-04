@@ -34,7 +34,7 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   static const Color unselectedNavItemColor = Colors.black54;
   static const Color selectedNavItemColor = Colors.black;
   static const double navItemIconSize = 25.0;
@@ -80,6 +80,15 @@ class _HomePageState extends State<HomePage> {
     Utils.hideSysNavBarColour();
 
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.detached) {
+      FirebaseAuth.instance.signOut();
+    }
+
+    super.didChangeAppLifecycleState(state);
   }
 
   @override
@@ -229,10 +238,10 @@ class _HomePageState extends State<HomePage> {
               cardNumber: _member.cardNumber!,
               cardAccount: cardAccount,
               accountOrderInfos: _accountOrderInfos);
-          setState(() {
-            _currPage = index;
-          });
         }
+        setState(() {
+          _currPage = index;
+        });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("You do not have a card yet")));
