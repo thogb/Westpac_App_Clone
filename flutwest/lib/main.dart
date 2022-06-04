@@ -1,10 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:decimal/decimal.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/controller/sqlite_controller.dart';
+import 'package:flutwest/model/account.dart';
+import 'package:flutwest/model/bank_card.dart';
 import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
