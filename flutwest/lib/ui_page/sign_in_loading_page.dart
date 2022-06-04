@@ -93,13 +93,14 @@ class _SignInLoadingPageState extends State<SignInLoadingPage> {
     );
   }
 
-  Future<bool> _createOrderInfos(List<Account> accounts) async {
+  Future<bool> _createOrderInfos(
+      List<Account> accounts, String memberId) async {
     //TODO: memberID update with auth
     List<Account> accountsClone = accounts.toList();
 
     List<AccountIDOrder> accountIDOrders = await SQLiteController
         .instance.tableAccountOrder
-        .getAccountIDsOrdered();
+        .getAccountIDsOrdered(memberId);
 
     AccountOrderInfo? temp;
 
@@ -134,6 +135,12 @@ class _SignInLoadingPageState extends State<SignInLoadingPage> {
           .signInWithEmailAndPassword(
               email: "${widget.userName}${Vars.fakeMail}",
               password: widget.password);
+      DateTime lastLogin = DateTime.now();
+      await SQLiteController.instance.tableMember
+          .insertMemberIfNotExist(widget.userName, lastLogin);
+      await SQLiteController.instance.tableMember
+          .updateRecentLogin(memberId: widget.userName, dateTime: lastLogin);
+      Member.lastLoginMemberId = widget.userName;
 
       _futureMember =
           FirestoreController.instance.colMember.getByDocId(widget.userName);
@@ -161,7 +168,7 @@ class _SignInLoadingPageState extends State<SignInLoadingPage> {
       _member = Member.fromMap((queryMember.data() as Map<String, dynamic>),
           _accounts, queryMember.id);
 
-      await _createOrderInfos(_accounts);
+      await _createOrderInfos(_accounts, widget.userName);
 
       await Navigator.push(
           context,
