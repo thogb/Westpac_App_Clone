@@ -10,6 +10,7 @@ import 'package:flutwest/cust_widget/in_text_button.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_id.dart';
+import 'package:flutwest/model/custom_exception.dart';
 import 'package:flutwest/model/payee.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
@@ -271,8 +272,7 @@ class _PaymentPageState extends State<PaymentPage> {
                         }
                       });
                   if (amount != null && finishedPayment) {
-                    print("opening payment loading");
-                    await Navigator.push(
+                    Object? result = await Navigator.push(
                         context,
                         PageRouteBuilder(
                             pageBuilder:
@@ -280,7 +280,27 @@ class _PaymentPageState extends State<PaymentPage> {
                                     LoadingPage(
                                         futureObject: handlePayment(amount,
                                             widget.memberId, widget.payee)))));
-                    Navigator.pop(context, true);
+                    if (result != null && result is Exception) {
+                      setState(() {
+                        _currAccount.balance;
+                      });
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                                title: const Text("Payment error"),
+                                content: Text(result.toString()),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text("Ok"))
+                                ]);
+                          });
+                    } else {
+                      Navigator.pop(context, true);
+                    }
                   }
                 }));
   }
@@ -288,8 +308,6 @@ class _PaymentPageState extends State<PaymentPage> {
   Future<void> handlePayment(
       Decimal amount, String memberId, Payee payee) async {
     DateTime payDate = DateTime.now();
-    print("in handlepayment");
-    print("Payee id mark  before = ${payee.docId}");
     await FirestoreController.instance.colTransaction.addPaymentTransaction(
         memberId: widget.memberId,
         payeeId: payee.docId,
@@ -300,8 +318,6 @@ class _PaymentPageState extends State<PaymentPage> {
         receiverDescription: _tecDescReceiver.text,
         amount: amount,
         dateTime: payDate);
-    print("Out handle payment");
-    print("Payee id mark after  = ${payee.docId}");
     /*await SQLiteController.instance.tablePayee
         .updatePayeeLastPayDate(memberId, payee.docId, payDate);*/
     payee.lastPayDate = payDate;

@@ -8,6 +8,7 @@ import 'package:flutwest/cust_widget/editing_page_scaffold.dart';
 import 'package:flutwest/cust_widget/in_text_button.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account.dart';
+import 'package:flutwest/model/custom_exception.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/loading_page.dart';
@@ -288,7 +289,7 @@ class _TransferPageState extends State<TransferPage> {
                           }
                         });
                     if (amount != null && _madeTransfer) {
-                      await Navigator.push(
+                      Object? result = await Navigator.push(
                           context,
                           PageRouteBuilder(
                               pageBuilder:
@@ -305,7 +306,28 @@ class _TransferPageState extends State<TransferPage> {
                                                   dateTime: _dateTime))),
                               transitionDuration: Duration.zero,
                               reverseTransitionDuration: Duration.zero));
-                      _onBackPress();
+                      if (result != null && result is Exception) {
+                        setState(() {
+                          _currAccount.balance;
+                          _toAccount.balance;
+                        });
+                        showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                  title: const Text("Transfer error"),
+                                  content: Text(result.toString()),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: const Text("Ok"))
+                                  ]);
+                            });
+                      } else {
+                        _onBackPress();
+                      }
                     }
                   })),
     );

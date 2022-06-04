@@ -152,13 +152,33 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
   static const BorderSide outlinedBorderSide =
       BorderSide(width: 0.5, color: Colors.black12);
 
-  late Future<QuerySnapshot<Map<String, dynamic>>> _recentTransactions;
+  Future<QuerySnapshot<Map<String, dynamic>>>? _recentTransactions;
+  late Future<Decimal?> _latestBalanceFuture;
+
+  bool _updatedBalance = false;
 
   @override
   void initState() {
-    _recentTransactions = FirestoreController.instance.colTransaction
-        .getAllLimitBy(widget.account.getNumber, 5);
+    FirestoreController.instance.colAccount
+        .addOnBalanceChangeObserver(_onBalanceUpdate);
+    _latestBalanceFuture = FirestoreController.instance.colAccount
+        .getLatestBalance(docId: widget.account.docID!);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    FirestoreController.instance.colAccount
+        .removeOnBalanceChangeObserver(_onBalanceUpdate);
+    super.dispose();
+  }
+
+  void _onBalanceUpdate(String docId, Decimal balance) {
+    if (docId == widget.account.docID) {
+      setState(() {
+        widget.account.balance = balance;
+      });
+    }
   }
 
   @override
@@ -166,80 +186,113 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
     super.build(context);
 
     return FutureBuilder(
-        future: _recentTransactions,
-        builder: (context,
-            AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
-          return SingleChildScrollView(
-            controller: widget.scrollController,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: Vars.standardPaddingSize,
-                  vertical: Vars.topBotPaddingSize),
-              child: Column(
-                children: [
-                  _getAccountInfo(widget.account),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      _getSimpleButton(Icons.payments, "Pay", () async {
-                        Object? result = await Navigator.push(
-                            context,
-                            PageRouteBuilder(
-                                pageBuilder:
-                                    ((context, animation, secondaryAnimation) =>
-                                        ChoosePayeePage(
-                                            currAccount: widget.account,
-                                            accounts: widget.accounts,
-                                            memberId: widget.memberId,
-                                            recentPayeeEdit:
-                                                widget.recentPayeeDate)),
-                                transitionDuration: Duration.zero,
-                                reverseTransitionDuration: Duration.zero));
-                        if (result != null && (result as bool)) {
-                          widget.onTransactionMade();
-                          setState(() {
-                            _recentTransactions = FirestoreController
-                                .instance.colTransaction
-                                .getAllLimitBy(widget.account.getNumber, 5);
-                          });
-                        }
-                      }),
-                      const SizedBox(width: 10.0),
-                      _getSimpleButton(
-                          Icons.transfer_within_a_station, "Transfer",
-                          () async {
-                        Object? result = await Navigator.push(
-                            context,
-                            PageRouteBuilder(
-                                pageBuilder:
-                                    ((context, animation, secondaryAnimation) =>
-                                        TransferPage(
-                                            currAccount: widget.account,
-                                            accounts: widget.accounts)),
-                                transitionDuration: Duration.zero,
-                                reverseTransitionDuration: Duration.zero));
-                        if (result != null && (result as bool)) {
-                          widget.onTransactionMade();
-                          setState(() {
-                            _recentTransactions = FirestoreController
-                                .instance.colTransaction
-                                .getAllLimitBy(widget.account.getNumber, 5);
-                          });
-                        }
-                      }),
-                      const SizedBox(width: 10.0),
-                      _getSimpleButton(Icons.paypal, "BPay", () {})
-                    ],
-                  ),
-                  const SizedBox(height: Vars.heightGapBetweenWidgets),
-                  _getTransactionSummary(widget.account, snapshot),
-                  _getBottomContent(widget.account),
-                  const SizedBox(height: 40)
-                ],
-              ),
-            ),
+        future: _latestBalanceFuture,
+        builder: ((context, AsyncSnapshot<Decimal?> snapshot) {
+          if (snapshot.hasError) {
+            return const Center(child: Text("Error"));
+          }
+
+          if (snapshot.hasData && snapshot.data == null) {
+            return const Center(child: Text("Error, account does not exist"));
+          }
+
+          if (ConnectionState.done == snapshot.connectionState) {
+            if (!_updatedBalance) {
+              widget.account.setBalance = snapshot.data!;
+              _updatedBalance = true;
+            }
+            _recentTransactions ??= FirestoreController.instance.colTransaction
+                .getAllLimitBy(widget.account.getNumber, 5);
+            return FutureBuilder(
+                future: _recentTransactions,
+                builder: (context,
+                    AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>>
+                        snapshot) {
+                  return SingleChildScrollView(
+                    controller: widget.scrollController,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: Vars.standardPaddingSize,
+                          vertical: Vars.topBotPaddingSize),
+                      child: Column(
+                        children: [
+                          _getAccountInfo(widget.account),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              _getSimpleButton(Icons.payments, "Pay", () async {
+                                Object? result = await Navigator.push(
+                                    context,
+                                    PageRouteBuilder(
+                                        pageBuilder: ((context, animation,
+                                                secondaryAnimation) =>
+                                            ChoosePayeePage(
+                                                currAccount: widget.account,
+                                                accounts: widget.accounts,
+                                                memberId: widget.memberId,
+                                                recentPayeeEdit:
+                                                    widget.recentPayeeDate)),
+                                        transitionDuration: Duration.zero,
+                                        reverseTransitionDuration:
+                                            Duration.zero));
+                                if (result != null && (result as bool)) {
+                                  widget.onTransactionMade();
+                                  setState(() {
+                                    _recentTransactions = FirestoreController
+                                        .instance.colTransaction
+                                        .getAllLimitBy(
+                                            widget.account.getNumber, 5);
+                                  });
+                                }
+                              }),
+                              const SizedBox(width: 10.0),
+                              _getSimpleButton(
+                                  Icons.transfer_within_a_station, "Transfer",
+                                  () async {
+                                Object? result = await Navigator.push(
+                                    context,
+                                    PageRouteBuilder(
+                                        pageBuilder: ((context, animation,
+                                                secondaryAnimation) =>
+                                            TransferPage(
+                                                currAccount: widget.account,
+                                                accounts: widget.accounts)),
+                                        transitionDuration: Duration.zero,
+                                        reverseTransitionDuration:
+                                            Duration.zero));
+                                if (result != null && (result as bool)) {
+                                  widget.onTransactionMade();
+                                  setState(() {
+                                    _recentTransactions = FirestoreController
+                                        .instance.colTransaction
+                                        .getAllLimitBy(
+                                            widget.account.getNumber, 5);
+                                  });
+                                }
+                              }),
+                              const SizedBox(width: 10.0),
+                              _getSimpleButton(Icons.paypal, "BPay", () {})
+                            ],
+                          ),
+                          const SizedBox(height: Vars.heightGapBetweenWidgets),
+                          _getTransactionSummary(widget.account, snapshot),
+                          _getBottomContent(widget.account),
+                          const SizedBox(height: 40)
+                        ],
+                      ),
+                    ),
+                  );
+                });
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _getAccountInfo(widget.account),
+              const LoadingText(repeats: 2)
+            ],
           );
-        });
+        }));
 
     //return _getAccountDetail(widget.account);
   }
@@ -496,7 +549,6 @@ class _AccountDetailSectionState extends State<AccountDetailSection>
           .toList();
       Decimal balance = account.getBalance;
       DateTime dateTime = Vars.invalidDateTime;
-      print("${DateTime.now()} Recreating details page");
       return Column(
         children: transactions.map(((transaction) {
           Widget retWidget;

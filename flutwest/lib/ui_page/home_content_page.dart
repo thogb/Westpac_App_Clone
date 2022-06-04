@@ -175,9 +175,8 @@ class _HomeContentPageState extends State<HomeContentPage>
 
     accounts = widget.member.accounts;
 
-    FirestoreController.instance.colTransaction
-        .addOnTransactionMadeObserver(_recreateAccountDrags);
-
+    FirestoreController.instance.colAccount
+        .addOnBalanceChangeObserver(_onBalanceChange);
     _scrollController.addListener(_onScroll);
 
     super.initState();
@@ -197,10 +196,21 @@ class _HomeContentPageState extends State<HomeContentPage>
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
 
-    FirestoreController.instance.colTransaction
-        .removeOnTransactionMadeObserver(_recreateAccountDrags);
+    FirestoreController.instance.colAccount
+        .removeOnBalanceChangeObserver(_onBalanceChange);
 
     super.dispose();
+  }
+
+  void _onBalanceChange(String docId, Decimal balance) {
+    for (Account account in widget.rawAccounts) {
+      if (account.docID == docId) {
+        account.setBalance = balance;
+        break;
+      }
+    }
+
+    _recreateAccountDrags();
   }
 
   void _onScroll() {
@@ -538,7 +548,7 @@ class _HomeContentPageState extends State<HomeContentPage>
               : Column(
                   children: List.generate(_accountOrderInfos.length, (index) {
                   print(
-                      "${_accountOrderInfos[index].account.hashCode} recreating and ${_accountOrderInfos[index].account.type}                               ${DateTime.now().toString()}");
+                      "${_accountOrderInfos[index].account.hashCode} recreating and ${_accountOrderInfos[index].account.type}  ${_accountOrderInfos[index].account.balance}                             ${DateTime.now().toString()}");
                   return !_accountOrderInfos[index].isHidden
                       ? _getAccountDrag(_accountOrderInfos[index])
                       : const SizedBox();

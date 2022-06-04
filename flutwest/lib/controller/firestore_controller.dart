@@ -10,6 +10,7 @@ import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/account_transaction.dart';
 import 'package:flutwest/model/bank_card.dart';
+import 'package:flutwest/model/custom_exception.dart';
 import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/payee.dart';
 import 'package:flutwest/model/utils.dart';
@@ -332,15 +333,16 @@ class ColAccount {
     return _firebaseFirestore.collection(collectionName).doc(docID).get();
   }
 
-  Future<Decimal> getLatestBalance({required String docId}) async {
+  Future<Decimal?> getLatestBalance({required String docId}) async {
     var account = await getByDocId(docID: docId);
+    Decimal? balance;
+
     if (account.exists) {
-      Decimal balance = Decimal.parse(account.data()![Account.fnBalance]);
+      balance = Decimal.parse(account.data()![Account.fnBalance]);
       notifyOnBalanceChangeObservers(docId, balance);
-      return balance;
-    } else {
-      return Decimal.parse("-1");
     }
+
+    return balance;
   }
 
   Future<void> updateBalance(
@@ -390,6 +392,22 @@ class ColTransaction {
       required String transferDescription,
       required Decimal amount,
       DateTime? dateTime}) async {
+    Decimal? senderBalance = await _firestoreController.colAccount
+        .getLatestBalance(docId: senderAccount.docID!);
+    if (senderBalance == null) {
+      throw DocumentNotFoundException("Account not found");
+    }
+
+    if (senderBalance < amount) {
+      throw InsufficientFundException("Insufficient funds.");
+    }
+
+    Decimal? receiverBalance = await _firestoreController.colAccount
+        .getLatestBalance(docId: receiverAccount.docID!);
+    if (receiverBalance == null) {
+      throw DocumentNotFoundException("Account not found");
+    }
+
     AccountTransaction transaction = AccountTransaction.create(
         sender: senderAccount.accountID,
         receiver: receiverAccount.accountID,
@@ -404,8 +422,8 @@ class ColTransaction {
           AccountTransaction.credits
         ]);
     await Future.delayed(_firestoreController.delay);
-    Decimal senderNewBal = senderAccount.getBalance - amount;
-    Decimal receiverNewBal = receiverAccount.getBalance + amount;
+    Decimal senderNewBal = senderBalance - amount;
+    Decimal receiverNewBal = receiverBalance + amount;
 
     var transactionRef = await addTransaction(transaction);
 
@@ -416,8 +434,8 @@ class ColTransaction {
           newBalance: receiverNewBal, docId: receiverAccount.docID!)
     ]);
 
-    senderAccount.setBalance = senderNewBal;
-    receiverAccount.setBalance = receiverNewBal;
+    //senderAccount.setBalance = senderNewBal;
+    //receiverAccount.setBalance = receiverNewBal;
 
     notifyOnTransactionMadebservers(
         AccountTransaction.fromMap(transaction.toMap(), transactionRef.id));
@@ -435,6 +453,18 @@ class ColTransaction {
       required DateTime dateTime}) async {
     DateTime payTime = dateTime;
     await Future.delayed(_firestoreController.delay);
+    var senderDoc = await _firestoreController.colAccount
+        .getByDocId(docID: senderAccount.docID!);
+    Decimal? senderBalance = await _firestoreController.colAccount
+        .getLatestBalance(docId: senderAccount.docID!);
+    if (senderBalance == null) {
+      throw DocumentNotFoundException("Account not found.");
+    }
+
+    if (senderBalance < amount) {
+      throw InsufficientFundException("Insufficient funds.");
+    }
+
     QueryDocumentSnapshot<Map<String, dynamic>>? receiverDoc =
         await _firestoreController.colAccount
             .getByAccountNumber(accountNumber: receiver.getNumber);
@@ -456,7 +486,7 @@ class ColTransaction {
           AccountTransaction.paymentsAndTransfers,
           AccountTransaction.credits
         ]);
-    Decimal senderNewBal = senderAccount.getBalance - amount;
+    Decimal senderNewBal = senderBalance - amount;
 
     var transactionRef = await addTransaction(transaction);
 
@@ -467,7 +497,7 @@ class ColTransaction {
           .updateLastPayDate(memberId, payeeId, payTime)
     ]);
 
-    senderAccount.setBalance = senderNewBal;
+    //senderAccount.setBalance = senderNewBal;
 
     if (receiverAccount != null) {
       Decimal receiverNewBal = receiverAccount.getBalance + amount;
