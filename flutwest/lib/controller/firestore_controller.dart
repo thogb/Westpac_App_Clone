@@ -572,7 +572,12 @@ class ColTransaction {
           arrayContains: accountNumber);
     }
 
-    if (amount != null) {
+    print(
+        "${DateTime.now()}           startAMount = $startAmount     end amount = $endAmount");
+
+    // limitation cant have more than one range filters.
+    /*
+        if (amount != null) {
       startAmount = amount - 0.050;
       endAmount = amount + 0.050;
     }
@@ -585,6 +590,12 @@ class ColTransaction {
           isLessThanOrEqualTo: (endAmount));
     }
 
+    if (startAmount != null || endAmount != null) {
+      query = query.orderBy(AccountTransaction.fnDoubleTypeAmount);
+    }*/
+
+    print(
+        "${DateTime.now()}           start date = $startDate    end date = $endDate");
     if (startDate != null) {
       query = query.where(AccountTransaction.fnDateTime,
           isGreaterThanOrEqualTo: startDate.millisecondsSinceEpoch);
@@ -595,6 +606,10 @@ class ColTransaction {
           isLessThanOrEqualTo: endDate.millisecondsSinceEpoch);
     }
 
+    query = query.orderBy(AccountTransaction.fnDateTime, descending: true);
+
+    // cant have multiple ranged search
+    /*
     if (description != null && description.length > 2) {
       query = query.where(
         "${AccountTransaction.fnDescription}.$accountNumber",
@@ -602,17 +617,25 @@ class ColTransaction {
       );
       query = query.where("${AccountTransaction.fnDescription}.$accountNumber",
           isLessThan: description + 'z');
-    }
+    }*/
 
+    /*
     if (transactionType != AccountTransaction.allTypes) {
+      query = query.where(
+          "${AccountTransaction.fnTransactionTtypes}.$transactionType",
+          isEqualTo: true);
+    }*/
+
+    /*
+    if (transactionType != AccountTransaction.allTypes) {
+
       query = query.where(AccountTransaction.fnTransactionTtypes,
           arrayContains: transactionType);
-    }
+    }*/
 
-    return query
-        .orderBy(AccountTransaction.fnDateTime, descending: true)
-        .limit(limit)
-        .get();
+    QuerySnapshot<Map<String, dynamic>> snapshot =
+        await query.limit(limit).get();
+    return snapshot;
   }
 }
 

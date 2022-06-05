@@ -112,7 +112,11 @@ class AccountTransaction {
     result.addAll({fnAmount: amount.toString()});
     result.addAll({fnDoubleTypeAmount: amount.toDouble()});
     if (transactionTypes.isNotEmpty) {
-      result.addAll({fnTransactionTtypes: transactionTypes});
+      Map<String, bool> map = {};
+      for (String type in transactionTypes) {
+        map.addAll({type: true});
+      }
+      result.addAll({fnTransactionTtypes: map});
     }
 
     return result;
@@ -121,8 +125,8 @@ class AccountTransaction {
   factory AccountTransaction.fromMap(Map<String, dynamic> map, String inId) {
     List<String> numbers = List<String>.from(map[fnAccountNumbers] ?? const []);
     List<String> bsbs = List<String>.from(map[fnAccountBSBs] ?? const []);
-    List<String> readTransactionTypes =
-        List<String>.from(map[fnTransactionTtypes] ?? const []);
+    Map<String, bool> readTypesMap = Map.from(map[fnTransactionTtypes] as Map);
+    List<String> readTransactionTypes = readTypesMap.keys.toList();
     // print(map["dateTime"] as int);
     // print(DateTime.fromMillisecondsSinceEpoch(map["dateTime"] as int).year);
     return AccountTransaction(

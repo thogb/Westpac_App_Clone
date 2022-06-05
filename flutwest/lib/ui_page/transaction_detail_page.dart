@@ -142,6 +142,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                 endDate: _transactionFilter.getEndDate),
             builder: (context, snapshots) {
               if (snapshots.hasError) {
+                print(snapshots.error);
                 return const Center(child: Text("Error"));
               }
 
@@ -176,29 +177,58 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                 // print(
                 // "------------------------------length is + ${_transactionGroups.length}");
 
+                Decimal? startAmount = _transactionFilter.getStartAmount != null
+                    ? Decimal.parse(
+                        _transactionFilter.getStartAmount.toString())
+                    : null;
+                Decimal? endAmount = _transactionFilter.getEndAmount != null
+                    ? Decimal.parse(_transactionFilter.getEndAmount.toString())
+                    : null;
+                String? descriptionSearch = _descriptionSearch?.toLowerCase();
+                if (_amountSearch != null) {
+                  startAmount =
+                      Decimal.parse((_amountSearch! - 0.050).toString());
+                  endAmount =
+                      Decimal.parse((_amountSearch! + 0.050).toString());
+                }
+                print(descriptionSearch);
                 while (_nOfProcessed < readTransactions.docs.length) {
                   accountTransaction = AccountTransaction.fromMap(
                       readTransactions.docs[_nOfProcessed].data(),
                       readTransactions.docs[_nOfProcessed].id);
-                  actualAmount = accountTransaction
-                      .getAmountPerspReceiver(widget.account.getNumber);
-                  accountTransactionPersp = AccountTransactionPersp(
-                      actualAmount: actualAmount,
-                      balance: _prevbalance,
-                      accountTransaction: accountTransaction);
+                  print(
+                      "$descriptionSearch ------ ${accountTransaction.description[widget.account.accountID]}");
+                  if ((startAmount == null ||
+                          accountTransaction.amount >= startAmount) &&
+                      (endAmount == null ||
+                          accountTransaction.amount <= endAmount) &&
+                      (descriptionSearch == null ||
+                          (accountTransaction
+                                      .description[widget.account.getNumber] !=
+                                  null &&
+                              accountTransaction
+                                  .description[widget.account.getNumber]!
+                                  .toLowerCase()
+                                  .contains(descriptionSearch)))) {
+                    actualAmount = accountTransaction
+                        .getAmountPerspReceiver(widget.account.getNumber);
+                    accountTransactionPersp = AccountTransactionPersp(
+                        actualAmount: actualAmount,
+                        balance: _prevbalance,
+                        accountTransaction: accountTransaction);
 
-                  if (Vars.isSameDay(
-                      accountTransaction.getDateTime, _prevDateTime)) {
-                    _transactionGroups[_transactionGroups.length - 1]
-                        .add(accountTransactionPersp);
-                  } else {
-                    _prevDateTime = accountTransaction.getDateTime;
-                    _transactionGroups.add(TransactionGroup(
-                        transactions: [accountTransactionPersp],
-                        dateTime: accountTransaction.getDateTime));
+                    if (Vars.isSameDay(
+                        accountTransaction.getDateTime, _prevDateTime)) {
+                      _transactionGroups[_transactionGroups.length - 1]
+                          .add(accountTransactionPersp);
+                    } else {
+                      _prevDateTime = accountTransaction.getDateTime;
+                      _transactionGroups.add(TransactionGroup(
+                          transactions: [accountTransactionPersp],
+                          dateTime: accountTransaction.getDateTime));
+                    }
+                    _prevbalance = _prevbalance - actualAmount;
                   }
-
-                  _prevbalance = _prevbalance - actualAmount;
                   _nOfProcessed++;
                 }
 
@@ -217,7 +247,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                   },
                 );*/
 
-                print("${DateTime.now()} Rebuilding trasnact");
+                bool showBalance = _transactionFilter.isAllFilterAny();
+
                 return SafeArea(
                   top: false,
                   child: ListView.builder(
@@ -262,7 +293,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                                   // "$index + types = ${_transactionGroups[index].transactions[indexTwo].accountTransaction.transactionTypes} ++ = $_transactionType");
                                   return _getTransactionButton(
                                       _transactionGroups[index]
-                                          .transactions[indexTwo]);
+                                          .transactions[indexTwo],
+                                      showBalance);
                                 }));
                       }),
                 );
@@ -283,7 +315,11 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
     );
   }
 
-  void _clearTransactions() {
+  void _clearTransactions() async {
+    if (_scrollController.positions.isNotEmpty) {
+      await _scrollController.animateTo(0,
+          duration: const Duration(microseconds: 1), curve: Curves.easeIn);
+    }
     _noMoreDataToLoad = false;
     _showLoading = true;
     _readLimits = 20;
@@ -347,7 +383,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
             _fakeAppBarController.forward();
           }
         },
-        onSubmitted: (String value) {
+        onSubmitted: (String value) async {
           double? val = double.tryParse(value);
 
           if (value.isNotEmpty) {
@@ -370,6 +406,11 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
               }
 
               if (value != _descriptionSearch && value.length > 2) {
+                if (_scrollController.positions.isNotEmpty) {
+                  await _scrollController.animateTo(0,
+                      duration: const Duration(microseconds: 1),
+                      curve: Curves.easeIn);
+                }
                 _clearTransactions();
                 setState(() {
                   _descriptionSearch = value;
@@ -493,7 +534,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
   }
 
   Widget _getTransactionButton(
-      AccountTransactionPersp accountTransactionPersp) {
+      AccountTransactionPersp accountTransactionPersp, bool showBalance) {
     AccountTransaction accountTransaction =
         accountTransactionPersp.accountTransaction;
     Decimal actualAmount = accountTransactionPersp.actualAmount;
@@ -524,7 +565,9 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                   color:
                       actualAmount > Decimal.fromInt(0) ? Colors.green : null),
             ),
-            Text("bal \$${Utils.formatDecimalMoneyUS(balance)}")
+            showBalance
+                ? Text("bal \$${Utils.formatDecimalMoneyUS(balance)}")
+                : const SizedBox()
           ],
         ),
       ),
