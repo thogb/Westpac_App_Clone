@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
 import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/model/account.dart';
+import 'package:flutwest/model/account_transaction.dart';
 import 'package:flutwest/model/bank_card.dart';
 import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/utils.dart';
