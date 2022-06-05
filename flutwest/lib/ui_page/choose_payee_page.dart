@@ -256,6 +256,7 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
                                       accounts: widget.accounts,
                                       currAccount: widget.accounts[0],
                                     ))));
+                    print("result is ========= $result");
                     if (result != null) {
                       Payee newPayee = result as Payee;
 
@@ -263,6 +264,7 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
                       // _payees.sort(
                       // ((a, b) => a.getNickName.compareTo(b.getNickName)));
                       //_sortPayeeList(_payees);
+                      await _waitPaymentPage(newPayee);
                       setState(() {
                         _requireReconstruct = true;
                         //_payees.length;
@@ -292,6 +294,22 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
         });
   }
 
+  Future<Object?> _waitPaymentPage(Payee payee) async {
+    Object? result = await Navigator.push(
+        context,
+        PageRouteBuilder(
+            pageBuilder: ((context, animation, secondaryAnimation) =>
+                PaymentPage(
+                    memberId: widget.memberId,
+                    payee: payee,
+                    accounts: widget.accounts,
+                    currAccount: widget.currAccount ?? widget.accounts[0])),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero));
+
+    return result;
+  }
+
   /*
   Widget _getPayeeList() {
     return ListView.builder(
@@ -318,15 +336,16 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
               snapshot.connectionState == ConnectionState.done) {
             List<Payee>? payees = snapshot.data;
             if (payees != null) {
-              if (payees.isEmpty) {
+              if (_payees.isEmpty) {
+                _payees = payees;
+              }
+
+              if (_payees.isEmpty) {
                 return const Align(
                     alignment: Alignment.topCenter, child: Text("No Payees"));
               }
 
-              if (_requireReconstruct || _payees.isEmpty) {
-                if (_payees.isEmpty) {
-                  _payees = payees;
-                }
+              if (_requireReconstruct || _payeeGroups.isEmpty) {
                 _resetPayeeData();
                 DateTime now = DateTime.now();
                 DateTime sevenDayAgo =
@@ -549,16 +568,7 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
   }
 
   Future<Object?> handlePaymentPage(Payee payee) async {
-    Object? result = await Navigator.push(
-        context,
-        PageRouteBuilder(
-            pageBuilder: ((context, animation, secondaryAnimation) =>
-                PaymentPage(
-                  memberId: widget.memberId,
-                  accounts: widget.accounts,
-                  currAccount: widget.currAccount ?? widget.accounts[0],
-                  payee: payee,
-                ))));
+    Object? result = await _waitPaymentPage(payee);
     _madeAnyPayment = (result != null && (result as bool)) || _madeAnyPayment;
     return result;
   }
