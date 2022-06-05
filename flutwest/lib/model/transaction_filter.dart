@@ -5,6 +5,7 @@ import 'package:flutwest/model/account_transaction.dart';
 import 'package:flutwest/model/vars.dart';
 
 class TransactionFilter {
+  static const String allTypes = AccountTransaction.allTypes;
   static const List<String> types = AccountTransaction.types;
 
   static const String anyAmount = "Any amount";
@@ -14,7 +15,7 @@ class TransactionFilter {
     anyAmount: [null, null],
     "Under \$20": [null, 20],
     "\$20 - \$50": [20, 50],
-    "\$50 - \$100": [20, 100],
+    "\$50 - \$100": [50, 100],
     "\$100 - \$250": [100, 250],
     "\$250 - \$500": [250, 500],
     "\$500 - \$1000": [500, 1000],
@@ -29,6 +30,7 @@ class TransactionFilter {
 
   static final Map<String, List<DateTime?>> dates = {
     anyDate: [null, null],
+    "Past 7 days": [DateTime(now.year, now.month, now.day - 7), now],
     "Past 14 days": [DateTime(now.year, now.month, now.day - 14), now],
     "Past 30 days": [DateTime(now.year, now.month, now.day - 30), now],
     "This month": [DateTime(now.year, now.month), now],
@@ -37,12 +39,12 @@ class TransactionFilter {
       DateTime(now.year, now.month, 0)
     ],
     "This quarter": [
-      DateTime(now.year, (((now.month - 1) % 3) * 3) + 1),
-      DateTime(now.year, (((now.month - 1) % 3) * 3) + 4, 0)
+      DateTime(now.year, (((now.month - 1) ~/ 3) * 3) + 1),
+      DateTime(now.year, (((now.month - 1) ~/ 3) * 3) + 4, 0)
     ],
     "Last quarter": [
-      DateTime(now.year, (((now.month - 1) % 3) * 3) + 1 - 3),
-      DateTime(now.year, (((now.month - 1) % 3) * 3) + 4 - 3, 0)
+      DateTime(now.year, (((now.month - 1) ~/ 3) * 3) + 1 - 3),
+      DateTime(now.year, (((now.month - 1) ~/ 3) * 3) + 4 - 3, 0)
     ],
     "This year": [DateTime(now.year), DateTime(now.year + 1, 1, 0)],
     "Last year": [DateTime(now.year - 1), DateTime(now.year, 1, 0)],
@@ -153,6 +155,12 @@ class TransactionFilter {
     }
 
     return amount1 == amount2;
+  }
+
+  bool isAllFilterAny() {
+    return this.amount == anyAmount &&
+        this.date == anyDate &&
+        this.type == allTypes;
   }
 
   bool isFilterEqual(TransactionFilter other) {
