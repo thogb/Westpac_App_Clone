@@ -26,10 +26,10 @@ void main() async {
   await Firebase.initializeApp();
 
   // WidgetsFlutterBinding.ensureInitialized();
-  //FirestoreController.instance.setFirebaseFireStore(FakeFirebaseFirestore());
-  FirestoreController.instance.setFirebaseFireStore(FirebaseFirestore.instance);
+  FirestoreController.instance.setFirebaseFireStore(FakeFirebaseFirestore());
+  //FirestoreController.instance.setFirebaseFireStore(FirebaseFirestore.instance);
   //FirestoreController.instance.enablePersistentData(true);
-  //Utils.putData();
+  Utils.putData();
 
   Member.lastLoginMemberId =
       await SQLiteController.instance.tableMember.getRecentLoggedMemberId();

@@ -17,6 +17,33 @@ import 'package:sticky_headers/sticky_headers.dart';
 
 import '../cust_widget/cust_button.dart';
 
+class AccountTransactionPersp {
+  final Decimal actualAmount;
+  final Decimal balance;
+  final AccountTransaction accountTransaction;
+
+  AccountTransactionPersp({
+    required this.actualAmount,
+    required this.balance,
+    required this.accountTransaction,
+  });
+}
+
+class TransactionGroup {
+  final DateTime dateTime;
+  final List<AccountTransactionPersp> transactions;
+
+  const TransactionGroup({required this.transactions, required this.dateTime});
+
+  void add(AccountTransactionPersp accountTransactionPersp) {
+    transactions.add(accountTransactionPersp);
+  }
+
+  AccountTransactionPersp getLast() {
+    return transactions.last;
+  }
+}
+
 class TransactionDetailPage extends StatefulWidget {
   final Account account;
   final bool isInputting;
@@ -35,12 +62,6 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
 
   late final AnimationController _fakeAppBarController = AnimationController(
       duration: const Duration(milliseconds: 300), vsync: this);
-  /*
-  late final Animation<double> _fakeAppBarFade =
-      CurvedAnimation(parent: _fakeAppBarController, curve: Curves.linear);
-
-  late final Animation<double> _fakeAppBarSize =
-      CurvedAnimation(parent: _fakeAppBarController, curve: Curves.linear);*/
 
   late final Animation<double> _fakeAppBarFade =
       Tween<double>(begin: 1.0, end: 0.0).animate(
@@ -52,27 +73,30 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
 
   final TextEditingController _textEditingController = TextEditingController();
 
-  // String _transactionType = AccountTransaction.allTypes;
   String _transactionType = AccountTransaction.allTypes;
 
   bool _isInputting = false;
-  // int _nOfProcessed = 0;
-  int _readLimits = 20;
-  // late double _prevbalance;
-  // DateTime _prevDateTime = Vars.invalidDateTime;
+  int _readLimits = 0;
+  int _displayLimits = 20;
 
   bool _noMoreDataToLoad = false;
 
   double? _amountSearch;
   String? _descriptionSearch;
 
-  // final List<TransactionGroup> _transactionGroups = [];
+  final List<TransactionGroup> _transactionGroups = [];
 
   final ScrollController _scrollController = ScrollController();
   bool _showLoading = false;
 
   late TransactionFilter _transactionFilter;
   late TransactionFilter _resetTransactionFilter;
+
+  bool _hasError = false;
+  bool _noMoreData = false;
+  int _prevSnapshotLen = 0;
+  bool _isLoading = true;
+  int _transactionCount = 0;
 
   @override
   void initState() {
@@ -87,6 +111,11 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
 
     // _prevbalance = widget.account.getBalance;
 
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      _resetTransactions();
+      _getTransactions();
+    });
+
     super.initState();
   }
 
@@ -96,6 +125,207 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
     _scrollController.dispose();
 
     super.dispose();
+  }
+
+  void _resetTransactions() async {
+    if (_scrollController.positions.isNotEmpty) {
+      await _scrollController.animateTo(0,
+          duration: const Duration(microseconds: 1), curve: Curves.easeIn);
+    }
+    _readLimits = 0;
+    _displayLimits = 20;
+    _noMoreData = false;
+    _prevSnapshotLen = 0;
+    _isLoading = true;
+    _transactionCount = 0;
+  }
+
+  void _getTransactions() async {
+    int limitIncrement = 10;
+    int readsMultiple = 1;
+
+    try {
+      while (!_noMoreData && _transactionCount < _displayLimits) {
+        print(
+            "${DateTime.now()} looping ${_transactionGroups.length} ${_displayLimits}");
+        _readLimits = _readLimits == 0
+            ? 20
+            : _readLimits + (limitIncrement * readsMultiple);
+        readsMultiple = readsMultiple == 1 ? 1 : readsMultiple * 2;
+
+        var snapShot = await FirestoreController.instance.colTransaction
+            .getAllLimitBy(widget.account.getNumber, _readLimits,
+                transactionType: _transactionType,
+                amount: _amountSearch,
+                description: _descriptionSearch,
+                startAmount: _transactionFilter.getStartAmount,
+                endAmount: _transactionFilter.getEndAmount,
+                startDate: _transactionFilter.getStartDate,
+                endDate: _transactionFilter.getEndDate);
+
+        var docs = snapShot.docs;
+
+        _noMoreData = _prevSnapshotLen == docs.length;
+        _prevSnapshotLen = docs.length;
+
+        if (!_noMoreData) {
+          String? lastTransactionId = _transactionGroups.isEmpty
+              ? null
+              : _transactionGroups.last.getLast().accountTransaction.getId;
+
+          Decimal _prevBalance = _transactionGroups.isEmpty
+              ? widget.account.getBalance
+              : _transactionGroups.last.getLast().balance;
+
+          int index = 0;
+          if (lastTransactionId != null) {
+            while (lastTransactionId != docs[index].id) {
+              index++;
+            }
+            index++;
+          }
+
+          AccountTransaction accountTransaction;
+          AccountTransactionPersp accountTransactionPersp;
+          Decimal actualAmount;
+          Decimal? startAmount = _transactionFilter.getStartAmount != null
+              ? Decimal.parse(_transactionFilter.getStartAmount.toString())
+              : null;
+          Decimal? endAmount = _transactionFilter.getEndAmount != null
+              ? Decimal.parse(_transactionFilter.getEndAmount.toString())
+              : null;
+          String? descriptionSearch = _descriptionSearch?.toLowerCase();
+          if (_amountSearch != null) {
+            startAmount = Decimal.parse((_amountSearch! - 0.050).toString());
+            endAmount = Decimal.parse((_amountSearch! + 0.050).toString());
+          }
+          DateTime _prevDateTime = _transactionGroups.isEmpty
+              ? Vars.invalidDateTime
+              : _transactionGroups.last.dateTime;
+
+          for (int i = index; i < docs.length; i++) {
+            accountTransaction =
+                AccountTransaction.fromMap(docs[i].data(), docs[i].id);
+            if ((startAmount == null ||
+                    accountTransaction.amount >= startAmount) &&
+                (endAmount == null || accountTransaction.amount <= endAmount) &&
+                (descriptionSearch == null ||
+                    (accountTransaction.description[widget.account.getNumber] !=
+                            null &&
+                        accountTransaction
+                            .description[widget.account.getNumber]!
+                            .toLowerCase()
+                            .contains(descriptionSearch)))) {
+              _transactionCount++;
+              actualAmount = accountTransaction
+                  .getAmountPerspReceiver(widget.account.getNumber);
+              accountTransactionPersp = AccountTransactionPersp(
+                  actualAmount: actualAmount,
+                  balance: _prevBalance,
+                  accountTransaction: accountTransaction);
+
+              print(
+                  "${DateTime.now()} ${_prevDateTime} ${accountTransaction.getDateTime} ${_transactionCount}");
+
+              if (Vars.isSameDay(
+                  accountTransaction.getDateTime, _prevDateTime)) {
+                _transactionGroups[_transactionGroups.length - 1]
+                    .add(accountTransactionPersp);
+              } else {
+                _prevDateTime = accountTransaction.getDateTime;
+                _transactionGroups.add(TransactionGroup(
+                    transactions: [accountTransactionPersp],
+                    dateTime: accountTransaction.getDateTime));
+              }
+            }
+          }
+        }
+      }
+    } on Exception catch (e) {
+      _hasError = true;
+    }
+
+    _displayLimits = _transactionCount;
+
+    setState(() {
+      _transactionGroups.length;
+    });
+
+    if (_isLoading) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Widget _getLoading(String msg) {
+    return LoadingText.getLoadingWithMessage(msg);
+  }
+
+  Widget _getTransactionsListView() {
+    if (_hasError) {
+      return const Align(
+          alignment: Alignment.topCenter,
+          child: Padding(
+            padding: EdgeInsets.all(Vars.standardPaddingSize),
+            child: Text("Error"),
+          ));
+    } else if (_isLoading) {
+      return _getLoading("Loading");
+    } else if (_transactionGroups.isEmpty) {
+      return const Align(
+          alignment: Alignment.topCenter,
+          child: Padding(
+            padding: EdgeInsets.all(Vars.standardPaddingSize),
+            child: Text("No Transactions"),
+          ));
+    } else {
+      bool showBalance = _transactionFilter.isAllFilterAny();
+      return Expanded(
+        child: SafeArea(
+          top: false,
+          child: ListView.builder(
+              padding: EdgeInsets.zero,
+              controller: _scrollController,
+              itemCount: _transactionGroups.length + 1,
+              itemBuilder: (context, index) {
+                //return _transactionGroups[index];
+                if (index == _transactionGroups.length) {
+                  if (_noMoreDataToLoad) {
+                    return const Padding(
+                        padding:
+                            EdgeInsets.only(bottom: Vars.topBotPaddingSize),
+                        child: Center(child: Text("No More Transactions")));
+                  } else {
+                    return Container(
+                        padding: const EdgeInsets.only(
+                            bottom: Vars.topBotPaddingSize),
+                        child: _getLoading("Loading more"));
+                  }
+
+                  //return const SizedBox(height: Vars.topBotPaddingSize * 3);
+                }
+
+                return StickyHeader(
+                    header: _getTransactionLineBr(
+                        _transactionGroups[index].dateTime),
+                    content: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        itemCount:
+                            _transactionGroups[index].transactions.length,
+                        shrinkWrap: true,
+                        physics: const ClampingScrollPhysics(),
+                        itemBuilder: (context, indexTwo) {
+                          // print(
+                          // "$index + types = ${_transactionGroups[index].transactions[indexTwo].accountTransaction.transactionTypes} ++ = $_transactionType");
+                          return _getTransactionButton(
+                              _transactionGroups[index].transactions[indexTwo],
+                              showBalance);
+                        }));
+              }),
+        ),
+      );
+    }
   }
 
   @override
@@ -128,8 +358,9 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
               ),
             ),
           ),
+          _getTransactionsListView()
           //Expanded(child: _getTransactionList())
-          Expanded(
+          /*Expanded(
               child: FutureBuilder(
             future: FirestoreController.instance.colTransaction.getAllLimitBy(
                 widget.account.getNumber, _readLimits,
@@ -309,13 +540,13 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                 ),
               );
             },
-          )),
+          )),*/
         ],
       ),
     );
   }
 
-  void _clearTransactions() async {
+  Future<void> _clearTransactions() async {
     if (_scrollController.positions.isNotEmpty) {
       await _scrollController.animateTo(0,
           duration: const Duration(microseconds: 1), curve: Curves.easeIn);
@@ -327,14 +558,12 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
 
   void _onScrollTransactions() {
     if (!_noMoreDataToLoad && _scrollController.position.extentAfter == 0.0) {
-      setState(() {
+      /*setState(() {
         _readLimits += loadingIncrement;
-      });
+      });*/
+      _getTransactions();
+      _displayLimits += loadingIncrement;
     }
-  }
-
-  Widget _getLoading(String msg) {
-    return LoadingText.getLoadingWithMessage(msg);
   }
 
   Widget _getFakeAppBar() {
@@ -377,9 +606,9 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
         autoFocus: _isInputting,
         hintText: "Search by name, date, amount",
         textEditingController: _textEditingController,
-        onFocus: (bool hasFocus) {
+        onFocus: (bool hasFocus) async {
           if (hasFocus) {
-            _clearTransactions();
+            await _clearTransactions();
             _fakeAppBarController.forward();
           }
         },
@@ -389,7 +618,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
           if (value.isNotEmpty) {
             if (val != null) {
               if (val != _amountSearch) {
-                _clearTransactions();
+                await _clearTransactions();
                 setState(() {
                   _amountSearch = val;
 
@@ -406,19 +635,14 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
               }
 
               if (value != _descriptionSearch && value.length > 2) {
-                if (_scrollController.positions.isNotEmpty) {
-                  await _scrollController.animateTo(0,
-                      duration: const Duration(microseconds: 1),
-                      curve: Curves.easeIn);
-                }
-                _clearTransactions();
+                await _clearTransactions();
                 setState(() {
                   _descriptionSearch = value;
                 });
               }
             }
           } else {
-            _clearTransactions();
+            await _clearTransactions();
             setState(() {
               if (_amountSearch != null) {
                 _amountSearch = null;
@@ -430,17 +654,17 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
             });
           }
         },
-        onClearButtonTap: () {
-          _clearTransactions();
+        onClearButtonTap: () async {
+          await _clearTransactions();
           setState(() {
             //_textEditingController.clear();
             _amountSearch = null;
             _descriptionSearch = null;
           });
         },
-        onPrefixButtonTap: () {
+        onPrefixButtonTap: () async {
           _fakeAppBarController.reverse();
-          _clearTransactions();
+          await _clearTransactions();
           setState(() {
             //_textEditingController.clear();
             _amountSearch = null;
@@ -472,7 +696,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                                     filter: _transactionFilter,
                                     resetFilter: _resetTransactionFilter))));
                 if (result != null && (result as bool)) {
-                  _clearTransactions();
+                  await _clearTransactions();
                   setState(() {
                     _transactionFilter;
                   });
@@ -500,7 +724,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
                     curve: Curves.easeIn);
               }
               if (_transactionType != value) {
-                _clearTransactions();
+                await _clearTransactions();
                 setState(() {
                   _transactionType = value;
                 });
@@ -572,28 +796,5 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
         ),
       ),
     );
-  }
-}
-
-class AccountTransactionPersp {
-  final Decimal actualAmount;
-  final Decimal balance;
-  final AccountTransaction accountTransaction;
-
-  AccountTransactionPersp({
-    required this.actualAmount,
-    required this.balance,
-    required this.accountTransaction,
-  });
-}
-
-class TransactionGroup {
-  final DateTime dateTime;
-  final List<AccountTransactionPersp> transactions;
-
-  const TransactionGroup({required this.transactions, required this.dateTime});
-
-  void add(AccountTransactionPersp accountTransactionPersp) {
-    transactions.add(accountTransactionPersp);
   }
 }
