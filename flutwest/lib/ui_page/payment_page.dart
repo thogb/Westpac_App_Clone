@@ -312,7 +312,7 @@ class _PaymentPageState extends State<PaymentPage> {
         memberId: widget.memberId,
         payeeId: payee.docId,
         senderAccount: _currAccount,
-        receiver: AccountID(number: "number", bsb: "bsb"),
+        receiver: payee.accountID,
         receiverName: widget.payee.getNickName,
         senderDescription: _tecDescSender.text,
         receiverDescription: _tecDescReceiver.text,

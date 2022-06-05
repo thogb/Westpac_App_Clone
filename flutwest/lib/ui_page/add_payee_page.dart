@@ -187,19 +187,7 @@ class _AddPayeePageState extends State<AddPayeePage> {
                                           widget.memberId, payee, addTime))),
                           transitionDuration: Duration.zero,
                           reverseTransitionDuration: Duration.zero));
-                  Navigator.pushReplacement(
-                      context,
-                      PageRouteBuilder(
-                          pageBuilder:
-                              ((context, animation, secondaryAnimation) =>
-                                  PaymentPage(
-                                      memberId: widget.memberId,
-                                      payee: payee,
-                                      accounts: widget.accounts,
-                                      currAccount: widget.currAccount)),
-                          transitionDuration: Duration.zero,
-                          reverseTransitionDuration: Duration.zero),
-                      result: payee);
+                  Navigator.pop(context, payee);
 
                   /*
                   await FirestoreController.instance
