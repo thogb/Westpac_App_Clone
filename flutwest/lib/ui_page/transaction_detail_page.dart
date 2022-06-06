@@ -244,7 +244,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
           // the new data to be processed
           int index = 0;
           if (lastTransactionId != null) {
-            while (lastTransactionId != docs[index].id) {
+            while (index < docs.length && lastTransactionId != docs[index].id) {
               index++;
             }
             index++;
@@ -268,7 +268,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
           // If there are some transactions stored already then get the last
           // group's dateTime and compare with new data, else chose a invalid
           // time
-          DateTime _prevDateTime = _transactionGroups.isEmpty
+          DateTime prevDateTime = _transactionGroups.isEmpty
               ? Vars.invalidDateTime
               : _transactionGroups.last.dateTime;
 
@@ -277,16 +277,19 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
             accountTransaction =
                 AccountTransaction.fromMap(docs[i].data(), docs[i].id);
             // Check if satisfy the filter requirements
-            if ((startAmount == null ||
+            bool passAmount = (startAmount == null ||
                     accountTransaction.amount >= startAmount) &&
-                (endAmount == null || accountTransaction.amount <= endAmount) &&
-                (descriptionSearch == null ||
-                    (accountTransaction.description[widget.account.getNumber] !=
-                            null &&
-                        accountTransaction
-                            .description[widget.account.getNumber]!
-                            .toLowerCase()
-                            .contains(descriptionSearch)))) {
+                (endAmount == null || accountTransaction.amount <= endAmount);
+            bool passDescription = (descriptionSearch == null ||
+                (accountTransaction.description[widget.account.getNumber] !=
+                        null &&
+                    accountTransaction.description[widget.account.getNumber]!
+                        .toLowerCase()
+                        .contains(descriptionSearch)));
+            bool passed = _amountSearch == null
+                ? passAmount && passDescription
+                : passAmount || passDescription;
+            if (passed) {
               _transactionCount++;
               actualAmount = accountTransaction
                   .getAmountPerspReceiver(widget.account.getNumber);
@@ -299,11 +302,11 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
               // transaction group else create new transaction group and add to
               // this
               if (Vars.isSameDay(
-                  accountTransaction.getDateTime, _prevDateTime)) {
+                  accountTransaction.getDateTime, prevDateTime)) {
                 _transactionGroups[_transactionGroups.length - 1]
                     .add(accountTransactionPersp);
               } else {
-                _prevDateTime = accountTransaction.getDateTime;
+                prevDateTime = accountTransaction.getDateTime;
                 _transactionGroups.add(TransactionGroup(
                     transactions: [accountTransactionPersp],
                     dateTime: accountTransaction.getDateTime));
@@ -325,17 +328,17 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
     _displayLimits = _transactionCount;
     _loadingMore = false;
 
-    // Update listview
-    setState(() {
-      _transactionGroups.length;
-    });
-
     // Set loading false
     if (_isLoading) {
       setState(() {
         _isLoading = false;
       });
     }
+
+    // Update listview
+    setState(() {
+      _transactionGroups.length;
+    });
   }
 
   Widget _getLoading(String msg) {
@@ -504,18 +507,23 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
           }
         },
         onSubmitted: (String value) async {
-          double? val = double.tryParse(value);
+          value = value.trim();
+          //double? val = double.tryParse(value);
+          _amountSearch = double.tryParse(value);
+          _descriptionSearch = value;
+          await _resetTransactions();
+          _getTransactions();
 
-          if (value.isNotEmpty) {
+          /*if (value.isNotEmpty) {
             if (val != null) {
               if (val != _amountSearch) {
                 await _resetTransactions();
                 setState(() {
                   _amountSearch = val;
 
-                  if (_descriptionSearch != null) {
+                  /*if (_descriptionSearch != null) {
                     _descriptionSearch = null;
-                  }
+                  }*/
                 });
                 _getTransactions();
               }
@@ -546,7 +554,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
               }
             });
             _getTransactions();
-          }
+          }*/
         },
         onClearButtonTap: () async {
           await _resetTransactions();

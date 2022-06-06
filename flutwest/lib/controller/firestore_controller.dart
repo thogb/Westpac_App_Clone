@@ -626,12 +626,10 @@ class ColTransaction {
           isEqualTo: true);
     }*/
 
-    /*
     if (transactionType != AccountTransaction.allTypes) {
-
       query = query.where(AccountTransaction.fnTransactionTtypes,
           arrayContains: transactionType);
-    }*/
+    }
 
     QuerySnapshot<Map<String, dynamic>> snapshot =
         await query.limit(limit).get();

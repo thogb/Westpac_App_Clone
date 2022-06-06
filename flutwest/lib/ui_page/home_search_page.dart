@@ -52,7 +52,6 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
   ];
 
   static const int limitIncrement = 10;
-  static const int initialLimit = 20;
 
   final TextEditingController _tecSearch = TextEditingController();
   final ScrollController _scrollController = ScrollController();
@@ -71,10 +70,20 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
   // Used by transactions section
   String? _descriptionSearch;
   double? _amountSearch;
-  int _limit = initialLimit;
-  int _prevTransactionCount = 0;
+
+  final List<AccountTransactionBinded> _transactions = [];
+  final Map<String, Account> _selectedAccountMap = {};
+  final HashSet<AccountTransactionBinded> _headerAccounts = HashSet();
+
   bool _noMoreToLoad = false;
-  bool _newSearch = true;
+  bool _hasError = false;
+  bool _isLoading = false;
+  bool _loadingMore = false;
+  int _readLimits = 20;
+  int _displayLimits = 20;
+  int _prevTransactionCount = 0;
+  int _transactionCount = 0;
+  DateTime _prevDateTime = Vars.invalidDateTime;
 
   @override
   void initState() {
@@ -96,7 +105,6 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
 
     _customDateFilters = Map.from(TransactionFilter.dates);
     //_customDateFilters.remove(TransactionFilter.anyDate);
-
     super.initState();
   }
 
@@ -111,10 +119,10 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
   void _onScroll() {
     if (_currFilter == filterTransactions &&
         !_noMoreToLoad &&
+        !_loadingMore &&
         _scrollController.position.extentAfter == 0.0) {
-      setState(() {
-        _limit += limitIncrement;
-      });
+      _displayLimits += limitIncrement;
+      _getTransactions();
     }
   }
 
@@ -146,6 +154,7 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
                       setState(() {
                         _currFilter;
                       });
+                      _getTransactions();
                     },
                   ),
                 ),
@@ -205,6 +214,14 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
                                 await resetScrollControllerPosition();
                                 if (_currFilter == filterTransactions) {
                                   _resetTransactionsValue();
+                                  _selectedAccountMap.clear();
+
+                                  for (Account account
+                                      in _transactionFilter.selectedAccounts) {
+                                    _selectedAccountMap
+                                        .addAll({account.getNumber: account});
+                                  }
+                                  _getTransactions();
                                 }
 
                                 setState(() {
@@ -247,6 +264,7 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
 
       if (value == filterTransactions) {
         _resetTransactionsValue();
+        _getTransactions();
       }
     }
   }
@@ -272,7 +290,7 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
         CustTextButton(heading: "Activate card", onTap: () {})
       ]);
     } else if (_currFilter == filterTransactions) {
-      return _getTransactions();
+      return _getTransactionsView();
     } else if (_currFilter == filterPayeeAndBillers) {
       return _getPayeesAndBillers();
     } else if (_currFilter == filterProducts) {
@@ -398,128 +416,217 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
   }
 
   void _resetTransactionsValue() {
-    _limit = initialLimit;
+    _headerAccounts.clear();
+    _transactions.clear();
+
+    _readLimits = 20;
+    _displayLimits = 20;
     _noMoreToLoad = false;
-    _newSearch = true;
+    _isLoading = true;
+    _prevTransactionCount = 0;
+    _transactionCount = 0;
   }
 
-  Widget _getTransactions() {
+  Future<void> _getTransactions() async {
     _amountSearch = null;
-    _descriptionSearch = null;
 
     String input = _tecSearch.text.trim();
+    _descriptionSearch = input;
 
     if (input.isNotEmpty) {
       _amountSearch = double.tryParse(input);
+    }
 
-      if (_amountSearch == null) {
-        _descriptionSearch = input;
+    int limitIncrement = 5;
+    int limitMultiple = 2;
+    _prevDateTime = _headerAccounts.isEmpty
+        ? Vars.invalidDateTime
+        : _headerAccounts.last.accountTransaction.dateTime;
+    Decimal? startAmount = _transactionFilter.getStartAmount != null
+        ? Decimal.parse(_transactionFilter.getStartAmount.toString())
+        : null;
+    Decimal? endAmount = _transactionFilter.getEndAmount != null
+        ? Decimal.parse(_transactionFilter.getEndAmount.toString())
+        : null;
+    String? descriptionSearch = _descriptionSearch?.toLowerCase();
+    if (_amountSearch != null) {
+      startAmount = Decimal.parse((_amountSearch! - 0.050).toString());
+      endAmount = Decimal.parse((_amountSearch! + 0.050).toString());
+    }
+
+    _loadingMore = true;
+
+    try {
+      while (!_noMoreToLoad && _transactionCount < _displayLimits) {
+        _readLimits = _readLimits == 0
+            ? 20
+            : _readLimits + (limitIncrement * limitMultiple);
+        limitMultiple *= 2;
+
+        var snapshot = await FirestoreController.instance.colTransaction
+            .getAllLimitBy("", _readLimits,
+                description: _descriptionSearch,
+                amount: _amountSearch,
+                startAmount: _transactionFilter.getStartAmount,
+                endAmount: _transactionFilter.getEndAmount,
+                startDate: _transactionFilter.getStartDate,
+                endDate: _transactionFilter.getEndDate,
+                transactionType: _transactionFilter.getType,
+                accountNumbers: _transactionFilter.selectedAccounts
+                    .map((e) => e.getNumber)
+                    .toList());
+        var docs = snapshot.docs;
+
+        _noMoreToLoad = _prevTransactionCount == docs.length;
+        _prevTransactionCount = docs.length;
+
+        if (!_noMoreToLoad) {
+          String? prevTransactionId = _transactions.isEmpty
+              ? null
+              : _transactions.last.accountTransaction.id;
+
+          int index = 0;
+          if (prevTransactionId != null) {
+            while (index < docs.length && prevTransactionId != docs[index].id) {
+              index++;
+            }
+            index++;
+          }
+
+          for (int i = index; i < docs.length; i++) {
+            AccountTransaction accountTransaction =
+                AccountTransaction.fromMap(docs[i].data(), docs[i].id);
+            Account? senderAccount =
+                _selectedAccountMap[accountTransaction.sender.getNumber];
+            Account? receiverAccount =
+                _selectedAccountMap[accountTransaction.receiver.getNumber];
+            bool anyAdded = false;
+
+            if (senderAccount != null) {
+              anyAdded = addAccountTransactionBinded(
+                      accountTransaction,
+                      senderAccount,
+                      startAmount,
+                      endAmount,
+                      descriptionSearch) ||
+                  anyAdded;
+            }
+
+            if (receiverAccount != null) {
+              // Make sure anyAdded comes after || operator otherwise
+              // addAccountTransactionBinded is not run when anyAdded is true
+              anyAdded ==
+                      addAccountTransactionBinded(
+                          accountTransaction,
+                          receiverAccount,
+                          startAmount,
+                          endAmount,
+                          descriptionSearch) ||
+                  anyAdded;
+            }
+
+            if (anyAdded) {
+              _transactionCount++;
+            }
+          }
+        }
+      }
+    } on Exception catch (e) {
+      setState(() {
+        _hasError = true;
+      });
+    }
+
+    _displayLimits = _transactionCount;
+    _loadingMore = false;
+    if (_isLoading) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+
+    setState(() {
+      _transactions.length;
+    });
+  }
+
+  bool addAccountTransactionBinded(
+    AccountTransaction accountTransaction,
+    Account account,
+    Decimal? startAmount,
+    Decimal? endAmount,
+    String? descriptionSearch,
+  ) {
+    bool passAmount =
+        (startAmount == null || accountTransaction.amount >= startAmount) &&
+            (endAmount == null || accountTransaction.amount <= endAmount);
+    bool passDescription = (descriptionSearch == null ||
+        (accountTransaction.description[account.getNumber] != null &&
+            accountTransaction.description[account.getNumber]!
+                .toLowerCase()
+                .contains(descriptionSearch)));
+    bool passed = _amountSearch == null
+        ? passAmount && passDescription
+        : passAmount || passDescription;
+
+    if (passed) {
+      AccountTransactionBinded accountTransactionBinded =
+          AccountTransactionBinded(
+              accountTransaction: accountTransaction, account: account);
+      _transactions.add(accountTransactionBinded);
+
+      if (!Vars.isSameDay(_prevDateTime, accountTransaction.dateTime)) {
+        _headerAccounts.add(accountTransactionBinded);
+        _prevDateTime = accountTransaction.dateTime;
       }
     }
 
-    return FutureBuilder(
-        future: FirestoreController.instance.colTransaction.getAllLimitBy(
-            "", _limit,
-            description: _descriptionSearch,
-            amount: _amountSearch,
-            startAmount: _transactionFilter.getStartAmount,
-            endAmount: _transactionFilter.getEndAmount,
-            startDate: _transactionFilter.getStartDate,
-            endDate: _transactionFilter.getEndDate,
-            transactionType: _transactionFilter.getType,
-            accountNumbers: _transactionFilter.selectedAccounts
-                .map((e) => e.getNumber)
-                .toList()),
-        builder: ((context,
-            AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snapshot) {
-          if (snapshot.hasError) {
-            return LoadingText.getLoadingWithMessage("Error", loading: false);
-          }
+    return passed;
+  }
 
-          if (snapshot.hasData &&
-              (!_newSearch ||
-                  ConnectionState.done == snapshot.connectionState)) {
-            _newSearch = false;
-            QuerySnapshot<Map<String, dynamic>> readTransactions =
-                snapshot.data!;
-            List<AccountTransactionBinded> transactions = [];
-            Map<String, Account> selectedAccountMap = {};
-            HashSet<int> headerIndexes = HashSet();
-
-            DateTime currDate = Vars.invalidDateTime;
-            int count = 0;
-
-            print(snapshot.data!.docs.length);
-
-            _noMoreToLoad =
-                _prevTransactionCount == readTransactions.docs.length;
-            _prevTransactionCount = readTransactions.docs.length;
-
-            for (Account account in _transactionFilter.selectedAccounts) {
-              selectedAccountMap.addAll({account.getNumber: account});
+  Widget _getTransactionsView() {
+    if (_hasError) {
+      return LoadingText.getLoadingWithMessage("Error", loading: false);
+    } else if (_isLoading) {
+      return LoadingText.getLoadingWithMessage("Loading");
+    } else {
+      return ListView.builder(
+        controller: _scrollController,
+        itemCount: _transactions.length + 1,
+        itemBuilder: (context, index) {
+          if (index == _transactions.length) {
+            if (_noMoreToLoad) {
+              return const StandardPadding(
+                showVerticalPadding: true,
+                child: Center(
+                    child: Text(
+                  "Can't find what you're looking for?\nTry changing the date or amount range filter",
+                  textAlign: TextAlign.center,
+                )),
+              );
             }
 
-            print(selectedAccountMap.toString());
-
-            for (var readTransaction in readTransactions.docs) {
-              AccountTransaction accountTransaction =
-                  AccountTransaction.fromMap(
-                      readTransaction.data(), readTransaction.id);
-              Account? account =
-                  selectedAccountMap[accountTransaction.sender.getNumber];
-              if (!Vars.isSameDay(currDate, accountTransaction.dateTime)) {
-                headerIndexes.add(count);
-                currDate = accountTransaction.dateTime;
-              }
-              if (account != null) {
-                transactions.add(AccountTransactionBinded(
-                    accountTransaction: accountTransaction, account: account));
-                count++;
-              }
-              account =
-                  selectedAccountMap[accountTransaction.receiver.getNumber];
-              if (account != null) {
-                transactions.add(AccountTransactionBinded(
-                    accountTransaction: accountTransaction, account: account));
-                count++;
-              }
+            return LoadingText.getLoadingWithMessage("Loading more");
+          } else {
+            AccountTransactionBinded accountTransactionBinded =
+                _transactions[index];
+            if (_headerAccounts.contains(accountTransactionBinded)) {
+              return Column(children: [
+                _getheader(
+                    accountTransactionBinded.accountTransaction.dateTime),
+                _getTransactionButton(
+                    accountTransactionBinded.accountTransaction,
+                    accountTransactionBinded.account)
+              ]);
+            } else {
+              return _getTransactionButton(
+                  accountTransactionBinded.accountTransaction,
+                  accountTransactionBinded.account);
             }
-
-            return ListView.builder(
-              controller: _scrollController,
-              itemCount: transactions.length + 1,
-              itemBuilder: (context, index) {
-                if (headerIndexes.contains(index)) {
-                  return Column(children: [
-                    _getheader(transactions[index].accountTransaction.dateTime),
-                    _getTransactionButton(
-                        transactions[index].accountTransaction,
-                        transactions[index].account)
-                  ]);
-                } else if (index == transactions.length) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return LoadingText.getLoadingWithMessage("Loading more");
-                  }
-
-                  return const StandardPadding(
-                    showVerticalPadding: true,
-                    child: Center(
-                        child: Text(
-                      "Can't find what you're looking for?\nTry changing the date or amount range filter",
-                      textAlign: TextAlign.center,
-                    )),
-                  );
-                }
-
-                return _getTransactionButton(
-                    transactions[index].accountTransaction,
-                    transactions[index].account);
-              },
-            );
           }
-
-          return LoadingText.getLoadingWithMessage("Loading");
-        }));
+        },
+      );
+    }
   }
 
   Widget _getheader(DateTime dateTime) {
