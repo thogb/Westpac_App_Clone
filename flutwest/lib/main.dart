@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -21,10 +22,10 @@ void main() async {
   await Firebase.initializeApp();
 
   // WidgetsFlutterBinding.ensureInitialized();
-  FirestoreController.instance.setFirebaseFireStore(FakeFirebaseFirestore());
-  //FirestoreController.instance.setFirebaseFireStore(FirebaseFirestore.instance);
+  //FirestoreController.instance.setFirebaseFireStore(FakeFirebaseFirestore());
+  FirestoreController.instance.setFirebaseFireStore(FirebaseFirestore.instance);
   //FirestoreController.instance.enablePersistentData(true);
-  Utils.putData();
+  //Utils.putData();
 
   Member.lastLoginMemberId =
       await SQLiteController.instance.tableMember.getRecentLoggedMemberId();
