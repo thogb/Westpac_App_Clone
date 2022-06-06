@@ -30,17 +30,17 @@ class Account {
       this.docID})
       : accountID = AccountID(number: number, bsb: bsb);
 
-  String get getType => this.type;
+  String get getType => type;
 
-  String get getBsb => this.accountID.bsb;
+  String get getBsb => accountID.bsb;
 
-  String get getNumber => this.accountID.number;
+  String get getNumber => accountID.number;
 
-  get getBalance => this.balance;
+  get getBalance => balance;
 
   set setBalance(balance) => this.balance = balance;
 
-  String? get getCardNumber => this.cardNumber;
+  String? get getCardNumber => cardNumber;
 
   String get getBalanceUSDToString => "\$${balance.round(scale: 2)}";
 
@@ -90,11 +90,11 @@ class AccountOrderInfo {
   AccountOrderInfo(
       {required this.account, required this.order, required this.hidden});
 
-  get getOrder => this.order;
+  get getOrder => order;
 
   set setOrder(order) => this.order = order;
 
-  get getHidden => this.hidden;
+  get getHidden => hidden;
 
   set setHidden(hidden) => this.hidden = hidden;
 

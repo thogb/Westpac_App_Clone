@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutwest/model/vars.dart';
 
 class CustRadio<T> extends StatelessWidget {
   static const EdgeInsets smallPaddingRight = EdgeInsets.only(right: 5);

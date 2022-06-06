@@ -39,17 +39,17 @@ class Payee {
         nickName: nickName);
   }
 
-  AccountID get getAccountID => this.accountID;
+  AccountID get getAccountID => accountID;
 
   String get getNickName => nickName;
 
-  String get getAccountName => this.accountName;
+  String get getAccountName => accountName;
 
   bool isAllEqual(Payee other) {
-    return this.accountID.getNumber == other.accountID.getNumber &&
-        this.accountID.getBsb == other.accountID.getBsb &&
-        this.accountName == other.accountName &&
-        this.nickName == other.nickName;
+    return accountID.getNumber == other.accountID.getNumber &&
+        accountID.getBsb == other.accountID.getBsb &&
+        accountName == other.accountName &&
+        nickName == other.nickName;
   }
 
   Map<String, dynamic> toMap() {

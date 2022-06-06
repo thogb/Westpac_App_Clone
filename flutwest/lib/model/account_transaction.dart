@@ -77,17 +77,17 @@ class AccountTransaction {
         transactionTypes: transactionTypes);
   }
 
-  AccountID get getSender => this.sender;
+  AccountID get getSender => sender;
 
-  AccountID get getReceiver => this.receiver;
+  AccountID get getReceiver => receiver;
 
-  get getDateTime => this.dateTime;
+  get getDateTime => dateTime;
 
-  get getId => this.id;
+  get getId => id;
 
-  Map<String, String> get getDescription => this.description;
+  Map<String, String> get getDescription => description;
 
-  get getAmount => this.amount;
+  get getAmount => amount;
 
   Decimal getAmountPerspReceiver(String subjectNumber) {
     return receiver.number == subjectNumber ? amount : -amount;

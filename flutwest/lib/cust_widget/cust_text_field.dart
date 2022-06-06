@@ -1,9 +1,7 @@
 import 'dart:math';
 
 import 'package:decimal/decimal.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:intl/intl.dart';

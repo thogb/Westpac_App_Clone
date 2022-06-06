@@ -4,7 +4,6 @@ import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
-import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/account_transaction.dart';
@@ -350,7 +349,7 @@ class Utils {
       "DEBIT CARD PURCHASE PAYPAL",
       "DEBIT CARD PURCHASE"
     ];
-    List<String> payLocation = ["Bob", "John", "Dave", "Dylan"];
+    //List<String> payLocation = ["Bob", "John", "Dave", "Dylan"];
     List<String> atmLocation = [
       "CANNINGTON ATM",
       "RIVERTON ATM",
@@ -465,9 +464,8 @@ class Utils {
       }
     }
 
-    // Remove later TODO:
-    SQLiteController.instance.tableMember
-        .insertMemberIfNotExist(Vars.fakeMemberID, DateTime.now());
+    /*SQLiteController.instance.tableMember
+        .insertMemberIfNotExist(Vars.fakeMemberID, DateTime.now());*/
     /*DateTime? lastDate = await SQLiteController.instance.getRecentPayeeEditDate(Vars.fakeMemberID);
         SQLiteController.instance
         .insertMemberIfNotExist(Vars.fakeMemberID, DateTime.now());

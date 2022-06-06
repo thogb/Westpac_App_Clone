@@ -8,12 +8,10 @@ import 'package:flutwest/cust_widget/cust_button.dart';
 import 'package:flutwest/cust_widget/loading_text.dart';
 import 'package:flutwest/cust_widget/outlined_container.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
-import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/account_transaction.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/choose_payee_page.dart';
-import 'package:flutwest/ui_page/payment_page.dart';
 import 'package:flutwest/ui_page/transaction_detail_page.dart';
 import 'package:flutwest/ui_page/transfer_page.dart';
 

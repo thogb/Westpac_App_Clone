@@ -6,7 +6,6 @@ import 'package:flutwest/cust_widget/cust_floating_button.dart';
 import 'package:flutwest/cust_widget/cust_heading.dart';
 import 'package:flutwest/cust_widget/cust_paragraph.dart';
 import 'package:flutwest/cust_widget/cust_radio.dart';
-import 'package:flutwest/cust_widget/cust_text_button.dart';
 import 'package:flutwest/cust_widget/cust_text_field.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account.dart';
@@ -282,6 +281,7 @@ class _FilteringPageState extends State<FilteringPage> {
                                           if (value.isEmpty) {
                                             return "An amount is required";
                                           }
+                                          return null;
                                         },
                                       ),
                                       const SizedBox(
@@ -294,6 +294,7 @@ class _FilteringPageState extends State<FilteringPage> {
                                             if (value.isEmpty) {
                                               return "An amount is required";
                                             }
+                                            return null;
                                           })
                                     ],
                                   )

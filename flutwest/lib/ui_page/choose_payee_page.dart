@@ -1,21 +1,14 @@
-import 'dart:collection';
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
-import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/cust_widget/clickable_text.dart';
 import 'package:flutwest/cust_widget/cust_button.dart';
 import 'package:flutwest/cust_widget/cust_fake_appbar.dart';
-import 'package:flutwest/cust_widget/cust_floating_button.dart';
 import 'package:flutwest/cust_widget/cust_radio.dart';
 import 'package:flutwest/cust_widget/cust_text_button.dart';
 import 'package:flutwest/cust_widget/cust_text_field_search.dart';
-import 'package:flutwest/cust_widget/editing_page_scaffold.dart';
 import 'package:flutwest/cust_widget/loading_text.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account.dart';
-import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/payee.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
@@ -42,7 +35,7 @@ class ChoosePayeePage extends StatefulWidget {
 
 class _ChoosePayeePageState extends State<ChoosePayeePage>
     with TickerProviderStateMixin {
-  static const String recentPaymentKey = "recent_payment";
+  //static const String recentPaymentKey = "recent_payment";
   late final AnimationController _fakeAppBarController = AnimationController(
       duration: const Duration(milliseconds: 300), vsync: this);
 
@@ -256,7 +249,6 @@ class _ChoosePayeePageState extends State<ChoosePayeePage>
                                       accounts: widget.accounts,
                                       currAccount: widget.accounts[0],
                                     ))));
-                    print("result is ========= $result");
                     if (result != null) {
                       Payee newPayee = result as Payee;
 

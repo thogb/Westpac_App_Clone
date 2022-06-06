@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/vars.dart';
 
 class LoadingText extends StatelessWidget {

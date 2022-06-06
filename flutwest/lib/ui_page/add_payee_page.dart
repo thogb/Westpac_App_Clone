@@ -10,7 +10,6 @@ import 'package:flutwest/model/payee.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/loading_page.dart';
-import 'package:flutwest/ui_page/payment_page.dart';
 
 class AddPayeePage extends StatefulWidget {
   final List<Account> accounts;

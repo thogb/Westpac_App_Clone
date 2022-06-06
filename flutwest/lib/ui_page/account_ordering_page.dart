@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/sqlite_controller.dart';
-import 'package:flutwest/cust_widget/cust_appbar.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_id.dart';

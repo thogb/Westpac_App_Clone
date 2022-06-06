@@ -1,9 +1,7 @@
 import 'package:decimal/decimal.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
-import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/cust_widget/account_button.dart';
 import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/cust_widget/clickable_text.dart';
@@ -12,7 +10,6 @@ import 'package:flutwest/cust_widget/outlined_container.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/cust_widget/west_logo.dart';
 import 'package:flutwest/model/account.dart';
-import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/navbar_state.dart';
 import 'package:flutwest/model/utils.dart';
@@ -548,8 +545,6 @@ class _HomeContentPageState extends State<HomeContentPage>
                 )
               : Column(
                   children: List.generate(_accountOrderInfos.length, (index) {
-                  print(
-                      "${_accountOrderInfos[index].account.hashCode} recreating and ${_accountOrderInfos[index].account.type}  ${_accountOrderInfos[index].account.balance}                             ${DateTime.now().toString()}");
                   return !_accountOrderInfos[index].isHidden
                       ? _getAccountDrag(_accountOrderInfos[index])
                       : const SizedBox();

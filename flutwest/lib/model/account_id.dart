@@ -4,11 +4,11 @@ class AccountID {
 
   AccountID({required this.number, required this.bsb});
 
-  get getNumber => this.number;
+  get getNumber => number;
 
   set setNumber(number) => this.number = number;
 
-  get getBsb => this.bsb;
+  get getBsb => bsb;
 
   set setBsb(bsb) => this.bsb = bsb;
 }
@@ -25,15 +25,15 @@ class AccountIDOrder {
       required this.hidden})
       : accountID = AccountID(number: number, bsb: bsb);
 
-  get getAccountID => this.accountID;
+  get getAccountID => accountID;
 
   set setAccountID(accountID) => this.accountID = accountID;
 
-  get getOrder => this.order;
+  get getOrder => order;
 
   set setOrder(order) => this.order = order;
 
-  get getHidden => this.hidden;
+  get getHidden => hidden;
 
   set setHidden(hidden) => this.hidden = hidden;
 

@@ -1,21 +1,15 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutwest/controller/firestore_controller.dart';
-import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/navbar_state.dart';
 import 'package:flutwest/model/utils.dart';
-import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/cards_page.dart';
 import 'package:flutwest/ui_page/choose_payee_page.dart';
 import 'package:flutwest/ui_page/home_content_page.dart';
-import 'package:flutwest/ui_page/payment_page.dart';
 import 'package:flutwest/ui_page/products_page.dart';
 import 'package:flutwest/ui_page/profile_page.dart';
-import 'package:flutwest/ui_page/transfer_Page.dart';
 import 'package:flutwest/ui_page/transfer_from_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -106,7 +100,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     Navigator.pop(context, true);
   }
 
-  Widget _getErrorPage(String errorMsg) {
+  /*Widget _getErrorPage(String errorMsg) {
     return Scaffold(
       body: Stack(children: [
         const BackgroundImage(),
@@ -122,7 +116,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         )
       ]),
     );
-  }
+  }*/
 
   Widget _getHomePage() {
     return Scaffold(

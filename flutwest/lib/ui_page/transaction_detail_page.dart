@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
@@ -317,7 +316,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
           }
         }
       }
-    } on Exception catch (e) {
+    } on Exception {
       _hasError = true;
     }
 

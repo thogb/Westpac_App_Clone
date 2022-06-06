@@ -1,5 +1,4 @@
 import 'package:flutwest/model/payee.dart';
-import 'package:flutwest/model/vars.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -151,7 +150,6 @@ class TablePayee {
   }
 
   Future<bool> doesPayeeExist(String memberId, Payee payee) async {
-    await Future.delayed(Duration(milliseconds: 1000));
     var query = await _database.query(TablePayee.tableName,
         where:
             "$colMemberId = ? AND $colAccountNumber = ? AND $colAccountBsb = ?",

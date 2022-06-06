@@ -95,7 +95,6 @@ class _SignInLoadingPageState extends State<SignInLoadingPage> {
 
   Future<bool> _createOrderInfos(
       List<Account> accounts, String memberId) async {
-    //TODO: memberID update with auth
     List<Account> accountsClone = accounts.toList();
 
     List<AccountIDOrder> accountIDOrders = await SQLiteController

@@ -1,16 +1,12 @@
 import 'package:decimal/decimal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
-import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/cust_widget/clickable_text.dart';
 import 'package:flutwest/cust_widget/cust_floating_button.dart';
 import 'package:flutwest/cust_widget/cust_text_field.dart';
 import 'package:flutwest/cust_widget/editing_page_scaffold.dart';
 import 'package:flutwest/cust_widget/in_text_button.dart';
-import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/account.dart';
-import 'package:flutwest/model/account_id.dart';
-import 'package:flutwest/model/custom_exception.dart';
 import 'package:flutwest/model/payee.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';

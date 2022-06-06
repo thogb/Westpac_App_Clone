@@ -76,7 +76,7 @@ class TransactionFilter {
     this.endAmount,
     this.date = anyDate,
     this.type = AccountTransaction.allTypes,
-  }) : this.selectedAccounts = selectedAccounts ?? HashSet();
+  }) : selectedAccounts = selectedAccounts ?? HashSet();
 
   DateTime? get getStartDate {
     //print("startDate in here = $date and this = ${dates[date]![0]}");
@@ -158,9 +158,7 @@ class TransactionFilter {
   }
 
   bool isAllFilterAny() {
-    return this.amount == anyAmount &&
-        this.date == anyDate &&
-        this.type == allTypes;
+    return amount == anyAmount && date == anyDate && type == allTypes;
   }
 
   bool isFilterEqual(TransactionFilter other) {

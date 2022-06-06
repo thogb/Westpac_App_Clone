@@ -36,33 +36,33 @@ class BankCard {
         _locked = locked,
         _linkedAccountID = AccountID(number: accountNumber, bsb: accountBSB);
 
-  get number => this._number;
+  get number => _number;
 
-  set number(value) => this._number = value;
+  set number(value) => _number = value;
 
-  get name => this._name;
+  get name => _name;
 
-  set name(value) => this._name = value;
+  set name(value) => _name = value;
 
-  get expiry => this._expiry;
+  get expiry => _expiry;
 
-  set expiry(value) => this._expiry = value;
+  set expiry(value) => _expiry = value;
 
-  get cvc => this._cvc;
+  get cvc => _cvc;
 
-  set cvc(value) => this._cvc = value;
+  set cvc(value) => _cvc = value;
 
-  get dynamicCVC => this._dynamicCVC;
+  get dynamicCVC => _dynamicCVC;
 
-  set dynamicCVC(value) => this._dynamicCVC = value;
+  set dynamicCVC(value) => _dynamicCVC = value;
 
-  get locked => this._locked;
+  get locked => _locked;
 
-  set locked(value) => this._locked = value;
+  set locked(value) => _locked = value;
 
-  get linkedAccountID => this._linkedAccountID;
+  get linkedAccountID => _linkedAccountID;
 
-  set linkedAccountID(value) => this._linkedAccountID = value;
+  set linkedAccountID(value) => _linkedAccountID = value;
 
   get firstFourDigit => _number.substring(0, 4);
 

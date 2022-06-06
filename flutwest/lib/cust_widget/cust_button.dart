@@ -81,7 +81,7 @@ class CustButton extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   width: leftRightPadding,
                 ),
                 rightWidget != null ? rightWidget! : const SizedBox()

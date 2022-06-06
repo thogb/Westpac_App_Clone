@@ -83,7 +83,6 @@ class _CardsPageState extends State<CardsPage> {
             _lockCard ??= _bankCard.locked;
           }
 
-          print("${DateTime.now()} recreating futurebuilder");
           return CustomScrollView(slivers: [
             const CustSilverAppbar(title: "Cards"),
             SliverList(

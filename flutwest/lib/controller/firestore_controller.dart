@@ -4,7 +4,6 @@ import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:decimal/decimal.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/account_id.dart';
@@ -14,7 +13,6 @@ import 'package:flutwest/model/custom_exception.dart';
 import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/payee.dart';
 import 'package:flutwest/model/utils.dart';
-import 'package:flutwest/model/vars.dart';
 
 class FirestoreController {
   late final FirebaseFirestore _firebaseFirestore;
@@ -453,8 +451,8 @@ class ColTransaction {
       required DateTime dateTime}) async {
     DateTime payTime = dateTime;
     await Future.delayed(_firestoreController.delay);
-    var senderDoc = await _firestoreController.colAccount
-        .getByDocId(docID: senderAccount.docID!);
+
+    // get latest balance from firestore
     Decimal? senderBalance = await _firestoreController.colAccount
         .getLatestBalance(docId: senderAccount.docID!);
     if (senderBalance == null) {
@@ -465,6 +463,7 @@ class ColTransaction {
       throw InsufficientFundException("Insufficient funds.");
     }
 
+    // get payee's account info
     QueryDocumentSnapshot<Map<String, dynamic>>? receiverDoc =
         await _firestoreController.colAccount
             .getByAccountNumber(accountNumber: receiver.getNumber);
@@ -490,6 +489,7 @@ class ColTransaction {
 
     var transactionRef = await addTransaction(transaction);
 
+    // update balance
     await Future.wait([
       _firestoreController.colAccount
           .updateBalance(newBalance: senderNewBal, docId: senderAccount.docID!),
@@ -499,6 +499,7 @@ class ColTransaction {
 
     //senderAccount.setBalance = senderNewBal;
 
+    // update payee balance if exist
     if (receiverAccount != null) {
       Decimal receiverNewBal = receiverAccount.getBalance + amount;
       await _firestoreController.colAccount.updateBalance(
@@ -572,9 +573,6 @@ class ColTransaction {
           arrayContains: accountNumber);
     }
 
-    print(
-        "${DateTime.now()}           startAMount = $startAmount     end amount = $endAmount");
-
     // limitation cant have more than one range filters.
     /*
         if (amount != null) {
@@ -594,8 +592,6 @@ class ColTransaction {
       query = query.orderBy(AccountTransaction.fnDoubleTypeAmount);
     }*/
 
-    print(
-        "${DateTime.now()}           start date = $startDate    end date = $endDate");
     if (startDate != null) {
       query = query.where(AccountTransaction.fnDateTime,
           isGreaterThanOrEqualTo: startDate.millisecondsSinceEpoch);

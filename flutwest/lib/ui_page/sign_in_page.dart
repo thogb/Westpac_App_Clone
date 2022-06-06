@@ -7,8 +7,6 @@ import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/cust_widget/west_logo.dart';
 import 'package:flutwest/model/member.dart';
 import 'package:flutwest/ui_page/guest_page.dart';
-import 'package:flutwest/ui_page/home_page.dart';
-import 'package:flutwest/ui_page/loading_page.dart';
 import 'package:flutwest/ui_page/sign_in_loading_page.dart';
 
 import '../model/vars.dart';
