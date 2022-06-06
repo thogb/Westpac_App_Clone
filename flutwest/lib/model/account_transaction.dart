@@ -125,7 +125,9 @@ class AccountTransaction {
   factory AccountTransaction.fromMap(Map<String, dynamic> map, String inId) {
     List<String> numbers = List<String>.from(map[fnAccountNumbers] ?? const []);
     List<String> bsbs = List<String>.from(map[fnAccountBSBs] ?? const []);
-    Map<String, bool> readTypesMap = Map.from(map[fnTransactionTtypes] as Map);
+    Map<String, bool> readTypesMap = map[fnTransactionTtypes] != null
+        ? Map.from(map[fnTransactionTtypes] as Map)
+        : {};
     List<String> readTransactionTypes = readTypesMap.keys.toList();
     // print(map["dateTime"] as int);
     // print(DateTime.fromMillisecondsSinceEpoch(map["dateTime"] as int).year);
