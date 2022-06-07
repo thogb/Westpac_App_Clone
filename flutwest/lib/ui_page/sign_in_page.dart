@@ -345,7 +345,10 @@ class _SignInPageState extends State<SignInPage> {
             if (_changeUser) {
               if (_customIDController.text.length < 8) {
                 errMsg = "Enter 8 digits";
-              } else if (_passwordController.text.isEmpty) {
+              }
+            }
+            if (errMsg.isEmpty) {
+              if (_passwordController.text.isEmpty) {
                 errMsg = "No password entered";
               } else if (_passwordController.text.length < 6) {
                 errMsg =
