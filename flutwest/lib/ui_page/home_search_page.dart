@@ -148,6 +148,10 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
                       Navigator.pop(context);
                     },
                     onSubmitted: (value) async {
+                      String input = value.trim();
+
+                      _descriptionSearch = input;
+                      _amountSearch = double.tryParse(input);
                       await resetScrollControllerPosition();
                       _resetTransactionsValue();
                       setState(() {
@@ -427,15 +431,6 @@ class _HomeSearchPageState extends State<HomeSearchPage> {
   }
 
   Future<void> _getTransactions() async {
-    _amountSearch = null;
-
-    String input = _tecSearch.text.trim();
-    _descriptionSearch = input;
-
-    if (input.isNotEmpty) {
-      _amountSearch = double.tryParse(input);
-    }
-
     int limitIncrement = 5;
     int limitMultiple = 2;
     _prevDateTime = _headerAccounts.isEmpty
