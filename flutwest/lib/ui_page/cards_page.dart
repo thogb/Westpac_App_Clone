@@ -279,10 +279,7 @@ class _CardsPageState extends State<CardsPage> {
               ),
         value: _lockCard!,
         onChanged: (bool value) async {
-          setState(() {
-            _lockCard = value;
-          });
-          await Navigator.push(
+          Object? result = await Navigator.push(
               context,
               PageRouteBuilder(
                   pageBuilder: ((context, animation, secondaryAnimation) =>
@@ -291,6 +288,11 @@ class _CardsPageState extends State<CardsPage> {
                               .updateLockStatus(widget.cardNumber, value))),
                   transitionDuration: const Duration(seconds: 0),
                   reverseTransitionDuration: const Duration(seconds: 0)));
+          if (result != null && result is Exception) {
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Error updating card")));
+            return;
+          }
           if (value == false) {
             showDialog(
                 context: context,
@@ -317,6 +319,9 @@ class _CardsPageState extends State<CardsPage> {
                         const LockCardInfoPage()),
                     transitionDuration: const Duration(seconds: 0)));
           }
+          setState(() {
+            _lockCard = value;
+          });
         });
   }
 
