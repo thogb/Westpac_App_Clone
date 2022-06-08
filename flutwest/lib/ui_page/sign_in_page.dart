@@ -2,12 +2,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
+import 'package:flutwest/controller/local_auth_controller.dart';
+import 'package:flutwest/controller/secure_storage_controller.dart';
+import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/cust_widget/west_logo.dart';
 import 'package:flutwest/model/member.dart';
 import 'package:flutwest/ui_page/guest_page.dart';
 import 'package:flutwest/ui_page/sign_in_loading_page.dart';
+import 'package:local_auth/local_auth.dart';
+import 'package:local_auth_android/local_auth_android.dart';
 
 import '../model/vars.dart';
 
@@ -31,13 +36,61 @@ class _SignInPageState extends State<SignInPage> {
 
   TextFieldFocus _textFieldFocus = TextFieldFocus.none;
 
-  bool _changeUser = false;
+  late bool _changeUser;
+  late bool _isinBiometicLogin;
+  bool _memberHasBiometric = false;
 
   @override
   void initState() {
     _changeUser = Member.lastLoginMemberId == null;
+    // no records of member in database means no biometric login
+    _isinBiometicLogin = Member.lastLoginMemberId != null && true;
+
+    WidgetsBinding.instance!.addPostFrameCallback((timeStamp) {
+      _fingerPrintLogin();
+    });
 
     super.initState();
+  }
+
+  Future<void> _fingerPrintLogin() async {
+    bool authenticated = false;
+    if (Member.lastLoginMemberId != null) {
+      _memberHasBiometric = await SecureStorageController.instance
+          .containsKey(Member.lastLoginMemberId!);
+      if (_memberHasBiometric) {
+        try {
+          authenticated = await LocalAuthController.instance.localAuthentication
+              .authenticate(
+                  authMessages: const [
+                AndroidAuthMessages(
+                    signInTitle: "Sign in to Westpac",
+                    biometricHint: "",
+                    cancelButton: "USE PASSWORD")
+              ],
+                  localizedReason: "Confirm your biometrics to continue",
+                  options: const AuthenticationOptions(
+                      useErrorDialogs: true,
+                      stickyAuth: true,
+                      biometricOnly: true));
+        } on PlatformException catch (error) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text("Error, ${error.code}")));
+        }
+      }
+    }
+
+    if (authenticated) {
+      // password should not be nullable
+      String? password = await SecureStorageController.instance
+          .read(Member.lastLoginMemberId!);
+      handleSignIn(Member.lastLoginMemberId!, password);
+    }
+
+    setState(() {
+      _isinBiometicLogin = false;
+      _memberHasBiometric;
+    });
   }
 
   @override
@@ -149,9 +202,13 @@ class _SignInPageState extends State<SignInPage> {
         children: [
           _errorMsg.isNotEmpty ? _getErrorMsg() : const SizedBox(),
           _getTextFields(),
-          _getForgotPassword(),
+          !_isinBiometicLogin
+              ? _getForgotPassword()
+              : const SizedBox(
+                  height: 180,
+                ),
           _getSignInButton(),
-          _getRegisterButton(),
+          !_isinBiometicLogin ? _getRegisterButton() : const SizedBox(),
         ],
       ),
     );
@@ -226,83 +283,126 @@ class _SignInPageState extends State<SignInPage> {
                   GestureDetector(
                     child: const Text(
                       "Change",
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: Vars.paragraphTextSize),
                     ),
-                    onTap: () {
-                      setState(() {
-                        _changeUser = true;
-                      });
+                    onTap: () async {
+                      Object? result = await showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: const Text("Sign in as someone else?"),
+                              content: const Text(
+                                  "This will clear your settings saved on this device"),
+                              actions: [
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context, false);
+                                    },
+                                    child: const Text("Cancel")),
+                                TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context, true);
+                                    },
+                                    child: const Text("Continue"))
+                              ],
+                            );
+                          });
+
+                      if (result != null && (result as bool)) {
+                        setState(() {
+                          _changeUser = true;
+                        });
+
+                        // check null just in case, this shouldn't be null
+                        if (Member.lastLoginMemberId != null) {
+                          Future.wait([
+                            SQLiteController.instance.tableMember
+                                .updateNotifyLocalAuth(
+                                    Member.lastLoginMemberId!, false),
+                            SecureStorageController.instance
+                                .delete(Member.lastLoginMemberId!)
+                          ]);
+                        }
+                      }
                     },
                   )
                 ],
               ),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: Vars.topBotPaddingSize),
-          child: TextField(
-            style: const TextStyle(color: Colors.white),
-            controller: _passwordController,
-            obscureText: true,
-            onTap: () {
-              if (_textFieldFocus != TextFieldFocus.password) {
-                setState(() {
-                  _textFieldFocus = TextFieldFocus.password;
-                });
-              }
+        !_isinBiometicLogin
+            ? Padding(
+                padding: const EdgeInsets.symmetric(
+                    vertical: Vars.topBotPaddingSize),
+                child: TextField(
+                  style: const TextStyle(color: Colors.white),
+                  controller: _passwordController,
+                  obscureText: true,
+                  onTap: () {
+                    if (_textFieldFocus != TextFieldFocus.password) {
+                      setState(() {
+                        _textFieldFocus = TextFieldFocus.password;
+                      });
+                    }
 
-              if (_changeUser) {
-                if (_customIDController.text.length < 8) {
-                  if (_errorMsg.isEmpty) {
-                    setState(() {
-                      _errorMsg = "Customer ID is too short. Enter 8 digits.";
-                    });
-                  }
-                } else {
-                  if (_errorMsg.isNotEmpty) {
-                    _errorMsg = "";
-                  }
-                }
-              }
-            },
-            onChanged: (value) {
-              if (_textFieldFocus == TextFieldFocus.password) {
-                if (value.isNotEmpty) {
-                  if (!_showPasswordCancel) {
-                    setState(() {
-                      _showPasswordCancel = true;
-                    });
-                  }
-                } else {
-                  if (_showPasswordCancel) {
-                    setState(() {
-                      _showPasswordCancel = false;
-                    });
-                  }
-                }
-              }
-            },
-            maxLength: 6,
-            decoration: InputDecoration(
-                labelText: "Password",
-                counterText: "",
-                labelStyle: const TextStyle(color: Colors.white),
-                enabledBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white)),
-                focusedBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white, width: 2.0)),
-                suffixIcon: _textFieldFocus == TextFieldFocus.password &&
-                        _showPasswordCancel
-                    ? IconButton(
-                        icon: const Icon(Icons.cancel, color: Colors.white),
-                        onPressed: () {
-                          _passwordController.clear();
+                    if (_changeUser) {
+                      if (_customIDController.text.length < 8) {
+                        if (_errorMsg.isEmpty) {
+                          setState(() {
+                            _errorMsg =
+                                "Customer ID is too short. Enter 8 digits.";
+                          });
+                        }
+                      } else {
+                        if (_errorMsg.isNotEmpty) {
+                          _errorMsg = "";
+                        }
+                      }
+                    }
+                  },
+                  onChanged: (value) {
+                    if (_textFieldFocus == TextFieldFocus.password) {
+                      if (value.isNotEmpty) {
+                        if (!_showPasswordCancel) {
+                          setState(() {
+                            _showPasswordCancel = true;
+                          });
+                        }
+                      } else {
+                        if (_showPasswordCancel) {
                           setState(() {
                             _showPasswordCancel = false;
                           });
-                        },
-                      )
-                    : const SizedBox()),
-          ),
-        )
+                        }
+                      }
+                    }
+                  },
+                  maxLength: 6,
+                  decoration: InputDecoration(
+                      labelText: "Password",
+                      counterText: "",
+                      labelStyle: const TextStyle(color: Colors.white),
+                      enabledBorder: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white)),
+                      focusedBorder: const UnderlineInputBorder(
+                          borderSide:
+                              BorderSide(color: Colors.white, width: 2.0)),
+                      suffixIcon: _textFieldFocus == TextFieldFocus.password &&
+                              _showPasswordCancel
+                          ? IconButton(
+                              icon:
+                                  const Icon(Icons.cancel, color: Colors.white),
+                              onPressed: () {
+                                _passwordController.clear();
+                                setState(() {
+                                  _showPasswordCancel = false;
+                                });
+                              },
+                            )
+                          : const SizedBox()),
+                ),
+              )
+            : const SizedBox()
       ],
     );
   }
@@ -375,55 +475,11 @@ class _SignInPageState extends State<SignInPage> {
               String userName = _changeUser
                   ? _customIDController.text
                   : Member.lastLoginMemberId ?? _customIDController.text;
-              try {
-                Object? result = await Navigator.push(
-                    context,
-                    PageRouteBuilder(
-                        pageBuilder:
-                            ((context, animation, secondaryAnimation) =>
-                                SignInLoadingPage(
-                                  userName: userName,
-                                  password: _passwordController.text,
-                                )),
-                        transitionDuration: Duration.zero,
-                        reverseTransitionDuration: Duration.zero));
-                if (result != null) {
-                  if (result is FirebaseAuthException) {
-                    throw result;
-                  } else if (result is String) {
-                    String message = result;
-                    if (message.isNotEmpty) {
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(SnackBar(content: Text(message)));
-                    }
-                  }
-                } else {
-                  if (FirebaseAuth.instance.currentUser != null) {
-                    await FirebaseAuth.instance.signOut();
-                  }
 
-                  Navigator.pushReplacement(
-                      context,
-                      PageRouteBuilder(
-                          pageBuilder:
-                              ((context, animation, secondaryAnimation) =>
-                                  const GuestPage(signedOut: true))));
-                }
+              await handleSignIn(userName, _passwordController.text);
 
-                _customIDController.clear();
-                _passwordController.clear();
-              } on FirebaseAuthException catch (e) {
-                String errMsg = "Unknown Error";
-
-                if (e.code == 'user-not-found') {
-                  errMsg = 'No user found for that email.';
-                } else if (e.code == 'wrong-password') {
-                  errMsg = 'Wrong password provided for that user.';
-                }
-
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(SnackBar(content: Text(errMsg)));
-              }
+              _customIDController.clear();
+              _passwordController.clear();
             }
           },
           child: const Padding(
@@ -439,6 +495,42 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
+  Future<void> handleSignIn(String userName, String? password) async {
+    Object? result = await Navigator.push(
+        context,
+        PageRouteBuilder(
+            pageBuilder: ((context, animation, secondaryAnimation) =>
+                SignInLoadingPage(
+                  userName: userName,
+                  password: password,
+                )),
+            transitionDuration: Duration.zero,
+            reverseTransitionDuration: Duration.zero));
+
+    if (result != null) {
+      if (result is FirebaseAuthException) {
+        String errMsg = "Unknown Error";
+
+        if (result.code == 'user-not-found') {
+          errMsg = 'No user found for that email.';
+        } else if (result.code == 'wrong-password') {
+          errMsg = 'Wrong password provided for that user.';
+        }
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(errMsg)));
+
+        return;
+      } else if (result is String) {
+        String message = result;
+        if (message.isNotEmpty) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(message)));
+        }
+      }
+    }
+  }
+
   Widget _getRegisterButton() {
     return Container(
       decoration: BoxDecoration(
@@ -450,15 +542,21 @@ class _SignInPageState extends State<SignInPage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(3.0),
         child: InkWell(
-          onTap: () async {},
-          child: const Padding(
-            padding: EdgeInsets.symmetric(
+          onTap: () async {
+            if (_memberHasBiometric) {
+              _fingerPrintLogin();
+            }
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
                 vertical: Vars.topBotPaddingSize,
                 horizontal: Vars.standardPaddingSize),
             child: Center(
               child: Text(
-                "Register for online banking",
-                style: TextStyle(color: Colors.black, fontSize: 18.0),
+                _memberHasBiometric
+                    ? "Try Biometrics again"
+                    : "Register for online banking",
+                style: const TextStyle(color: Colors.black, fontSize: 18.0),
               ),
             ),
           ),

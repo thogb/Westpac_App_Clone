@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
+import 'package:flutwest/controller/secure_storage_controller.dart';
 import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/cust_widget/background_image.dart';
 import 'package:flutwest/cust_widget/big_circular_loading.dart';
@@ -10,11 +11,12 @@ import 'package:flutwest/model/account_id.dart';
 import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
+import 'package:flutwest/ui_page/biometrics_confirm_page.dart';
 import 'package:flutwest/ui_page/home_page.dart';
 
 class SignInLoadingPage extends StatefulWidget {
   final String userName;
-  final String password;
+  final String? password;
   const SignInLoadingPage(
       {Key? key, required this.userName, required this.password})
       : super(key: key);
@@ -130,16 +132,39 @@ class _SignInLoadingPageState extends State<SignInLoadingPage> {
 
   void _trySignIn() async {
     try {
+      if (widget.password == null) {
+        throw FirebaseAuthException(code: "Password is empty.");
+      }
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
               email: "${widget.userName}${Vars.fakeMail}",
-              password: widget.password);
+              password: widget.password!);
       DateTime lastLogin = DateTime.now();
       await SQLiteController.instance.tableMember
           .insertMemberIfNotExist(widget.userName, lastLogin);
       await SQLiteController.instance.tableMember
           .updateRecentLogin(memberId: widget.userName, dateTime: lastLogin);
       Member.lastLoginMemberId = widget.userName;
+
+      bool notifyLocalAuth = await SQLiteController.instance.tableMember
+          .getNotifyLocalAuth(widget.userName);
+      if (!notifyLocalAuth) {
+        Object? result = await Navigator.push(
+            context,
+            PageRouteBuilder(
+                pageBuilder: ((context, animation, secondaryAnimation) =>
+                    const BiometricsConfirmPage())));
+        if (result != null) {
+          bool biomerticsOn = result as bool;
+          await SQLiteController.instance.tableMember
+              .updateNotifyLocalAuth(widget.userName, true);
+
+          if (biomerticsOn) {
+            SecureStorageController.instance
+                .write(widget.userName, widget.password!);
+          }
+        }
+      }
 
       _futureMember =
           FirestoreController.instance.colMember.getByDocId(widget.userName);
@@ -169,7 +194,8 @@ class _SignInLoadingPageState extends State<SignInLoadingPage> {
 
       await _createOrderInfos(_accounts, widget.userName);
 
-      await Navigator.push(
+      Navigator.pop(context);
+      Navigator.pushReplacement(
           context,
           PageRouteBuilder(
             pageBuilder: ((context, animation, secondaryAnimation) => HomePage(
@@ -180,7 +206,6 @@ class _SignInLoadingPageState extends State<SignInLoadingPage> {
             transitionDuration: Duration.zero,
             reverseTransitionDuration: Duration.zero,
           ));
-      Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
       Navigator.pop(context, e);
       return;

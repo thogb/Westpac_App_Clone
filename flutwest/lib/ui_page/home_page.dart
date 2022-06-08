@@ -7,6 +7,7 @@ import 'package:flutwest/model/navbar_state.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/ui_page/cards_page.dart';
 import 'package:flutwest/ui_page/choose_payee_page.dart';
+import 'package:flutwest/ui_page/guest_page.dart';
 import 'package:flutwest/ui_page/home_content_page.dart';
 import 'package:flutwest/ui_page/products_page.dart';
 import 'package:flutwest/ui_page/profile_page.dart';
@@ -77,9 +78,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
     if (state == AppLifecycleState.detached) {
-      FirebaseAuth.instance.signOut();
+      await FirebaseAuth.instance.signOut();
     }
 
     super.didChangeAppLifecycleState(state);
@@ -97,7 +98,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   Future<void> _onBackPress() async {
     await FirebaseAuth.instance.signOut();
-    Navigator.pop(context, true);
+    Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+            pageBuilder: ((context, animation, secondaryAnimation) =>
+                const GuestPage(
+                  signedOut: true,
+                ))));
   }
 
   /*Widget _getErrorPage(String errorMsg) {
