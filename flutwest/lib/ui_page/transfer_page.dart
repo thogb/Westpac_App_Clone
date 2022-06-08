@@ -10,6 +10,7 @@ import 'package:flutwest/model/account.dart';
 import 'package:flutwest/model/utils.dart';
 import 'package:flutwest/model/vars.dart';
 import 'package:flutwest/ui_page/loading_page.dart';
+import 'package:flutwest/ui_page/payment_finish_page.dart';
 import 'package:flutwest/ui_page/schedule_pay_page.dart';
 import 'package:flutwest/ui_page/transfer_from_page.dart';
 
@@ -324,6 +325,15 @@ class _TransferPageState extends State<TransferPage> {
                                   ]);
                             });
                       } else {
+                        await Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                                pageBuilder: ((context, animation,
+                                        secondaryAnimation) =>
+                                    PaymentFinishPage(
+                                        senderName: _currAccount.getAccountName,
+                                        receiverName: _toAccount.getAccountName,
+                                        amount: _tecMoney.text))));
                         _onBackPress();
                       }
                     }
