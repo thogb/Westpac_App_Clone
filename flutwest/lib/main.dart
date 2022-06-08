@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutwest/controller/firestore_controller.dart';
+import 'package:flutwest/controller/local_auth_controller.dart';
 import 'package:flutwest/controller/sqlite_controller.dart';
 import 'package:flutwest/model/member.dart';
 import 'package:flutwest/model/utils.dart';
@@ -29,6 +30,8 @@ void main() async {
 
   Member.lastLoginMemberId =
       await SQLiteController.instance.tableMember.getRecentLoggedMemberId();
+
+  LocalAuthController.instance.getDeviceInfo();
 
   runApp(const MyApp());
 }
