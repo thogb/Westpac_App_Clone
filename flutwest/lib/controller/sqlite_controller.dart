@@ -37,7 +37,7 @@ class SQLiteController {
       batch.execute(
           "CREATE TABLE ${TablePayee.tableName}(${TablePayee.colMemberId} TEXT NOT NULL, ${TablePayee.colDocId} TEXT NOT NULL, ${TablePayee.colAccountNumber} TEXT NOT NULL, ${TablePayee.colAccountBsb} TEXT NOT NULL, ${TablePayee.colAccountName} TEXT NO NULL, ${TablePayee.colNickName} TEXT NOT NULL, ${TablePayee.colLastPayDate} INTEGER NOT NULL, PRIMARY KEY(${TablePayee.colMemberId}, ${TablePayee.colDocId}))");
       batch.execute(
-          "CREATE TABLE ${TableMember.tableName}(${TableMember.colMemberId} TEXT NOT NULL PRIMARY KEY, ${TableMember.colLastLogin} INTEGER NOT NULL, ${TableMember.colRecentPayee} INTEGER NOT NULL)");
+          "CREATE TABLE ${TableMember.tableName}(${TableMember.colMemberId} TEXT NOT NULL PRIMARY KEY, ${TableMember.colLastLogin} INTEGER NOT NULL, ${TableMember.colRecentPayee} INTEGER NOT NULL, ${TableMember.colNotifyLocalAuth} INTEGER NOT NULL)");
       batch.commit();
     }), version: 1);
 
@@ -267,10 +267,30 @@ class TableMember {
   static const String colMemberId = "member_id";
   static const String colLastLogin = "last_login";
   static const String colRecentPayee = "recent_payee";
+  static const String colNotifyLocalAuth = "notify_local_auth";
 
   final Database _database;
 
   TableMember({required Database database}) : _database = database;
+
+  Future<bool> getNotifyLocalAuth(String memberId) async {
+    bool notifyLocalAuth = false;
+    var query = await _database.query(tableName,
+        where: "$colMemberId = ?", whereArgs: [memberId], limit: 1);
+    if (query.isNotEmpty) {
+      Object? value = query[0][colNotifyLocalAuth];
+      if (value != null && value is int) {
+        notifyLocalAuth = value == 1 ? true : false;
+      }
+    }
+
+    return notifyLocalAuth;
+  }
+
+  Future<void> updateNotifyLocalAuth(String memberId, bool value) async {
+    await _database.update(tableName, {colNotifyLocalAuth: value ? 1 : 0},
+        where: "$colMemberId = ?", whereArgs: [memberId]);
+  }
 
   Future<void> updateRecentPayeeEditDate(
       String memberId, DateTime dateTime) async {
@@ -279,13 +299,16 @@ class TableMember {
         where: "$colMemberId = ?", whereArgs: [memberId]);
   }
 
-  Future<void> insertMemberIfNotExist(
+  Future<bool> insertMemberIfNotExist(
       String memberId, DateTime lastLogin) async {
     var member = await getMember(memberId);
+    bool exist = member != null;
 
-    if (member == null) {
-      await insertMember(getMemberMap(memberId, lastLogin, null));
+    if (!exist) {
+      await insertMember(getMemberMap(memberId, lastLogin, null, false));
     }
+
+    return exist;
   }
 
   Future<void> insertMember(Map<String, Object?> memberMap) async {
@@ -343,14 +366,15 @@ class TableMember {
     return memberInfo[colMemberId];
   }
 
-  Map<String, Object?> getMemberMap(
-      String memberId, DateTime lastLogin, DateTime? recentPayeeDate) {
+  Map<String, Object?> getMemberMap(String memberId, DateTime lastLogin,
+      DateTime? recentPayeeDate, bool notifyLocalAuth) {
     return {
       colMemberId: memberId,
       colLastLogin: lastLogin.millisecondsSinceEpoch,
       colRecentPayee: recentPayeeDate != null
           ? recentPayeeDate.millisecondsSinceEpoch
-          : SQLiteController.invalidDateIntValue
+          : SQLiteController.invalidDateIntValue,
+      colNotifyLocalAuth: notifyLocalAuth ? 1 : 0
     };
   }
 }
