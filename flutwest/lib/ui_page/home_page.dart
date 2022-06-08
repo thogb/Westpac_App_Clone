@@ -61,6 +61,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     _accounts = widget.accounts;
     _member = widget.member;
     _pages[0] = (HomeContentPage(
+      signOutCallback: _onBackPress,
       rawAccounts: _accounts,
       navbarState: navbarState,
       member: _member,
@@ -254,7 +255,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
         }
       } else if (index == 4) {
         if (_pages[4] is! ProfilePage) {
-          _pages[4] = const ProfilePage();
+          _pages[4] = ProfilePage(signOutCallback: _onBackPress);
         }
       }
       setState(() {

@@ -26,13 +26,15 @@ class HomeContentPage extends StatefulWidget {
   final Member member;
   final List<AccountOrderInfo> accountOrderInfos;
   final List<Account> rawAccounts;
+  final VoidCallback signOutCallback;
 
   const HomeContentPage(
       {Key? key,
       required this.navbarState,
       required this.member,
       required this.accountOrderInfos,
-      required this.rawAccounts})
+      required this.rawAccounts,
+      required this.signOutCallback})
       : super(key: key);
 
   @override
@@ -371,8 +373,9 @@ class _HomeContentPageState extends State<HomeContentPage>
             style: fakeAppBarStyle,
           ),
           onTap: () async {
-            await FirebaseAuth.instance.signOut();
-            Navigator.pop(context);
+            //await FirebaseAuth.instance.signOut();
+            //Navigator.pop(context);
+            widget.signOutCallback();
           },
         )
       ],

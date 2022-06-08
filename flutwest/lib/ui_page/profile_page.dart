@@ -8,7 +8,9 @@ import 'package:flutwest/cust_widget/standard_padding.dart';
 import 'package:flutwest/model/vars.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  final VoidCallback signOutCallback;
+  const ProfilePage({Key? key, required this.signOutCallback})
+      : super(key: key);
 
   @override
   _ProfilePageState createState() => _ProfilePageState();
@@ -27,8 +29,9 @@ class _ProfilePageState extends State<ProfilePage> {
           actions: [
             TextButton(
                 onPressed: () async {
-                  await FirebaseAuth.instance.signOut();
-                  Navigator.pop(context);
+                  //await FirebaseAuth.instance.signOut();
+                  //Navigator.pop(context);
+                  widget.signOutCallback();
                 },
                 child: const Text("Sign Out",
                     style: TextStyle(color: Vars.clickAbleColor)))
