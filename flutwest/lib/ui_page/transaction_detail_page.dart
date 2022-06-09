@@ -362,7 +362,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage>
             child: Text("No Transactions"),
           ));
     } else {
-      bool showBalance = _transactionFilter.isAllFilterAny();
+      bool showBalance = _transactionFilter.isAllFilterAny() &&
+          (_descriptionSearch == null || _descriptionSearch!.trim().isEmpty);
       return Expanded(
         child: SafeArea(
           top: false,
