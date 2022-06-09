@@ -282,7 +282,9 @@ class _CustTextFieldState extends State<CustTextField> {
 
   @override
   void dispose() {
-    _controller.dispose();
+    if (widget.controller == null) {
+      _controller.dispose();
+    }
     _focusNode.removeListener(onFocusChange);
     _focusNode.dispose();
 
