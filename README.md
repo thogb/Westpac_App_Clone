@@ -26,7 +26,7 @@ A simple westpac app clone using flutter
 
 ### Sign in page
 
-<img src="/images/signin.jpg">
+<img width="500" src="/images/signin.jpg">
 <img src="/images/signin2.jpg">
 
 ### Home page
