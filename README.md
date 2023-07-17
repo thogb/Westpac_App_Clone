@@ -27,39 +27,39 @@ A simple westpac app clone using flutter
 ### Sign in page
 
 <img width="300" src="/images/signin.jpg">
-<img src="/images/signin2.jpg">
+<img width="300" src="/images/signin2.jpg">
 
 ### Home page
 
-<img src="/images/homepage.jpg">
+<img width="300" src="/images/homepage.jpg">
 
 ### Account transfer
 
-<img src="/images/accountTransfer.jpg">
+<img width="300" src="/images/accountTransfer.jpg">
 
 ### Account setting
 
-<img src="/images/accountSettings.jpg">
+<img width="300" src="/images/accountSettings.jpg">
 
 ### Account details
 
-<img src="/images/accountDetails.jpg">
-<img src="/images/accountDetails2.jpg">
+<img width="300" src="/images/accountDetails.jpg">
+<img width="300" src="/images/accountDetails2.jpg">
 
 ### Card
 
-<img src="/images/card.jpg">
+<img width="300" src="/images/card.jpg">
 
 ### Payee
 
-<img src="/images/payee.jpg">
+<img width="300" src="/images/payee.jpg">
 
 ### Transactions
 
-<img src="/images/transactions.jpg">
-<img src="/images/transactions2.jpg">
+<img width="300" src="/images/transactions.jpg">
+<img width="300" src="/images/transactions2.jpg">
 
 ### filter
 
-<img src="/images/filter.jpg">
-<img src="/images/filter1.jpg">
+<img width="300" src="/images/filter.jpg">
+<img width="300" src="/images/filter1.jpg">
